@@ -24,7 +24,6 @@
     "live-elements-core": "file:packages/live-elements-core",
     "live-elements-js-compiler": "^0.1.4",
     "live-elements-loader": "file:packages/live-elements-loader",
-    "live-elements-web": "file:packages/live-elements-web",
     "live-web": "file:packages/live-web",
     "live-test": "file:packages/live-test"
   }
