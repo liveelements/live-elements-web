@@ -1,6 +1,9 @@
 /build
 packages/live-web/build
 packages/live-testspec/build
+samples/customstyle/build
+samples/slider/build
+samples/staticpages/build
 node_modules
 npm-debug.log
 .env
