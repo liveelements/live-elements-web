@@ -1,0 +1,5 @@
+{
+    "name" : "bundle",
+    "package": "../..",
+    "modules": ["bundle", "IndexPage"]
+}

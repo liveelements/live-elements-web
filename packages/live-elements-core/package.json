@@ -5,6 +5,9 @@
     "keywords": ["live", "elements", "live-elements-core", "core", "live-elements"],
     "author": "Dinu SV",
     "license": "MIT",
-    "type": "module"
-  }
+    "type": "module",
+    "dependencies": {
+      "tmp": "^0.2.1"
+    }
+}
   

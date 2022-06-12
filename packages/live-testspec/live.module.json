@@ -1,6 +1,6 @@
 
 {
-    "name" : "live-test",
+    "name" : "live-testspec",
     "package": ".",
     "modules": ["Spec", "Scenario"]
 }

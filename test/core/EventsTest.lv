@@ -1,4 +1,4 @@
-import live-test
+import live-testspec
 
 instance test Spec{
     Scenario{

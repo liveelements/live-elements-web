@@ -25,6 +25,6 @@
     "live-elements-js-compiler": "^0.1.4",
     "live-elements-loader": "file:packages/live-elements-loader",
     "live-web": "file:packages/live-web",
-    "live-test": "file:packages/live-test"
+    "live-testspec": "file:packages/live-testspec"
   }
 }

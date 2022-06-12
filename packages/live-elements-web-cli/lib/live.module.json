@@ -2,7 +2,7 @@
     "name": "lib",
     "package" : "..",
     "modules" : [
-        "Generator",
+        "GeneratorPack",
         "FileGenerator",
         "FileGeneratorContent",
         "FileGeneratorInfo"

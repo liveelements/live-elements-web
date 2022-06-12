@@ -1,17 +1,17 @@
 {
-    "name": "live-test",
+    "name": "live-testspec",
     "version": "0.1.1",
     "description": "Live Elements Test Package.",
     "keywords": [
         "live",
         "elements",
         "test",
-        "live-test"
+        "live-testspec"
     ],
     "author": "Dinu SV",
     "license": "MIT",
     "bin" : {
-      "live-test": "./index.js"
+      "lvtest": "./index.js"
     },
     "dependencies": {
         "live-elements-core": "^0.1.1",

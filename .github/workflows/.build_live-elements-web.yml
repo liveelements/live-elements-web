@@ -55,6 +55,6 @@ jobs:
           cd ../live-web
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
-          cd ../live-test
+          cd ../live-testspec
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public

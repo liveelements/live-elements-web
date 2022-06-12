@@ -1,4 +1,4 @@
-component Generator{
+component GeneratorPack{
     var name: ''
 
     default children

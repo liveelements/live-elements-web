@@ -1,6 +1,6 @@
 import .lib
 
-instance webpackBundle Generator{
+instance webpackBundle GeneratorPack{
     name: 'webpack-bundle'
 
 FileGenerator{
@@ -82,11 +82,10 @@ FileGeneratorContent```
     \"webpack-dev-server\": \"^4.7.4\"
   },
   \"dependencies\": {
-    \"live-elements-bundle-plugin\": \"file:../live-elements-web/packages/live-elements-bundle-plugin\",
-    \"live-elements-core\": \"file:../live-elements-web/packages/live-elements-core\",
-    \"live-elements-loader\": \"file:../live-elements-web/packages/live-elements-loader\",
-    \"live-elements-web\": \"file:../live-elements-web/packages/live-elements-web\",
-    \"live-web\": \"file:../live-elements-web/packages/live-web\"
+    \"live-elements-bundle-plugin\": \"^0.1.1\",
+    \"live-elements-core\": \"^0.1.1\",
+    \"live-elements-web\": \"^0.1.1\",
+    \"live-web\": \"^0.1.1\"
   }
 }
 ```

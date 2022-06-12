@@ -1,4 +1,6 @@
-build
+/build
+packages/live-web/build
+packages/live-testspec/build
 node_modules
 npm-debug.log
 .env
