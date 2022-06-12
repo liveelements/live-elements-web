@@ -1,6 +1,6 @@
 {
     "name": "live-test",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Live Elements Test Package.",
     "keywords": [
         "live",
@@ -14,6 +14,8 @@
       "live-test": "./index.js"
     },
     "dependencies": {
+        "live-elements-core": "^0.1.1",
+        "live-elements-js-compiler": "^0.1.1",
         "commander": "^9.0.0",
         "tape": "^5.5.3"
     }
