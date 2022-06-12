@@ -1,0 +1,16 @@
+component Spec{
+
+    default children: []
+    var describe: ''
+
+    fn run(){
+        return import('tape').then((tapeModule) => {
+            var test = tapeModule.test
+
+            for ( var i = 0; i < this.children.length; ++i ){
+                test(this.children[i].name, this.children[i].run)
+            }
+        })
+    }
+
+}

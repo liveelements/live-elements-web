@@ -1,0 +1,8 @@
+
+component Table < DOMElement{
+
+    constructor(){
+        super('table')
+        Table.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,8 @@
+
+component Form < DOMElement{
+
+    constructor(){
+        super('form')
+        Form.prototype.__initialize.call(this)
+    }
+}

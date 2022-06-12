@@ -1,0 +1,43 @@
+
+component Ul < DOMElement{
+
+    constructor(text){
+        super('ul')
+        Ul.prototype.__initialize.call(this)
+
+        if ( text ){
+            var listSegments = this.grabListSegments(text)
+            this.children = listSegments.map( (ls) => {
+                return new Li(ls)
+            })
+        }
+    }
+
+    fn grabListSegments(var str){
+        var strTrim = str.trimStart()
+        if ( !strTrim.startsWith('*')){
+            throw new Error('Ul content must start with a bullet notation \'*\'')
+        }
+
+        var result = []
+
+        var segments = strTrim.split('\n')
+        var textBuilder = ''
+        for ( var i = 0; i < segments.length; ++i ){
+            var segm = segments[i].trimLeft()
+            if ( segm.startsWith('*') ){
+                if ( textBuilder.length ){
+                    result.push(textBuilder)
+                }
+                textBuilder = segm.substr(1).trimLeft()
+            } else {
+                textBuilder += '\n' + segments[i]
+            }
+        }
+        if ( textBuilder.length ){
+            result.push(textBuilder)
+        }
+
+        return result
+    }
+}

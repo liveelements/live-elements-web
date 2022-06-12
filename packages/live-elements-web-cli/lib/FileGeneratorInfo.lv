@@ -1,0 +1,17 @@
+component FileGeneratorInfo{
+
+    var key: ''
+    var content: ''
+
+    constructor(key){
+        super()
+        FileGeneratorInfo.prototype.__initialize.call(this)
+        this.key = key
+    }
+
+    fn evaluateContent(var info){
+        if ( info.hasOwnProperty(this.key) ){
+            this.content = info[this.key]
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "live-elements-web",
+  "version": "0.1.0",
+  "description": "Live Elements Web Main Package.",
+  "keywords": [
+    "live",
+    "elements",
+    "live-elements",
+    "html",
+    "live-web",
+    "live-elements-web"
+  ],
+  "author": "Dinu SV",
+  "license": "MIT",
+  "dependencies": {
+    "live-elements-js-compiler": "^0.1.4",
+    "live-elements-core": "^0.1.0",
+    "live-elements-loader": "^0.1.0",
+    "live-web": "^0.1.0"
+  }
+}

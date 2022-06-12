@@ -1,0 +1,8 @@
+
+component Label < DOMElement{
+
+    constructor(){
+        super('label')
+        Label.prototype.__initialize.call(this)
+    }
+}

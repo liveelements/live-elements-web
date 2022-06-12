@@ -1,0 +1,8 @@
+
+component Pre < DOMElement{
+
+    constructor(){
+        super('pre')
+        Pre.prototype.__initialize.call(this)
+    }
+}

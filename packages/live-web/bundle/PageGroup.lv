@@ -1,0 +1,84 @@
+import .dom
+
+component PageGroup{
+    
+    default children: []
+
+    get ownAssets(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof BundleAssetProvider )
+                result = result.concat(this.children[i].collectAssets())
+        }
+        return result
+    }
+
+    get ownStyles(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof Stylesheet ){
+                result.push(this.children[i])
+            }
+        }
+        return result
+    }
+
+    get ownScripts(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof Script ){
+                result.push(this.children[i])
+            }
+        }
+        return result
+    }
+
+    get assets(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof BundleAssetProvider ){
+                result = result.concat(this.children[i].collectAssets())
+            } else if ( this.children[i] instanceof Page ){
+                result = result.concat(this.children[i].assets)
+            } else if ( this.children[i] instanceof PageGroup ){
+                result = result.concat(this.children[i].assets)
+            }
+        }
+        return result
+    }
+
+    get styles(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof Stylesheet ){
+                result.push(this.children[i])
+            } else if ( this.children[i] instanceof Page ){
+                result = result.concat(this.children[i].styles)
+            } else if ( this.children[i] instanceof PageGroup ){
+                result = result.concat(this.children[i].styles)
+            }
+        }
+        return result
+    }
+    get scripts(){
+        var result = []
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof Script ){
+                result.push(this.children[i])
+            } else if ( this.children[i] instanceof Page ){
+                result = result.concat(this.children[i].scripts)
+            } else if ( this.children[i] instanceof PageGroup ){
+                result = result.concat(this.children[i].scripts)
+            }
+        }
+        return result
+    }
+
+    fn captureContentRecurse(Object domInterface, fn cb){
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof Page ){
+                this.children[i].captureContentRecurse(domInterface, cb)
+            }
+        }
+    }
+}

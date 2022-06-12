@@ -1,0 +1,8 @@
+
+component Div < DOMElement{
+
+    constructor(){
+        super('div')
+        Div.prototype.__initialize.call(this)
+    }
+}

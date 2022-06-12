@@ -1,0 +1,22 @@
+component Link < DOMElement{
+    constructor(){
+        super('link')
+        Link.prototype.__initialize.call(this)
+    }
+
+    string href: ''
+    on hrefChanged: () => {
+        this.props['href'] = this.href
+        this.propsChanged.emit()
+    }
+    string rel: ''
+    on relChanged: () => {
+        this.props['rel'] = this.rel
+        this.propsChanged.emit()
+    }
+    string type: ''
+    on typeChanged: () => {
+        this.props['type'] = this.type
+        this.propsChanged.emit()
+    }
+}

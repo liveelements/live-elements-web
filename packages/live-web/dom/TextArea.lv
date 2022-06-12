@@ -1,0 +1,8 @@
+
+component TextArea < DOMElement{
+
+    constructor(){
+        super('textarea')
+        TextArea.prototype.__initialize.call(this)
+    }
+}

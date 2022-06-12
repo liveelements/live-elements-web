@@ -1,0 +1,8 @@
+
+component Section < DOMElement{
+
+    constructor(){
+        super('section')
+        Section.prototype.__initialize.call(this)
+    }
+}

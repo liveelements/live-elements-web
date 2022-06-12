@@ -1,0 +1,66 @@
+import live-test
+
+instance test Spec{
+    Scenario{
+        name: 'Nested Property Test'
+        run: (t) => {
+            var data = BaseElement{
+                var x: 100
+                var y: this.x
+            }
+            data.x = 200
+            t.equals(data.y, 200)
+            t.end()
+        }
+    }
+
+    Scenario{
+        name: 'Nested Property Test'
+        run: (t) => {
+            var data = BaseElement{
+                var x: BaseElement{
+                    var z: 30
+                }
+                var y: this.x.z + 100
+            }
+            data.x.z = 130
+            t.equals(data.y, 230)
+
+            data.x = BaseElement{
+                var z: 1000
+            }
+            t.equals(data.y, 1100)
+            data.x.z = 300
+            t.equals(data.y, 400)
+            t.end()
+        }
+    }
+
+    Scenario{
+        name: 'Nested Nested Property Test'
+        run: (t) => {
+            var data = BaseElement{
+                var x: BaseElement{
+                    var y: BaseElement{
+                        var z: 100
+                    }
+                }
+                var t: this.x.y.z + 100
+            }
+            t.equals(data.t, 200)
+            data.x.y.z = 130
+
+            t.equals(data.t, 230)
+
+            data.x = BaseElement{
+                var y: BaseElement{
+                    var z: 1000
+                }
+            }
+            t.equals(data.t, 1100)
+            data.x.y.z = 300
+            t.equals(data.t, 400)
+            t.end()
+        }
+    }
+}

@@ -1,0 +1,6 @@
+
+{
+    "name" : "live-test",
+    "package": ".",
+    "modules": ["Spec", "Scenario"]
+}

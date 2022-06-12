@@ -1,0 +1,48 @@
+
+component Application{
+
+    default children: []
+    var run: null
+    var config: ({})
+    var index: null
+    var render: null
+
+    constructor(){
+        super()
+        Application.prototype.__initialize.call(this)
+    }
+
+    fn completed(){
+        if ( this.index ){
+            var ViewComponent = this.index
+            var view = new ViewComponent()
+            if ( view.children.length > 1 ){
+                throw new Error("Failed to load index view. Views should be limited to only one child root object.")
+            }
+            if ( view.children.length ){
+                var child = view.children[0]
+                
+                var locations = document.querySelectorAll('[data-content-type="main"]')
+                if ( locations.length === 0 ){
+                    throw new Error("Failed to find insertion location for element:" + child)
+                }
+                var location = locations[0]
+                child.expandTo(location)
+            }
+        } else if ( this.render ){
+            var locations = document.querySelectorAll('[data-content-type="main"]')
+            if ( locations.length === 0 ){
+                throw new Error("Failed to find insertion location for element:" + child)
+            }
+            var location = locations[0]
+            this.render.expandTo(location)
+        }
+        if ( this.run ){
+            this.run()
+        }
+    }
+    fn setup(){
+        BaseElement.complete(this)
+    }
+
+}

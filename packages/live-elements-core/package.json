@@ -1,0 +1,10 @@
+{
+    "name": "live-elements-core",
+    "version": "0.1.0",
+    "description": "Live Elements Web Core Package.",
+    "keywords": ["live", "elements", "live-elements-core", "core", "live-elements"],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "type": "module"
+  }
+  

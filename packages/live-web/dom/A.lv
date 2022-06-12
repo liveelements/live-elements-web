@@ -1,0 +1,29 @@
+
+component A < DOMElement{
+
+    constructor(text){
+        super('a')
+        A.prototype.__initialize.call(this)
+
+        if ( text ){
+            var separatorPos = text.indexOf('|')
+            if ( separatorPos !== -1 ){
+                this.children = [new T(text.substr(0, separatorPos))]
+                this.href = text.substr(separatorPos + 1)
+            } else {
+                this.children = [new T(text)]
+            }
+        }
+    }
+
+    string href: ''
+    on hrefChanged: () => {
+        this.props['href'] = this.href
+        this.propsChanged.emit()
+    }
+    string alt: ''
+    on altChanged: () => {
+        this.props['alt'] = this.alt
+        this.propsChanged.emit()
+    }
+}

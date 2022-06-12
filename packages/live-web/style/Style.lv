@@ -1,0 +1,63 @@
+
+component Style{
+
+    constructor(){
+        super()
+        Style.prototype.__initialize.call(this)
+    }
+
+    object convert: null
+    on convertChanged: () => {
+
+        this.__data.value = {}
+
+        var dataChange = false
+
+        var propNames = BaseElement.propertyNames(this)
+        for  ( var i = 0; i < propNames.length; ++i ){
+            if ( propNames[i] !== 'convert' && propNames[i] !== 'data' ){
+                if ( this.convert && this.convert.hasOwnProperty(propNames[i]) ){
+                    var converter = this.convert[propNames[i]]
+                    var value = this[propNames[i]]
+                    converter(value)
+                    dataChange = true
+                } else {
+                    this.data[propNames[i]] = this[propNames[i]]
+                    dataChange = true
+                }
+            }
+        }
+
+        if ( dataChange ){
+            this.dataChanged.emit()
+        }
+    }
+
+    object data: ({})
+
+    fn assign(string key, var value){
+        this.data[key] = value
+    }
+
+    fn completed(){
+        var props = BaseElement.propertyNames(this)
+        for ( var i = 0; i < props.length; ++i ){
+            var propertyName = props[i]
+            if ( propertyName !== 'data' && propertyName !== 'convert' ){
+                var propMetaName = '__' + propertyName
+                var pm = this[propMetaName]
+                this.on(propertyName + 'Changed', function(propertyName){
+                    if ( this.convert && this.convert.hasOwnProperty(propertyName) ){
+                        var converter = this.convert[propertyName]
+                        converter(this[propertyName])
+                        this.dataChanged.emit()
+                    } else {
+                        this.data[propertyName] = this[propertyName]
+                        this.dataChanged.emit()
+                    }
+                }.bind(this, propertyName))
+            }
+        }
+    }
+
+}

@@ -1,0 +1,10 @@
+
+component H5 < DOMElement{
+
+    constructor(text){
+        super('h5')
+        H5.prototype.__initialize.call(this)
+        if ( text )
+            this.children = [new T(text)]
+    }
+}

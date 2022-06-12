@@ -1,0 +1,14 @@
+
+component Tr < DOMElement{
+    constructor(text){
+        super('tr')
+        Tr.prototype.__initialize.call(this)
+
+        if ( text ){
+            var segments = text.split('|').map( (s) => s.trim() )
+            this.children = segments.map( (s) => {
+                return new Td(s)
+            })
+        }
+    }
+}

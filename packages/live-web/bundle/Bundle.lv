@@ -1,0 +1,47 @@
+component Bundle{
+
+    constructor(){
+        super()
+        Bundle.prototype.__initialize.call(this)
+        this._domInterface = null
+    }
+
+    list pages: []
+
+    fn generatePages(fn cb){
+        if ( !this._domInterface ){
+            throw new Error("Bundle: Generating pages requires DOM interface object.")
+        }
+
+        for ( var i = 0; i < this.pages.length; ++i ){
+            var PageComponent = this.pages[i]
+            var page = new PageComponent()
+
+            page.captureContentRecurse(this._domInterface, (page, content) => {
+                if ( !page.output ){
+                    throw new Error("Bundle: Page output property has not been set for " + page.constructor.name)
+                }
+
+                if ( cb && cb.onPageReady ){
+                    cb.onPageReady(page, content)
+                }
+            })
+
+            if ( cb && cb.onAssetReady ){
+                var styles = page.styles
+                for ( var j = 0; j < styles.length; ++j ){
+                    cb.onAssetReady('style', styles[j].src, styles[j].output)
+                }
+                var scripts = page.scripts
+                for ( var j = 0; j < scripts.length; ++j ){
+                    if ( scripts[j].output )
+                        cb.onAssetReady('script', scripts[j].src, scripts[j].output)
+                }
+                var assets = page.assets
+                for ( var j = 0; j < assets.length; ++j ){
+                    cb.onAssetReady(assets[j].type, assets[j].src, assets[j].output)
+                }
+            }
+        }
+    }
+}

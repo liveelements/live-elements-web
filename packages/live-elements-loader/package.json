@@ -1,0 +1,18 @@
+{
+  "name": "live-elements-loader",
+  "version": "0.1.0",
+  "description": "Live Elements Loader.",
+  "keywords": [
+    "live",
+    "elements",
+    "live-elements",
+    "loader",
+    "lv"
+  ],
+  "author": "Dinu SV",
+  "license": "MIT",
+  "dependencies": {
+    "live-elements-js-compiler": "^0.1.4",
+    "live-web": "^0.1.0"
+  }
+}

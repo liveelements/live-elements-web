@@ -1,0 +1,4 @@
+component Scenario{
+    var name: ''
+    var run: null
+}

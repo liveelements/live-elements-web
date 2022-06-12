@@ -1,0 +1,204 @@
+
+import {elementOpen, elementClose, elementVoid, text, patch} from 'incremental-dom'
+
+component DOMElement{
+    constructor(tag, isVoid){
+        super()
+        this._tag = tag
+        this._isVoid = isVoid ? true : false
+        this._domEvents = {}
+        
+        DOMElement.prototype.__initialize.call(this)
+    }
+    
+    get tag(){ return this._tag }
+    get isVoid(){ return this._isVoid }
+    get domEvents(){ return this._domEvents }
+
+    fn _initializeDOMEvent(string type, string domType){
+        if ( this._domEvents.hasOwnProperty(type) )
+            return
+
+        if ( !this.hasOwnProperty(type) ){
+            BaseElement.addEvent(this, type, ['var'])
+        }
+
+        var event = null; // hack
+        this._domEvents[domType] = function(event){ 
+            this[type].emit(event) 
+        }.bind(this)
+
+        if ( this._dom )
+            this._dom[domType] = this._domEvents[domType]
+    }
+
+
+    fn on(string eventName, var fn){
+        if ( this.hasOwnProperty(eventName) ){
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            
+            var DOMElementEventTypes = {
+                'auxclick': 'auxclick',
+                'blur': 'blur',
+                'click': 'click',
+                'compositionend': 'compositionend',
+                'compositionstart': 'compositionstart',
+                'compositionupdate': 'compositionupdate',
+                'contextmenu': 'contextmenu',
+                'copy': 'copy',
+                'cut': 'cut',
+                'dblclick': 'dblclick',
+                'error': 'error',
+                'focus': 'focus',
+                'focusin': 'focusin',
+                'focusout': 'focusout',
+                'fullscreenchange': 'fullscreenchange',
+                'fullscreenerror': 'fullscreenerror',
+                'keydown': 'keydown',
+                'keyup': 'keyup',
+                'mousedown': 'mousedown',
+                'mouseenter': 'mouseenter',
+                'mouseleave': 'mouseleave',
+                'mousemove': 'mousemove',
+                'mouseout': 'mouseout',
+                'mouseover': 'mouseover',
+                'mouseup': 'mouseup',
+                'paste': 'paste',
+                'scroll': 'scroll',
+                'securitypolicyviolation': 'securitypolicyviolation',
+                'select': 'select',
+                'touchcancel': 'touchcancel',
+                'touchend': 'touchend',
+                'touchmove': 'touchmove',
+                'touchstart': 'touchstart',
+                'wheel': 'wheel'
+            };
+
+            if ( DOMElementEventTypes.hasOwnProperty(eventName) ){
+                this._initializeDOMEvent(eventName, 'on' + eventName)
+                BaseElement.prototype.on.call(this, eventName, fn)
+            }
+        }
+    }
+
+    default children: []
+    on childrenChanged: () => {
+        if ( this.dom ){
+            DOMElement.patch(this.dom.parentNode, this.parent)
+        }
+    }
+
+    string glid: ''
+    list classes: []
+    object style: null
+    on styleChanged: () => {
+        if ( this.style ){
+            var style = this.style.data ? this.style.data : this.style
+
+            if ( this.dom ){
+                for (const [key, value] of Object.entries(style)) {
+                    this.dom.style[key] = value
+                }
+            }
+            if ( this.style.data ){
+                this.style.on('dataChanged', () => {
+                    if ( this.dom ){
+                        for (const [key, value] of Object.entries(style)) {
+                            this.dom.style[key] = value
+                        }
+                    }
+                })
+            }
+        }
+    }
+
+    object props: ({})
+    on propsChanged: () => {
+        if ( this.dom ){
+            DOMElement.patch(this.dom.parentNode, this.parent)
+        }
+    }
+    string key: ''
+    object dom: null
+
+    fn expandTo(var item){
+        DOMElement.patch(item, this)
+    }
+
+    static fn __unwrapAttributes(string prefix, Object object){
+        var result = []
+        var key = undefined
+        for ( key in object ){
+            if ( object.hasOwnProperty(key) ){
+                var val = object[key]
+                if ( typeof val === 'object' ){
+                    result = result.concat(DOMElement.__unwrapAttributes(prefix + '-' + key, val))
+                } else {
+                    result.push(prefix + '-' + key, val)
+                }
+            }
+        }
+        return result
+    }
+
+    static fn patch(object htmlElement, object element){
+        patch(htmlElement, function() {
+            DOMElement.render(element);
+        });
+    }
+
+    static fn render(object element){
+        if ( element.tag === 'text' ){
+            text(element.text)
+            return
+        }
+
+        var props = [element.tag, element.key ? element.key : null, null]
+        if ( element.glid ){
+            props.push('id', element.glid)
+        }
+        if ( element.classes.length ){
+            var className = element.classes.join(' ')
+            props.push('class', className)
+        }
+        if ( element.style ){
+            var style = element.style.data ? element.style.data : element.style
+            props.push('style', style)
+        }
+        if ( element.props ){
+            var key = undefined
+            for (let key in element.props) {
+                if (element.props.hasOwnProperty(key)) {
+                    var val = element.props[key]
+                    if ( typeof val === 'object' ){
+                        props = props.concat(DOMElement.__unwrapAttributes(key, val))
+                    } else {
+                        props.push(key, val)
+                    }
+                }
+            }
+        }
+
+        if ( element._domEvents ){
+            var key = undefined
+            for (let key in element._domEvents) {
+                if (element._domEvents.hasOwnProperty(key)) {
+                    props.push(key, element._domEvents[key])
+                }
+            }
+        }
+
+        if ( element.isVoid ){
+            element.dom = elementVoid.apply(null, props)
+        } else {
+            elementOpen.apply(null, props)
+            for ( var i = 0; i < element.children.length; ++i ){
+                DOMElement.render(element.children[i])
+            }
+            element.dom = elementClose(element.tag)
+        }
+    }
+
+}
+

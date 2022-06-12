@@ -1,0 +1,24 @@
+{
+    "name": "live-elements-bundle-plugin",
+    "version": "0.1.0",
+    "description": "Live Elements Webpack Bundle Plugin.",
+    "keywords": [
+        "live",
+        "elements",
+        "live-elements",
+        "loader",
+        "lv",
+        "bundle",
+        "plugin"
+    ],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "dependencies": {
+        "jsdom": "^19.0.0",
+        "live-elements-js-compiler": "^0.1.4",
+        "live-elements-loader": "^0.1.0",
+        "live-web": "^0.1.0",
+        "pretty": "^2.0.0",
+        "tmp": "^0.2.1"
+    }
+}

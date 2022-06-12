@@ -1,0 +1,18 @@
+
+component T{
+    constructor(text){
+        super()
+        this._tag = 'text'
+        T.prototype.__initialize.call(this)
+        this.text = text
+    }
+
+    get tag(){ return this._tag }
+
+    string text: ''
+    on textChanged: () => {
+        if ( this.parent && this.parent.dom ){
+            DOMElement.patch(this.parent.dom, this.parent)
+        }
+    }
+}

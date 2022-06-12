@@ -1,0 +1,4 @@
+component ModelType < BaseElement{
+    fn serialize(){}
+    fn deserialize(){}
+}

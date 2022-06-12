@@ -1,0 +1,6 @@
+
+{
+    "name" : "slider",
+    "package": "../../..",
+    "modules": ["main", "IndexPage", "bundle"]
+}

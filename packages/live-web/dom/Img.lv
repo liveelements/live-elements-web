@@ -1,0 +1,19 @@
+
+component Img < DOMElement{
+
+    constructor(){
+        super('img', true)
+        Img.prototype.__initialize.call(this)
+    }
+
+    string src: ''
+    on srcChanged: () => {
+        this.props['src'] = this.src
+        this.propsChanged.emit()
+    }
+    string alt: ''
+    on altChanged: () => {
+        this.props['alt'] = this.alt
+        this.propsChanged.emit()
+    }
+}

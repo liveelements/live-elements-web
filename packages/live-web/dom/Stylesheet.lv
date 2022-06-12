@@ -1,0 +1,11 @@
+
+component Stylesheet < DOMElement{
+
+    constructor(){
+        super('link')
+        Stylesheet.prototype.__initialize.call(this)
+    }
+
+    string src: ''
+    string output
+}

@@ -1,0 +1,8 @@
+
+component Nav < DOMElement{
+
+    constructor(){
+        super('nav')
+        Nav.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "name": "live-test",
+    "version": "0.1.0",
+    "description": "Live Elements Test Package.",
+    "keywords": [
+        "live",
+        "elements",
+        "test",
+        "live-test"
+    ],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "bin" : {
+      "live-test": "./index.js"
+    },
+    "dependencies": {
+        "commander": "^9.0.0",
+        "tape": "^5.5.3"
+    }
+}

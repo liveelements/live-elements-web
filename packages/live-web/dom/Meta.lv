@@ -1,0 +1,25 @@
+
+component Meta < DOMElement{
+
+    constructor(){
+        super('meta')
+        Meta.prototype.__initialize.call(this)
+    }
+
+    string name
+    on nameChanged: () => {
+        this.props['name'] = this.name
+        this.propsChanged.emit()
+    }
+    string content
+    on contentChanged: () => {
+        this.props['content'] = this.content
+        this.propsChanged.emit()
+    }
+    string property
+    on propertyChanged: () => {
+        this.props['property'] = this.property
+        this.propsChanged.emit()
+    }
+
+}

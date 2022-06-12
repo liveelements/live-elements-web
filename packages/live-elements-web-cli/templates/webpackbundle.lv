@@ -1,0 +1,184 @@
+import .lib
+
+instance webpackBundle Generator{
+    name: 'webpack-bundle'
+
+FileGenerator{
+    output: 'webpack.config.js'
+
+FileGeneratorContent```
+const path = require('path');
+const LiveElementsBundlePlugin = require('live-elements-bundle-plugin')
+
+var globalDevServer = null
+
+module.exports = {
+  entry: './src/app/main.lv',
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist')
+  },
+  mode: 'development',
+  devServer: {
+      host: '0.0.0.0',
+      port: 8080,
+      hot: false,
+      setupMiddlewares: (middlewares, devServer) => {
+        if (!devServer) {
+          throw new Error('webpack-dev-server is not defined');
+        }
+        globalDevServer = devServer
+        return middlewares
+      }
+  },
+  plugins: [
+    new LiveElementsBundlePlugin({
+      bundle: path.resolve('src/bundle/bundle.lv'),
+      output: path.resolve(__dirname, 'dist'),
+      beautifyHtml: true,
+      onAssetsAdded: () => {
+        globalDevServer.sendMessage(globalDevServer.webSocketServer.clients, 'content-changed')
+      }
+    })
+  ],
+  module: {
+    rules: [
+        {
+            test: /\\.lv$/,
+            use: [{
+              loader: 'live-elements-loader',
+            }],
+        },
+    ]
+  }
+};
+```
+}
+
+
+FileGenerator{
+    output: 'package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+  \"version\": \"0.1.0\",
+  \"description\": \"\",
+  \"main\": \"index.js\",
+  \"scripts\": {
+    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"
+  },
+  \"author\": \"\",
+  \"license\": \"UNLICENSED\",
+  \"devDependencies\": {
+    \"webpack\": \"^5.65.0\",
+    \"webpack-cli\": \"^4.9.1\",
+    \"webpack-dev-server\": \"^4.7.4\"
+  },
+  \"dependencies\": {
+    \"live-elements-bundle-plugin\": \"file:../live-elements-web/packages/live-elements-bundle-plugin\",
+    \"live-elements-core\": \"file:../live-elements-web/packages/live-elements-core\",
+    \"live-elements-loader\": \"file:../live-elements-web/packages/live-elements-loader\",
+    \"live-elements-web\": \"file:../live-elements-web/packages/live-elements-web\",
+    \"live-web\": \"file:../live-elements-web/packages/live-web\"
+  }
+}
+```
+}
+
+FileGenerator{
+    output: 'live.package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+    \"version\" : \"0.1.0\"
+}
+```
+}
+
+FileGenerator{
+    output: 'src/app/live.module.json'
+
+FileGeneratorContent```
+{
+    \"name\" : \"app\",
+    \"package\": \"../..\",
+    \"modules\": [\"main\"]
+}
+```
+}
+
+FileGenerator{
+    output: 'src/app/main.lv'
+
+FileGeneratorContent```
+import live-web
+import live-web.style
+import live-web.dom
+ 
+instance app Application{
+    render: Div{
+        H1\`Welcome from Live Elements\`
+    }
+}
+```
+}
+
+
+FileGenerator{
+    output: 'src/bundle/live.module.json'
+
+FileGeneratorContent```
+{
+    \"name\" : \"bundle\",
+    \"package\": \"../..\",
+    \"modules\": [\"bundle\", \"IndexPage\"]
+}
+```
+} 
+
+FileGenerator{
+    output: 'src/bundle/bundle.lv'
+
+FileGeneratorContent```
+import live-web.bundle
+
+instance bundle Bundle{
+    pages: [IndexPage]
+}
+```
+}
+
+FileGenerator{
+    output: 'src/bundle/IndexPage.lv'
+
+FileGeneratorContent```
+import live-web.bundle
+import live-web.dom
+
+component IndexPage < Page{
+    output: 'index.html'
+    title: 'Index'
+    clientRender: body
+
+    Body{
+        id: body
+    }
+}
+```
+}
+
+} // webpackBundle Generator

@@ -1,0 +1,25 @@
+{
+    "name": "live-elements-web-cli",
+    "version": "0.1.0",
+    "description": "Live Elements Web Command Line Interface: lvweb",
+    "keywords": [
+      "live",
+      "elements",
+      "live-elements",
+      "lvweb",
+      "live-elements-web"
+    ],
+    "bin" : {
+      "lvweb": "./index.js"
+    },
+    "author": "Dinu SV",
+    "license": "MIT",
+    "dependencies": {
+      "commander": "^9.0.0",
+      "chalk": "^5.0.1",
+      "jsdom": "^19.0.0",
+      "live-elements-core": "^0.1.0",
+      "live-elements-loader": "^0.1.0"
+    }
+  }
+  

@@ -1,0 +1,45 @@
+component Input < DOMElement{
+    constructor(){
+        super('input')
+        Input.prototype.__initialize.call(this)
+    }
+
+    string type: ''
+    on typeChanged: () => { this.props['type'] = this.type; this.propsChanged.emit() }
+    int min: 0
+    on minChanged: () => { this.props['min'] = this.min; this.propsChanged.emit() }
+    int max: 0
+    on maxChanged: () => { this.props['max'] = this.max; this.propsChanged.emit() }
+    var value: 0
+    on valueChanged: () => { 
+        if ( this.type === 'checkbox' ){
+            if ( this.value )
+                this.props['checked'] = this.value;
+            else
+                delete this.props['checked']
+        } else {
+            this.props['value'] = this.value; 
+        }
+        this.currentValue = this.value;
+        this.propsChanged.emit()
+    }
+    var currentValue: 0
+
+    on input: () => {
+        if ( this.type === 'checkbox' ){
+            this.currentValue = this.dom.checked
+        } else {
+            this.currentValue = this.dom.value
+        }
+    }
+
+    fn on(string eventName, var fn){
+        if ( eventName === 'input' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            DOMElement.prototype.on.call(this, eventName, fn)
+        }
+    }
+
+}

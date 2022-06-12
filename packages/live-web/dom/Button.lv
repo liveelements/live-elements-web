@@ -1,0 +1,8 @@
+
+component Button < DOMElement{
+
+    constructor(){
+        super('button')
+        Button.prototype.__initialize.call(this)
+    }
+}

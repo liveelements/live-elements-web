@@ -1,0 +1,39 @@
+import live-web.bundle
+import live-web.dom
+
+component Article1 < Page{
+    output: 'article1.html'
+    title: 'Article 1'
+    expand: false
+    Stylesheet{ src: 'samples/staticpages/src/styles/style.css'; output: 'css/style.css' }
+    Body{
+        Div{ classes: ['container']
+            H1`Article 1`
+            P`This is a static page generated for article 1.`
+            P{ A{ href: '/' T`Go back to index page` } }
+        }
+    }
+}
+
+component Article2 < Page{
+    output: 'article2.html'
+    title: 'Article 2'
+    expand: false
+    Stylesheet{ src: 'samples/staticpages/src/styles/style.css'; output: 'css/style.css' }
+    Body{
+        Div{ classes: ['container']
+            H1`Article 2`
+            P`This is a static page generated for article 2.`
+            P{ A{ href: '/' T`Go back to index page` } }
+        }
+    }
+}
+
+component ArticlePages < PageGroup{
+
+    Script{ src:'samples/staticpages/src/scripts/globalscript.js'; output: 'js/globalscript.js' }
+    Stylesheet{ src:'samples/staticpages/src/styles/style.css'; output: 'css/style.css' }
+
+    Article1{}
+    Article2{}
+}

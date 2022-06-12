@@ -1,0 +1,21 @@
+component FileGenerator{
+    var name: ''
+
+    default children
+
+    fn captureContent(var info){
+        if ( this.children.length === 0 )
+            return ''
+
+        var content = ''
+        for ( var i = 0; i < this.children.length; ++i ){
+            if ( this.children[i] instanceof FileGeneratorInfo ){
+                this.children[i].evaluateContent(info)
+            }
+            var fileContent = this.children[i]
+            content += fileContent.content
+        }
+        
+        return content
+    }
+}

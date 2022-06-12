@@ -1,0 +1,8 @@
+
+component Heading < DOMElement{
+
+    constructor(){
+        super('heading')
+        Heading.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,22 @@
+
+component Script < DOMElement{
+
+    constructor(){
+        super('script')
+        Script.prototype.__initialize.call(this)
+    }
+
+    string src: ''
+    string output
+
+    string crossorigin: ''
+    on crossoriginChanged: () => {
+        this.props['crossorigin'] = this.crossorigin
+        this.propsChanged.emit()
+    }
+    string integrity: ''
+    on integrityChanged: () => {
+        this.props['integrity'] = this.integrity
+        this.propsChanged.emit()
+    }
+}

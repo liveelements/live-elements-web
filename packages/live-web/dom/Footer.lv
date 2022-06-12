@@ -1,0 +1,8 @@
+
+component Footer < DOMElement{
+
+    constructor(){
+        super('footer')
+        Footer.prototype.__initialize.call(this)
+    }
+}

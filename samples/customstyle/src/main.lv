@@ -1,0 +1,35 @@
+import live-web.dom
+import live-web.style
+import live-web
+
+instance style Style{
+    convert: ({
+        'pixelWidth': (value) => { this.assign('width', value + 'px' ) },
+        'pixelHeight': (value) => { this.assign('height', value + 'px') }
+    })
+    int pixelWidth: 200
+    int pixelHeight: 30
+    color background: 'red'
+}
+
+instance container Div{
+    Div{
+        id: bar
+        style: style 
+    }
+    Button{ 
+        on click: (event) => { bar.style.pixelWidth = bar.style.pixelWidth > 20 ? bar.style.pixelWidth - 20 : 0 } 
+        T`Shrink`
+    }
+    Button{ 
+        on click: (event) => { bar.style.pixelWidth += 20 }; 
+        T`Expand`
+    }
+}
+
+instance app Application{
+    render: container
+    // run: () => {
+        // container.expandTo(document.body)
+    // }
+}

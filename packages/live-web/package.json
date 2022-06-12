@@ -1,0 +1,20 @@
+{
+    "name": "live-web",
+    "version": "0.1.0",
+    "description": "Live Elements Web Package.",
+    "keywords": [
+        "live",
+        "elements",
+        "live-elements",
+        "html",
+        "dom",
+        "live-web",
+        "liveweb",
+        "web"
+    ],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "dependencies": {
+        "incremental-dom": "^0.7.0"
+    }
+}

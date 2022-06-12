@@ -1,0 +1,19 @@
+import live-test
+
+instance test Spec{
+    Scenario{
+        name: 'timing test'
+        run: (t) => {
+            var data = BaseElement{
+                var x: 100
+                var y: 200
+                on xChanged : () => {
+                    this.y = 300
+                }
+            }
+            data.x = 130
+            t.equals(data.y, 300)
+            t.end()
+        }
+    }
+}

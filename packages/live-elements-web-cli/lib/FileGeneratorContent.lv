@@ -1,0 +1,10 @@
+component FileGeneratorContent{
+
+    var content: ''
+
+    constructor(content){
+        super()
+        FileGeneratorContent.prototype.__initialize.call(this)
+        this.content = content
+    }
+}

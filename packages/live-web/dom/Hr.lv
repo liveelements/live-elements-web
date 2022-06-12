@@ -1,0 +1,7 @@
+
+component Hr < DOMElement{
+    constructor(){
+        super('hr', true)
+        Hr.prototype.__initialize.call(this)
+    }
+}

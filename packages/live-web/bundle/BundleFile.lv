@@ -1,0 +1,15 @@
+component BundleFile < BundleAssetProvider{
+    var src: ''
+    var output: ''
+    var type: ''
+
+    fn collectAssets(){
+        if ( this.src && this.output && this.type ){
+            return [{
+                src: this.src,
+                output: this.output,
+                type: this.type
+            }]
+        }
+    }
+}
