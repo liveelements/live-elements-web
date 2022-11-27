@@ -15,7 +15,7 @@
     "license": "MIT",
     "dependencies": {
         "jsdom": "^19.0.0",
-        "live-elements-js-compiler": "^0.1.4",
+        "live-elements-js-compiler": "^0.1.5",
         "live-web": "^0.1.2",
         "pretty": "^2.0.0",
         "tmp": "^0.2.1"

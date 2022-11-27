@@ -85,7 +85,7 @@ component DOMElement{
     default children: []
     on childrenChanged: () => {
         if ( this.dom ){
-            DOMElement.patch(this.dom.parentNode, this.parent)
+            DOMElement.patch(this.dom, this)
         }
     }
 
@@ -154,49 +154,58 @@ component DOMElement{
             return
         }
 
-        var props = [element.tag, element.key ? element.key : null, null]
-        if ( element.glid ){
-            props.push('id', element.glid)
-        }
-        if ( element.classes.length ){
-            var className = element.classes.join(' ')
-            props.push('class', className)
-        }
-        if ( element.style ){
-            var style = element.style.data ? element.style.data : element.style
-            props.push('style', style)
-        }
-        if ( element.props ){
-            var key = undefined
-            for (let key in element.props) {
-                if (element.props.hasOwnProperty(key)) {
-                    var val = element.props[key]
-                    if ( typeof val === 'object' ){
-                        props = props.concat(DOMElement.__unwrapAttributes(key, val))
-                    } else {
-                        props.push(key, val)
+        if ( element instanceof DOMElement ){
+
+            var props = [element.tag, element.key ? element.key : null, null]
+            if ( element.glid ){
+                props.push('id', element.glid)
+            }
+            if ( element.classes.length ){
+                var className = element.classes.join(' ')
+                props.push('class', className)
+            }
+            if ( element.style ){
+                var style = element.style.data ? element.style.data : element.style
+                props.push('style', style)
+            }
+            if ( element.props ){
+                var key = undefined
+                for (let key in element.props) {
+                    if (element.props.hasOwnProperty(key)) {
+                        var val = element.props[key]
+                        if ( typeof val === 'object' ){
+                            props = props.concat(DOMElement.__unwrapAttributes(key, val))
+                        } else {
+                            props.push(key, val)
+                        }
                     }
                 }
             }
-        }
 
-        if ( element._domEvents ){
-            var key = undefined
-            for (let key in element._domEvents) {
-                if (element._domEvents.hasOwnProperty(key)) {
-                    props.push(key, element._domEvents[key])
+            if ( element._domEvents ){
+                var key = undefined
+                for (let key in element._domEvents) {
+                    if (element._domEvents.hasOwnProperty(key)) {
+                        props.push(key, element._domEvents[key])
+                    }
                 }
             }
-        }
 
-        if ( element.isVoid ){
-            element.dom = elementVoid.apply(null, props)
-        } else {
-            elementOpen.apply(null, props)
-            for ( var i = 0; i < element.children.length; ++i ){
-                DOMElement.render(element.children[i])
+            if ( element.isVoid ){
+                element.dom = elementVoid.apply(null, props)
+            } else {
+                elementOpen.apply(null, props)
+                for ( var i = 0; i < element.children.length; ++i ){
+                    DOMElement.render(element.children[i])
+                }
+                element.dom = elementClose(element.tag)
             }
-            element.dom = elementClose(element.tag)
+        } else {
+            if ( element.visualChildren ){
+                for ( var i = 0; i < element.visualChildren.length; ++i ){
+                    DOMElement.render(element.visualChildren[i])
+                }
+            }
         }
     }
 
