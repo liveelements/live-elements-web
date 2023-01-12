@@ -63,4 +63,32 @@ instance test Spec{
             t.end()
         }
     }
+
+    Scenario{
+        name: 'Null initial element assignment'
+        run: (t) => {
+            component User < BaseElement{
+                var name: '123'
+            }
+
+            component UserView < BaseElement{
+                var user: null
+                var userName: this.user ? this.user.name : null
+            }
+
+            var userView = UserView{ user: User{} }
+            t.equals(userView.userName, '123')
+            userView.user.name = '345'
+            t.equals(userView.userName, '345')
+
+            userView.user = null
+            t.equals(userView.userName, null)
+
+            userView.user = User{}
+            userView.user.name = '345'
+            t.equals(userView.userName, '345')
+
+            t.end()
+        }
+    }
 }

@@ -272,6 +272,7 @@ export class BaseElement{
                 connection.nestedCallback = nestCb
                 connection.__call = nestCb.bind(connection)
                 connection.childEvents = BaseElement.__createEventBindingsRecurse(bind, mainElement, nextElement, cb, nestCb)
+                connection.childEventsTemplate = [null].concat(bind.slice(1))
                 result.push(connection)
             } else {
                 var connection = new EventConnection(bindingElement, bind + 'Changed', mainElement, cb)
@@ -299,7 +300,7 @@ export class BaseElement{
                 propMeta.event.emit()
             }, 
             function(){
-                var bindingFormat = BaseElement.__createBindingFormat(this)
+                var bindingFormat = this.childEventsTemplate
 
                 // reset all child events
                 var allChildEvents = []
@@ -314,10 +315,11 @@ export class BaseElement{
                 // reconfigure the events based on binding format
                 var propName = this.eventName.substr(0, this.eventName.lastIndexOf('Changed'))
                 this.childEvents = BaseElement.__createEventBindingsRecurse(bindingFormat, element, this.emitterObject[propName], this.basicCallback, this.nestedCallback )
-
+                
                 // add new events to property bindings
                 var newChildEvents = []
                 BaseElement.__collectAllChildEventsFlat(this.childEvents, newChildEvents)
+
                 for ( var i = 0; i < newChildEvents.length; ++i ){
                     var conn = newChildEvents[i]
                     propMeta['bindings'].push(conn)

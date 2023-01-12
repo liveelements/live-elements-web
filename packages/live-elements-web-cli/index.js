@@ -9,7 +9,7 @@ const convertCommand = require('./commands/convert')
 program
     .name('lvweb')
     .description('Live Elements Web CLI')
-    .version('0.1.2')
+    .version('0.1.4')
 
 program.command('generate <template>')
     .description('Generate a project from a template.')

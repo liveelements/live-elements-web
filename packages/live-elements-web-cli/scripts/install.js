@@ -18,7 +18,7 @@ function findLvFiles(d){
 }
 
 async function run(){
-    var importer = await import('../../live-elements-core/lvimport.mjs')
+    var importer = await import('live-elements-core/lvimport.mjs')
     var templatesPath = path.resolve(__dirname + '/../templates/')
 
     var filesToCompile = findLvFiles(templatesPath)

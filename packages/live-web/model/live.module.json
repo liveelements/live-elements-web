@@ -2,5 +2,5 @@
 {
     "name" : "model",
     "package": "..",
-    "modules": ["ModelType", "StateType"]
+    "modules": ["ModelType", "StateType", "State"]
 }
