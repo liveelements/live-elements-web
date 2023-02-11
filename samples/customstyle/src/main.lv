@@ -17,11 +17,11 @@ instance container Div{
         id: bar
         style: style 
     }
-    Button{ 
+    Button{
         on click: (event) => { bar.style.pixelWidth = bar.style.pixelWidth > 20 ? bar.style.pixelWidth - 20 : 0 } 
         T`Shrink`
     }
-    Button{ 
+    Button{
         on click: (event) => { bar.style.pixelWidth += 20 }; 
         T`Expand`
     }
@@ -29,7 +29,4 @@ instance container Div{
 
 instance app Application{
     render: container
-    // run: () => {
-        // container.expandTo(document.body)
-    // }
 }

@@ -26,8 +26,15 @@ export class BaseElement{
     }
 
     on(eventName, fn){
-        var eventConnection = new EventConnection(this, eventName, null, fn)
-        this[eventName].listeners.push(eventConnection)
+        try{
+            var eventConnection = new EventConnection(this, eventName, null, fn)
+            this[eventName].listeners.push(eventConnection)
+        } catch ( e ){
+            if ( !this.hasOwnProperty('eventName') ){
+                throw new Error("Failed to find event: " + eventName)
+            } else 
+                throw e
+        }
     }
 
     completed(){}

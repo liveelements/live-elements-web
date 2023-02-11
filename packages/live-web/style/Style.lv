@@ -35,7 +35,7 @@ component Style{
 
     object data: ({})
 
-    fn assign(string key, var value){
+    fn assign(key:string, value:any){
         this.data[key] = value
     }
 

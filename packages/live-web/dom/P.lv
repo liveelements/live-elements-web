@@ -1,6 +1,6 @@
 
 component P < DOMElement{
-    constructor(text){
+    constructor(text:string){
         super('p')
         P.prototype.__initialize.call(this)
 

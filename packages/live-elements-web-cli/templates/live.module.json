@@ -1,4 +1,5 @@
 {
     "name": "templates",
-    "package" : ".."
+    "package" : "..",
+    "modules" : ["webpackbundle"]
 }

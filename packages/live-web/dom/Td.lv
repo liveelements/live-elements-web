@@ -1,6 +1,6 @@
 
 component Td < DOMElement{
-    constructor(text){
+    constructor(text:string){
         super('td')
         Td.prototype.__initialize.call(this)
 

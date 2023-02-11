@@ -8,7 +8,7 @@ component Bundle{
 
     list pages: []
 
-    fn generatePages(fn cb){
+    fn generatePages(cb:any){
         if ( !this._domInterface ){
             throw new Error("Bundle: Generating pages requires DOM interface object.")
         }

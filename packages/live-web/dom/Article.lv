@@ -1,6 +1,6 @@
 
 component Article < DOMElement{
-    constructor(text){
+    constructor(){
         super('article')
         Article.prototype.__initialize.call(this)
     }

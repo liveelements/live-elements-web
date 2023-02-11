@@ -2,7 +2,7 @@
 import {elementOpen, elementClose, elementVoid, text, patch} from 'incremental-dom'
 
 component DOMElement{
-    constructor(tag, isVoid){
+    constructor(tag:Object, isVoid:bool){
         super()
         this._tag = tag
         this._isVoid = isVoid ? true : false
@@ -15,7 +15,7 @@ component DOMElement{
     get isVoid(){ return this._isVoid }
     get domEvents(){ return this._domEvents }
 
-    fn _initializeDOMEvent(string type, string domType){
+    fn _initializeDOMEvent(type:string, domType:string){
         if ( this._domEvents.hasOwnProperty(type) )
             return
 
@@ -33,7 +33,7 @@ component DOMElement{
     }
 
 
-    fn on(string eventName, var fn){
+    fn on(eventName:string, fn:any){
         if ( this.hasOwnProperty(eventName) ){
             BaseElement.prototype.on.call(this, eventName, fn)
         } else {
@@ -122,11 +122,11 @@ component DOMElement{
     string key: ''
     object dom: null
 
-    fn expandTo(var item){
+    fn expandTo(item:any){
         DOMElement.patch(item, this)
     }
 
-    static fn __unwrapAttributes(string prefix, Object object){
+    static fn __unwrapAttributes(prefix:string, object:Object){
         var result = []
         var key = undefined
         for ( key in object ){
@@ -142,13 +142,13 @@ component DOMElement{
         return result
     }
 
-    static fn patch(object htmlElement, object element){
+    static fn patch(htmlElement:Object, element:Object){
         patch(htmlElement, function() {
             DOMElement.render(element);
         });
     }
 
-    static fn render(object element){
+    static fn render(element:Object){
         if ( element.tag === 'text' ){
             text(element.text)
             return

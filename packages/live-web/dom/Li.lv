@@ -1,7 +1,7 @@
 
 component Li < DOMElement{
 
-    constructor(text){
+    constructor(text:string){
         super('li')
         Li.prototype.__initialize.call(this)
 

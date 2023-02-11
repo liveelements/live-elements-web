@@ -33,7 +33,7 @@ component Input < DOMElement{
         }
     }
 
-    fn on(string eventName, var fn){
+    fn on(eventName:string, fn:any){
         if ( eventName === 'input' ){
             this._initializeDOMEvent(eventName, 'on' + eventName)
             BaseElement.prototype.on.call(this, eventName, fn)

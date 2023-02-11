@@ -1,6 +1,6 @@
 
 component Strong < DOMElement{
-    constructor(text){
+    constructor(text:string){
         super('strong')
         Strong.prototype.__initialize.call(this)
 

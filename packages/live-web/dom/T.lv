@@ -1,6 +1,6 @@
 
 component T{
-    constructor(text){
+    constructor(text:string){
         super()
         this._tag = 'text'
         T.prototype.__initialize.call(this)

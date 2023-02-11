@@ -1,6 +1,6 @@
 
 component Code < DOMElement{
-    constructor(text){
+    constructor(text:string){
         super('code')
         Code.prototype.__initialize.call(this)
 

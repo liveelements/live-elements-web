@@ -1,7 +1,7 @@
 
 component H5 < DOMElement{
 
-    constructor(text){
+    constructor(text:string){
         super('h5')
         H5.prototype.__initialize.call(this)
         if ( text )

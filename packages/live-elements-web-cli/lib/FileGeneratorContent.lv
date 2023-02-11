@@ -2,7 +2,7 @@ component FileGeneratorContent{
 
     var content: ''
 
-    constructor(content){
+    constructor(content:string){
         super()
         FileGeneratorContent.prototype.__initialize.call(this)
         this.content = content

@@ -4,7 +4,7 @@ component BundleDirectory < BundleAssetProvider{
     var src: ''
     var output: ''
 
-    fn recurseDirSync(var path){
+    fn recurseDirSync(path:string){
         var files = readdirSync(path)
         var result = []
         for ( var i = 0; i < files.length; ++i ){

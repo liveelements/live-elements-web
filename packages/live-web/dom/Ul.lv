@@ -1,7 +1,7 @@
 
 component Ul < DOMElement{
 
-    constructor(text){
+    constructor(text:string){
         super('ul')
         Ul.prototype.__initialize.call(this)
 
@@ -13,7 +13,7 @@ component Ul < DOMElement{
         }
     }
 
-    fn grabListSegments(var str){
+    fn grabListSegments(str:string){
         var strTrim = str.trimStart()
         if ( !strTrim.startsWith('*')){
             throw new Error('Ul content must start with a bullet notation \'*\'')

@@ -3,7 +3,7 @@ component FileGenerator{
 
     default children
 
-    fn captureContent(var info){
+    fn captureContent(info:Object){
         if ( this.children.length === 0 )
             return ''
 

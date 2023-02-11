@@ -1,6 +1,6 @@
 
 component Span < DOMElement{
-    constructor(text){
+    constructor(text:string){
         super('span')
         Span.prototype.__initialize.call(this)
 

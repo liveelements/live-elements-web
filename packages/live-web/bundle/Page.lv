@@ -34,14 +34,14 @@ component Page{
         return result
     }
 
-    fn captureContentRecurse(Object domInterface, fn cb){
+    fn captureContentRecurse(domInterface:Object, cb:any){
         var content = this.captureContent(domInterface)
         cb(this, content)
     }
 
     fn beforeRender(){}
 
-    fn captureContent(Object domInterface){
+    fn captureContent(domInterface:Object){
         this.beforeRender()
 
         var init = '<!DOCTYPE html><html>' +

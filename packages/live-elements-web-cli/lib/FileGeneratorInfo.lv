@@ -1,15 +1,15 @@
 component FileGeneratorInfo{
 
-    var key: ''
-    var content: ''
+    string key: ''
+    string content: ''
 
-    constructor(key){
+    constructor(key:string){
         super()
         FileGeneratorInfo.prototype.__initialize.call(this)
         this.key = key
     }
 
-    fn evaluateContent(var info){
+    fn evaluateContent(info:Object){
         if ( info.hasOwnProperty(this.key) ){
             this.content = info[this.key]
         }

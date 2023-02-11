@@ -74,7 +74,7 @@ component PageGroup{
         return result
     }
 
-    fn captureContentRecurse(Object domInterface, fn cb){
+    fn captureContentRecurse(domInterface:Object, cb:any){
         for ( var i = 0; i < this.children.length; ++i ){
             if ( this.children[i] instanceof Page ){
                 this.children[i].captureContentRecurse(domInterface, cb)
