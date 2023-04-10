@@ -8,6 +8,8 @@
 import * as tmp from 'tmp'
 import * as fs from 'fs'
 import * as path from 'path'
+import url from 'url'
+
 import {spawn} from 'child_process'
 
 export default function(importPath){
@@ -16,7 +18,8 @@ export default function(importPath){
             reject(new Error('Import requires absolute path: ' + importPath))
             return
         }
-        import(importPath).then(resolve).catch((err) => {
+
+        import(url.pathToFileURL(importPath)).then(resolve).catch((err) => {
             if ( !(err instanceof SyntaxError) ){ reject(err); return }
             if ( err.fileName ){ reject(err); return }
             try{
