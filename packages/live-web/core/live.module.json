@@ -1,0 +1,6 @@
+
+{
+    "name" : "core",
+    "package": "..",
+    "modules": ["ComponentMap"]
+}

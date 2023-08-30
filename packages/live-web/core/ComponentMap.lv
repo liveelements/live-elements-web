@@ -1,0 +1,41 @@
+component ComponentMap{
+
+    constructor(){
+        super()
+        ComponentMap.prototype.__initialize.call(this)
+    }
+
+    get visualChildren(){
+        return this.children
+    }
+
+    default children: []
+    on childrenChanged: () => {
+        if ( this.parent  ){
+            this.parent.childrenChanged.emit()
+        }
+    }
+
+    fn rebuildChildren(){
+        this.children = this.input.map((v, i) => {
+            var nc = new this.c()
+            nc.setParent(this)
+            nc.contextData = {value: v, index: i}
+            BaseElement.complete(nc)
+            return nc
+        })
+    }
+
+    var input: []
+    on inputChanged: () => {
+        if ( this.input && this.c ){
+            this.rebuildChildren()
+        }
+    }
+    var c: null
+    on cChanged: () => {
+        if ( this.input && this.c ){
+            this.rebuildChildren()
+        }
+    }
+}
