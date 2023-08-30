@@ -68,8 +68,8 @@ export class BaseElement{
         BaseElement.complete(element)
     }
 
-    static assignId(newId){
-        this.id = newId
+    static assignId(element, newId){
+        element.id = newId
     }
 
     static propertyNames(element){
@@ -340,6 +340,10 @@ export class BaseElement{
 
         for ( var i = 0; i < bindingEvents.length; ++i ){
             var conn = bindingEvents[i]
+            if ( !(conn.eventName in conn.emitterObject) ){
+                throw new Error("Failed to find event \'" + conn.eventName + "\' in object of type \'" +  conn.emitterObject.constructor.name + "\'")
+            }
+
             conn.emitterObject[conn.eventName].listeners.push(conn)
         }
         propMeta['bindings'] = bindingEvents

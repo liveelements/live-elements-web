@@ -2,7 +2,7 @@
     "baseComponent" : "BaseElement",
     "baseComponentPath" : "live-elements-core/baseelement.js",
     "implicitTypes" : [
-        "console", "document", "arguments", "window", "alert", "undefined", "Error", "Object", "Math", "JSON", "Set", "WeakSet", "Map", "WeakMap", "Array", 
+        "console", "document", "arguments", "window", "alert", "parseInt", "parseFloat", "undefined", "Error", "Object", "Math", "JSON", "Set", "WeakSet", "Map", "WeakMap", "Array", 
         "String", "Symbol", "Date", "BigInt", "Data", "DataView", "Function", "Generator", "NaN", "Number",
         "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", 
         "Float32Array", "Float64Array", "BigInt64Array", "BigUint64Array", "SharedArrayBuffer", "Atomics",
