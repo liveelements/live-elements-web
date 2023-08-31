@@ -1,0 +1,6 @@
+
+{
+    "name" : "clientrouter",
+    "package": "..",
+    "modules": ["Router", "ClientNavigation", "NavLink", "Route", "RouteSwitch"]
+}

@@ -1,0 +1,93 @@
+
+component RouteSwitch{
+
+    constructor(){
+        super()
+
+        this._visualChild = null
+        this._isComplete  = false
+        
+        RouteSwitch.prototype.__initialize.call(this)
+    }
+
+    var ignoreNotFound: false
+
+    default children: []
+    set children(val:any){
+        for ( var i = 0; i < val.length; ++i ){
+            if ( !(val[i] instanceof Route) ){
+                throw new Error("RouteSwitch only accepts children of type Route.")
+            }
+        }
+        var prevch = this.children
+        if ( this.parent ){
+            var router = this.parent._internal
+            for ( var i = 0; i < prevch.length; ++i ){
+                var c = prevch[i]
+                if ( c.path === '*' ){
+                    router.notFound(this.parent.handleNotFound.bind(this.parent))
+                } else {
+                    router.off(c.path)
+                }
+            }
+        }
+        BaseElement.setProperty(this, 'children', val)
+        if ( this._isComplete ){
+            this._handleNewChildren()
+        }
+    }
+
+    get visualChildren(){
+        return this._visualChild ? [this._visualChild] : []
+    }
+
+    fn handleRoute(child:Object, routeInfo:Object){
+        let router = this.parent._internal
+        router.currentMatchedRoute = routeInfo
+
+        if ( this._visualChild !== child ){
+            if ( child ){
+                child.activate()
+            }
+            this._visualChild = child
+            this.parent.childrenChanged.emit()
+        }
+    }
+
+    fn _handleNewChildren(){
+        let router = this.parent._internal
+
+        let newVisualChild = this._visualChild
+        let notFoundChild = null
+        let foundMatch = false
+        for ( var i = 0; i < this.children.length; ++i ){
+            var c = this.children[i]
+            if ( c.path === '*' ){
+                notFoundChild = c
+                router.notFound(this.handleRoute.bind(this, c))
+            } else {
+                router.on(c.path, this.handleRoute.bind(this, c))
+                let locationMatch = router.matchLocation(c.path)
+                if ( locationMatch ){
+                    foundMatch = locationMatch
+                    newVisualChild = c
+                }
+            }
+        }
+
+        if ( !newVisualChild && notFoundChild ){
+            newVisualChild = notFoundChild
+        }
+
+        this.handleRoute(newVisualChild, foundMatch)
+
+        if ( this._visualChild === null && !this.ignoreNotFound ){
+            this.parent.handleNotFound({url: ClientNavigation.currentWindowPath()})
+        }
+    }
+
+    fn completed(){
+        this._handleNewChildren()
+        this._isComplete = true
+    }
+}

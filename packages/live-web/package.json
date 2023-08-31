@@ -15,6 +15,7 @@
     "author": "Dinu SV",
     "license": "MIT",
     "dependencies": {
-        "incremental-dom": "^0.7.0"
+        "incremental-dom": "^0.7.0",
+        "navigo": "^8.11.1"
     }
 }

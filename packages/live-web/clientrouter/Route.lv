@@ -1,0 +1,27 @@
+
+component Route{
+    default children: []
+
+    var path: ''
+    var child: null
+    set child(value:Object){ BaseElement.setProperty(this, 'child', value) }
+
+    var component: null
+    set component(value:component){
+        this.child = null
+        BaseElement.setProperty(this, 'component', value)
+    }
+
+    get visualChildren(){ return this.child ? [this.child] : this.children }
+
+    fn activate(){
+        if ( this.component ){
+            if ( this.child ){
+                this.child.release()
+            }
+            this.child = new this.component()
+            this.child.setParent(this)
+            BaseElement.complete(this.child)
+        }
+    }
+}

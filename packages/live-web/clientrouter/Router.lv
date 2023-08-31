@@ -1,0 +1,31 @@
+import {Navigo} from './routerinternal.mjs'
+
+component Router{
+
+    constructor(path:string){
+        super()
+
+        this._internal = new Navigo(path ? path : '/')
+        ClientNavigation.store(this._internal)
+        this._internal.notFound(this.handleNotFound.bind(this))
+
+        Router.prototype.__initialize.call(this)
+    }
+
+    default children: []
+    on childrenChanged: () => {
+        if ( this.parent  ){
+            this.parent.childrenChanged.emit()
+        }
+    }
+
+    fn path(){
+        return this._internal.root
+    }
+
+    fn handleNotFound(match:string){
+        throw new Error("Route not found: " + match.url)
+    }
+
+    get visualChildren(){  return this.children  }
+}

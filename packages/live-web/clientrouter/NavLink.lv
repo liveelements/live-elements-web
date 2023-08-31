@@ -1,0 +1,22 @@
+import .dom
+
+component NavLink < A{
+
+    string to: ''
+
+    constructor(text:string){
+        super(text)
+        NavLink.prototype.__initialize.call(this)
+    }
+
+    set to(value:string){
+        BaseElement.setProperty(this, 'to', value)
+    }
+
+    on toChanged: () => { this.href = this.to }
+
+    on click: (event) => {
+        event.preventDefault()
+        ClientNavigation.goTo(this.href)
+    }
+}

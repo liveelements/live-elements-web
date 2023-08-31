@@ -1,0 +1,48 @@
+
+component ClientNavigation{
+
+    static fn store(navigation:any){
+        window.clientNavigation = navigation
+    }
+    static fn global(){
+        return window.clientNavigation
+    }
+
+    static fn goTo(path:string){
+        var n = ClientNavigation.global()
+        if ( !n ){
+            throw new Error("ClientNavigation: Router has not been configured.")
+        }
+        n.navigate(path)
+    }
+
+    static fn baseUrl(){
+        let n = ClientNavigation.global()
+        return n ? (n.root === '' ? '' : '/' + n.root ) : ''
+    }
+
+    static fn currentMatchedLocationInfo(){
+        var n = ClientNavigation.global()
+        if ( !n ){
+            throw new Error("ClientNavigation: Router has not been configured.")
+        }
+        return n.currentMatchedRoute
+    }
+
+    static fn currentRoute(){
+        return ClientNavigation.currentMatchedLocationInfo()
+    }
+
+    static fn currentWindowPath(){
+        return window.location.pathname
+    }
+
+    static fn currentLocationInfo(){
+        var n = ClientNavigation.global()
+        if ( !n ){
+            throw new Error("ClientNavigation: Router has not been configured.")
+        }
+        return n.getCurrentLocation()
+    }
+
+}
