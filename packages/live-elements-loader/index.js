@@ -12,14 +12,20 @@ module.exports = function (_source){
     const callback = this.async();
 
     (async function run(){
-        var lvcompilerm = await import('live-elements-js-compiler')
-        var lvcompilerconfigm = await import('live-elements-core/compilerconfig.mjs')
+        let lvcompilerm = await import('live-elements-js-compiler')
+        let lvcompilerconfigm = await import('live-elements-core/compilerconfig.mjs')
 
         lvcompilerm.default.compile(this.resourcePath, lvcompilerconfigm.read(), (resultFile, err) => {
             if ( resultFile ){
-                var mainPath = resultFile
-                var relative = path.relative(path.dirname(this.resourcePath), mainPath)
-                callback(undefined, "import '" + relative + "'")
+                let mainPath = resultFile
+                let relative = path.relative(path.dirname(this.resourcePath), mainPath)
+                if ( process.platform === "win32" )
+                    relative = relative.split(path.sep).join(path.posix.sep);
+                if ( !relative.startsWith('.') ){
+                    relative = './' + relative
+                }
+
+                callback(undefined, "export * from '" + relative + "'")
             } else if ( err ){
                 if ( err instanceof Error ){
                     callback(err)
@@ -33,7 +39,7 @@ module.exports = function (_source){
                     callback(err)
                 }
             } else
-                callback(new Error("Internal compiler error: Undefined result."))
+                callback(new Error("Internal compiler error: Undefined compilation result: " + this.resourcePath + ")."))
         })
     }.bind(this))()
 }
