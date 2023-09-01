@@ -98,7 +98,7 @@ export class BaseElement{
                 pm.bindings = []
             }
 
-            pm.value = newValue;
+            pm.value = newValue
             if ( pm.event ){
                 pm.event.emit()
             }
@@ -152,7 +152,7 @@ export class BaseElement{
                         }
                     }
 
-                    pm.value = newValue;
+                    pm.value = newValue
                     if ( pm.event ){
                         pm.event.emit()
                     }
@@ -161,8 +161,6 @@ export class BaseElement{
             enumerable: true,
             isWritable: isWritable
         })
-
-        
     }
 
     static addEvent(element, eventName, args){
@@ -175,7 +173,7 @@ export class BaseElement{
             }
         }.bind(eventMeta)
 
-        element[eventName] = eventMeta
+        Object.defineProperty(element, eventName, { enumerable: false, value: eventMeta })
         return eventMeta
     }
 
@@ -185,7 +183,6 @@ export class BaseElement{
             eventConnection.emitterObject[eventConnection.eventName].listeners.splice(index, 1)
         }
     }
-
 
     static __debugEventBindings(eventBindings, indent, objectIds){
         objectIds = objectIds || []
@@ -264,17 +261,16 @@ export class BaseElement{
 
     // Example: can receive: [element, ['z', 'a', 'b']], and ['z', 'a', 'b'] after
     static __createEventBindingsRecurse(bindings, mainElement, bindingElement, cb, nestCb){
-        var result = []
-        for ( var i = 1; i < bindings.length; ++i ){ // itereate only properties
-            if ( !bindingElement )
-                continue
-            if ( !(bindingElement instanceof BaseElement) )
-                continue
-
-            var bind = bindings[i]
+        let result = []
+        if ( !bindingElement )
+            return result
+        if ( !(bindingElement instanceof BaseElement) )
+            return result
+        for ( let i = 1; i < bindings.length; ++i ){ // itereate only properties
+            let bind = bindings[i]
             if ( bind instanceof Array ){
-                var nextElement = bindingElement[bind[0]]
-                var connection = new EventConnection(bindingElement, bind[0] + 'Changed', mainElement, null)
+                let nextElement = bindingElement[bind[0]]
+                const connection = new EventConnection(bindingElement, bind[0] + 'Changed', mainElement, null)
                 connection.basicCallback = cb
                 connection.nestedCallback = nestCb
                 connection.__call = nestCb.bind(connection)
@@ -282,7 +278,7 @@ export class BaseElement{
                 connection.childEventsTemplate = [null].concat(bind.slice(1))
                 result.push(connection)
             } else {
-                var connection = new EventConnection(bindingElement, bind + 'Changed', mainElement, cb)
+                const connection = new EventConnection(bindingElement, bind + 'Changed', mainElement, cb)
                 result.push(connection)
             }
         }
@@ -343,7 +339,6 @@ export class BaseElement{
             if ( !(conn.eventName in conn.emitterObject) ){
                 throw new Error("Failed to find event \'" + conn.eventName + "\' in object of type \'" +  conn.emitterObject.constructor.name + "\'")
             }
-
             conn.emitterObject[conn.eventName].listeners.push(conn)
         }
         propMeta['bindings'] = bindingEvents

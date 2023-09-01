@@ -27,7 +27,7 @@ export default function(path){
                     reject(err)
                 }
             } else
-                reject(new Error("Internal lvimport error."))
+                reject(new Error("Internal lvimport error at path: " + path))
         })
     })
 }
