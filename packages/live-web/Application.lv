@@ -12,6 +12,15 @@ component Application{
         Application.prototype.__initialize.call(this)
     }
 
+    fn renderLocation(){
+        var locations = document.querySelectorAll('[data-content-type="main"]')
+        if ( locations.length === 0 ){
+            throw new Error("Failed to find insertion location for element.")
+        }
+        var location = locations[0]
+        return location
+    }
+
     fn completed(){
         if ( this.index ){
             var ViewComponent = this.index

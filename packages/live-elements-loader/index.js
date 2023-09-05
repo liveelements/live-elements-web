@@ -9,8 +9,8 @@ var path = require("path")
 
 module.exports = function (_source){
 
-    const callback = this.async();
-
+    const callback = this.async()
+    
     (async function run(){
         let lvcompilerm = await import('live-elements-js-compiler')
         let lvcompilerconfigm = await import('live-elements-core/compilerconfig.mjs')
