@@ -22,6 +22,7 @@
         "A",
         "Nav",
         "Ul",
+        "Ol",
         "Li",
         "Code",
         "Pre",
@@ -42,6 +43,9 @@
         "Hr",
         "Link",
         "Meta",
-        "Article"
+        "Article",
+        "IFrame",
+        "Svg",
+        "Path"
     ]
 }

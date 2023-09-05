@@ -1,0 +1,7 @@
+
+component Ol < DOMElement{
+    constructor(){
+        super('ol')
+        Ol.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,7 @@
+
+component Path < DOMElement{
+    constructor(text:string){
+        super('path')
+        Path.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,46 @@
+
+component IFrame < DOMElement{
+    constructor(){
+        super('iframe', true)
+        IFrame.prototype.__initialize.call(this)
+    }
+    string src: ''
+    on srcChanged: () => {
+        this.props['src'] = this.src
+        if ( this.dom ){
+            this.dom.src = this.src
+        } else {
+            this.propsChanged.emit()
+        }
+    }
+
+    get currentSrc(){
+        return this.dom ? this.dom.src : ''
+    }
+
+    fn load(src:string){
+        if ( this.src === src ){
+            this.refresh()
+        } else {
+            this.src = src
+        }
+    }
+
+    fn refresh(){
+        if ( this.dom ){
+            this.dom.src = this.dom.src
+        }
+    }
+
+    fn back(){
+        if ( this.dom ){
+            this.dom.contentWindow.history.back()
+        }
+    }
+
+    fn forward(){
+        if ( this.dom ){
+            this.dom.contentWindow.history.forward()
+        }
+    }
+}

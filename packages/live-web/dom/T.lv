@@ -12,7 +12,7 @@ component T{
     string text: ''
     on textChanged: () => {
         if ( this.parent && this.parent.dom ){
-            DOMElement.patch(this.parent.dom, this.parent)
+            DOMElement.patchOuter(this.parent.dom, this.parent)
         }
     }
 }

@@ -1,0 +1,7 @@
+
+component Svg < DOMElement{
+    constructor(text:string){
+        super('svg')
+        Svg.prototype.__initialize.call(this)
+    }
+}
