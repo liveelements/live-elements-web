@@ -1,6 +1,6 @@
-const path = require('path')
-const fs = require('fs')
-const jsdom = require('jsdom')
+import path from 'path'
+import fs from 'fs'
+import jsdom from 'jsdom'
 const { JSDOM } = jsdom
 
 function capitalizeFirstLetter(string) {
@@ -101,7 +101,7 @@ function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
     return result
 }
 
-module.exports = function(options){
+export default function generate(options){
     var data = ''
     if ( options.file ){
         data = fs.readFileSync(options.file, 'utf-8')

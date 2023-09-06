@@ -1,10 +1,11 @@
 #! /usr/bin/env node
 
-const {Command, Argument} = require('commander')
+import {Command} from 'commander'
 const program = new Command()
 
-const generateCommand = require('./commands/generate')
-const convertCommand = require('./commands/convert')
+import generate from './commands/generate.mjs'
+import convert from './commands/convert.mjs'
+import argumentPairsToObject from './lib/argument-pairs-to-object.mjs'
 
 program
     .name('lvweb')
@@ -13,11 +14,16 @@ program
 
 program.command('generate <template>')
     .description('Generate a project from a template.')
-    .action(generateCommand)
+    .allowUnknownOption()
+    .action((template, cmd) => {
+        const excludeKeys = []
+        const props = argumentPairsToObject(process.argv, excludeKeys)
+        generate(template, cmd, props)
+    })
 
 program.command('convert')
     .description('Converts html code to elements either from a file or from stdin.')
     .option('--file <file>', 'Input file.', '')
-    .action(convertCommand)
+    .action(convert)
 
 program.parse(process.argv)

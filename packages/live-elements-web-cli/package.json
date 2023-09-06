@@ -14,7 +14,7 @@
         "prepare": "npm run build"
     },
     "bin": {
-        "lvweb": "./index.js"
+        "lvweb": "./index.mjs"
     },
     "author": "Dinu SV",
     "license": "MIT",
