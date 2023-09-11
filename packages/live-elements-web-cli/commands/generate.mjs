@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import url from 'url'
-import generateTemplateFiles from '../lib/generate-template-files.mjs'
+import {generateTemplateFiles} from '../lib/generate-template-files.mjs'
 
 export default function generate(template, _cmd, propArgs){
     const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
@@ -20,7 +20,7 @@ export default function generate(template, _cmd, propArgs){
             const file = files[i]
             fs.mkdirSync(file.outputDir, {recursive: true} )
             fs.writeFileSync(file.outputPath, file.content)
-        } 
+        }
     }).catch((err) => {
         throw err
     })

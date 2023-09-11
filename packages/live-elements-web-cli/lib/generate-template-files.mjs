@@ -1,6 +1,6 @@
 import path from 'path'
 
-export default async function generateTemplateFiles(template, templatePath, props){
+export async function loadTemplate(template, templatePath){
     const lvimport = await import('live-elements-core/lvimport.mjs')
     const generatorModule = await lvimport.default(templatePath)
 
@@ -13,12 +13,15 @@ export default async function generateTemplateFiles(template, templatePath, prop
     if ( generator.name !== template ){
         throw new Error("Generator name is different than the required template: " + generator.name)
     }
+    return generator
+}
 
+export function generateFiles(generator, props, resultPath){
     let files = []
     for ( let i = 0; i < generator.children.length; ++i ){
         const file = generator.children[i]
 
-        var outputPath = process.cwd() + '/' + file.output
+        var outputPath = path.join(resultPath, file.output)
         var outputDir = path.dirname(outputPath)
 
         var captureInfo = {
@@ -41,5 +44,11 @@ export default async function generateTemplateFiles(template, templatePath, prop
             content: content
         })
     }
+    return files
+}
+
+export async function generateTemplateFiles(template, templatePath, props){
+    const generator = await loadTemplate(template, templatePath)
+    const files = generateFiles(generator, props, process.cwd())
     return files
 }
