@@ -11,5 +11,6 @@
     "importLocalPath" : "node_modules",
     "packageBuildPath" : "build",
     "outputExtension" : "mjs",
+    "enableComponentMetaInfo": true,
     "allowUnresolved" : false
 }
