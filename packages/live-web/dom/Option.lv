@@ -1,0 +1,18 @@
+component Option < DOMElement{
+    constructor(){
+        super('option')
+        Option.prototype.__initialize.call(this)
+    }
+
+    any value: null
+    on valueChanged: () => { this.props['value'] = this.value; this.propsChanged.emit() }
+
+    boolean selected: false
+    on selectedChanged: () => { 
+        if ( this.selected ){
+            this.props['selected'] = this.selected
+        } else {
+            delete this.props['selected']
+        }
+        this.propsChanged.emit()
+}

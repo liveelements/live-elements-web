@@ -1,0 +1,14 @@
+component Select < DOMElement{
+    constructor(){
+        super('select')
+        Select.prototype.__initialize.call(this)
+    }
+
+    string name: ''
+    on nameChanged: () => { this.props['name'] = this.name; this.propsChanged.emit() }
+
+    number currentValue: 0
+    on change: () => {
+        this.currentValue = this.dom.value
+    }
+}
