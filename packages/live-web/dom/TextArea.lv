@@ -5,4 +5,25 @@ component TextArea < DOMElement{
         super('textarea')
         TextArea.prototype.__initialize.call(this)
     }
+
+    string placeholder: ''
+    on placeholderChanged: () => { this.props['placeholder'] = this.placeholder; this.propsChanged.emit() }
+
+    var currentValue: ''
+    on input: () => { 
+        this.currentValue = this.dom.value 
+    }
+    on domChanged: () => {
+        if ( this.dom )
+            this.currentValue = this.dom.value
+    }
+
+    fn on(eventName:string, fn:any){
+        if ( eventName === 'input' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            DOMElement.prototype.on.call(this, eventName, fn)
+        }
+    }
 }
