@@ -1,0 +1,32 @@
+component Select < DOMElement{
+    constructor(){
+        super('select')
+        Select.prototype.__initialize.call(this)
+    }
+
+    string name: ''
+    on nameChanged: () => { this.props['name'] = this.name; this.propsChanged.emit() }
+
+    number currentValue: 0
+    on change: () => {
+        this.currentValue = this.dom.value
+    }
+    
+    on childrenChanged: () => {
+        this.currentValue = this.children.length ? this.children[0].value : null
+        for ( let i = 0; i < this.children.length; ++i ){
+            if ( this.children[i].selected ){
+                this.currentValue = this.children[i].value
+            }
+        }
+    }
+    
+    fn on(eventName:string, fn:any){
+        if ( eventName === 'change' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            DOMElement.prototype.on.call(this, eventName, fn)
+        }
+    }
+}

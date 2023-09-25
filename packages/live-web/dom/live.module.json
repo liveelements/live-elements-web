@@ -46,6 +46,8 @@
         "Article",
         "IFrame",
         "Svg",
-        "Path"
+        "Path",
+        "Select",
+        "Option"
     ]
 }
