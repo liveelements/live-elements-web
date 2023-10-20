@@ -15,6 +15,44 @@ component DOMElement{
     get isVoid(){ return this._isVoid }
     get domEvents(){ return this._domEvents }
 
+    static Object EventTypes = ({
+        'auxclick': 'auxclick',
+        'blur': 'blur',
+        'click': 'click',
+        'compositionend': 'compositionend',
+        'compositionstart': 'compositionstart',
+        'compositionupdate': 'compositionupdate',
+        'contextmenu': 'contextmenu',
+        'copy': 'copy',
+        'cut': 'cut',
+        'dblclick': 'dblclick',
+        'error': 'error',
+        'focus': 'focus',
+        'focusin': 'focusin',
+        'focusout': 'focusout',
+        'fullscreenchange': 'fullscreenchange',
+        'fullscreenerror': 'fullscreenerror',
+        'keydown': 'keydown',
+        'keyup': 'keyup',
+        'load' : 'load',
+        'mousedown': 'mousedown',
+        'mouseenter': 'mouseenter',
+        'mouseleave': 'mouseleave',
+        'mousemove': 'mousemove',
+        'mouseout': 'mouseout',
+        'mouseover': 'mouseover',
+        'mouseup': 'mouseup',
+        'paste': 'paste',
+        'scroll': 'scroll',
+        'securitypolicyviolation': 'securitypolicyviolation',
+        'select': 'select',
+        'touchcancel': 'touchcancel',
+        'touchend': 'touchend',
+        'touchmove': 'touchmove',
+        'touchstart': 'touchstart',
+        'wheel': 'wheel'
+    })
+
     fn _initializeDOMEvent(type:string, domType:string){
         if ( this._domEvents.hasOwnProperty(type) )
             return
@@ -37,46 +75,7 @@ component DOMElement{
         if ( this.hasOwnProperty(eventName) ){
             BaseElement.prototype.on.call(this, eventName, fn)
         } else {
-            
-            var DOMElementEventTypes = {
-                'auxclick': 'auxclick',
-                'blur': 'blur',
-                'click': 'click',
-                'compositionend': 'compositionend',
-                'compositionstart': 'compositionstart',
-                'compositionupdate': 'compositionupdate',
-                'contextmenu': 'contextmenu',
-                'copy': 'copy',
-                'cut': 'cut',
-                'dblclick': 'dblclick',
-                'error': 'error',
-                'focus': 'focus',
-                'focusin': 'focusin',
-                'focusout': 'focusout',
-                'fullscreenchange': 'fullscreenchange',
-                'fullscreenerror': 'fullscreenerror',
-                'keydown': 'keydown',
-                'keyup': 'keyup',
-                'load' : 'load',
-                'mousedown': 'mousedown',
-                'mouseenter': 'mouseenter',
-                'mouseleave': 'mouseleave',
-                'mousemove': 'mousemove',
-                'mouseout': 'mouseout',
-                'mouseover': 'mouseover',
-                'mouseup': 'mouseup',
-                'paste': 'paste',
-                'scroll': 'scroll',
-                'securitypolicyviolation': 'securitypolicyviolation',
-                'select': 'select',
-                'touchcancel': 'touchcancel',
-                'touchend': 'touchend',
-                'touchmove': 'touchmove',
-                'touchstart': 'touchstart',
-                'wheel': 'wheel'
-            };
-
-            if ( DOMElementEventTypes.hasOwnProperty(eventName) ){
+            if ( DOMElement.EventTypes.hasOwnProperty(eventName) ){
                 this._initializeDOMEvent(eventName, 'on' + eventName)
                 BaseElement.prototype.on.call(this, eventName, fn)
             }
