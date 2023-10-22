@@ -1,0 +1,22 @@
+import .dom
+
+component DOMBehavior{
+    
+    DOMElement target: null
+    Object domEvents : ({})
+
+    constructor(){
+        super()
+        DOMBehavior.prototype.__initialize.call(this)
+    }
+
+    fn completed(){
+        if ( !this.target )
+            this.target = this.parent
+        if ( this.target ){
+            for (const [key, value] of Object.entries(this.domEvents)) {
+                this.target.on(key, value)
+            }
+        }
+    }
+}

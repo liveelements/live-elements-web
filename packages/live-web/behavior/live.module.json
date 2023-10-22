@@ -1,0 +1,8 @@
+
+{
+    "name" : "behavior",
+    "package": "..",
+    "modules":[
+        "DOMBehavior"
+    ]
+}
