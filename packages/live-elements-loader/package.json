@@ -12,6 +12,6 @@
   "author": "Dinu SV",
   "license": "MIT",
   "dependencies": {
-    "live-elements-js-compiler": "^0.1.8"
+    "live-elements-js-compiler": "^0.1.10"
   }
 }
