@@ -21,9 +21,8 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "live-elements-bundle-plugin": "file:packages/live-elements-bundle-plugin",
     "live-elements-core": "file:packages/live-elements-core",
-    "live-elements-js-compiler": "^0.1.8",
+    "live-elements-js-compiler": "^0.1.10",
     "live-elements-loader": "file:packages/live-elements-loader",
     "live-testspec": "file:packages/live-testspec",
     "live-web": "file:packages/live-web"
