@@ -1,9 +1,0 @@
-import live-web
-import live-web.style
-import live-web.dom
- 
-instance app Application{
-    render: Div{
-        H1`Welcome from Live Elements`
-    }
-}

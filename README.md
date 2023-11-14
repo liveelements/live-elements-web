@@ -2,8 +2,8 @@
 
 ## Packages
 
- * live-elements-bundle-plugin
  * live-elements-core
  * live-elements-loader
  * live-elements-web
+ * live-elements-web-server
  * live-web
