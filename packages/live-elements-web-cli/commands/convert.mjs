@@ -31,7 +31,7 @@ function domChildrenToLv(window, dom, indent = -1, indentMultiplier = 1){
     var indentValue = indent > 0 ? ' '.repeat(indent * indentMultiplier) : ''
     for ( var i = 0; i < dom.childNodes.length; ++i ){
         if ( dom.childNodes[i] instanceof window.Text ){
-            var content = dom.childNodes[i].nodeValue.replaceAll('\"', '\\\"').replaceAll('\`', '\\\`').trim()
+            var content = dom.childNodes[i].nodeValue.replaceAll('\"', '\\\"').replaceAll('\`', '\\\`').trim().replaceAll('\n', '\\n')
             if ( content.length > 0 )
                 result += indentValue + 'T`' + content + '`\n'
         } else {
@@ -43,29 +43,30 @@ function domChildrenToLv(window, dom, indent = -1, indentMultiplier = 1){
 
 
 function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
-    var result = ''
+    let result = ''
     if ( !dom.tagName )
         return ''
 
+    const indentValue = indent > 0 ? ' '.repeat(indent * indentMultiplier) : ''
+    const nextIndentValue = indent >= 0 ? ' '.repeat(indent * indentMultiplier + indentMultiplier) : ''
 
-    var indentValue = indent > 0 ? ' '.repeat(indent * indentMultiplier) : ''
-    var nextIndentValue = indent >= 0 ? ' '.repeat(indent * indentMultiplier + indentMultiplier) : ''
-
-    var tagName = dom.tagName.toLowerCase()
-    var componentName = capitalizeFirstLetter(tagName)
+    const tagName = dom.tagName.toLowerCase()
+    let componentName = capitalizeFirstLetter(tagName)
     if ( tagName === 'textarea' )
         componentName = 'TextArea'
 
     result += indentValue + componentName + '{ '
 
-    var props = {}
+    let props = {}
+    let attrs = []
 
-    for ( var i = 0; i < dom.attributes.length; ++i ){
-        var attr = dom.attributes[i]
+
+    for ( let i = 0; i < dom.attributes.length; ++i ){
+        const attr = dom.attributes[i]
         if ( attr.name === 'id' ){
-            result += nextIndentValue + 'glid: \'' + attr.value + '\';'
+            attrs.push('glid: \'' + attr.value + '\'')
         } else if ( attr.name === 'class' ){
-            result += nextIndentValue + 'classes: [' + attr.value.split(' ').map( v => '\'' + v + '\'' ).join(',') + '];'
+            attrs.push('classes: [' + attr.value.split(' ').map( v => '\'' + v + '\'' ).join(',') + ']')
         } else {
             var dashIndex = attr.name.indexOf('-')
             if ( dashIndex !== -1 ){
@@ -83,7 +84,7 @@ function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
     var propsStr = ''
     for (const [key, value] of Object.entries(props)) {
         if ( propsStr.length > 0 )
-            propsStr += ','
+            propsStr += ', '
         if ( typeof value === 'object' && value !== null ){
             propsStr += key + ': ' + objectToCode(value)
         } else {
@@ -91,24 +92,47 @@ function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
         }
     }
     if ( propsStr.length > 0 ){
-        result += nextIndentValue + 'props: ({ ' + propsStr + ' })'
+        attrs.push('props: ({' + propsStr + '})')
     }
+    const attrsLength = attrs.reduce((total, current) => total + current.length, 0)
+    if ( indentValue.length + componentName.length + attrsLength > 80 )
+        result += '\n' + nextIndentValue + attrs.join('\n' + nextIndentValue)
+    else
+        result += attrs.join(';')
     result += '\n'
-
     result += domChildrenToLv(window, dom, indent >= 0 ? indent + 1 : indent, indentMultiplier)
-
     result += indentValue + '}\n'
     return result
 }
 
-export default function generate(options){
-    var data = ''
+function readFromStdIn(){
+    return new Promise((resolve, _reject) => {
+        let builder = ''
+        process.stdin.setEncoding('utf8')
+
+        process.stdin.on('readable', () => {
+            let chunk
+            while ((chunk = process.stdin.read()) !== null) {
+                builder += chunk
+            }
+        })
+
+        process.stdin.on('end', () => {
+            resolve(builder)
+        })
+    })
+}
+
+export default async function generate(options){
+    let data = ''
     if ( options.file ){
         data = fs.readFileSync(options.file, 'utf-8')
     } else {
-        data = fs.readFileSync(0, 'utf-8')
+        data = await readFromStdIn()
     }
+    const indentValue = options.indent ? options.indent : 2
+
     var dom = new JSDOM(data)
-    var str = domChildrenToLv(dom.window, dom.window.document.body, 0, 2)
+    var str = domChildrenToLv(dom.window, dom.window.document.body, 0, indentValue)
     console.log(str)
 }

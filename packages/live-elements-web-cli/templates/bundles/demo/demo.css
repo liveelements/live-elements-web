@@ -1,0 +1,187 @@
+body{
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    font-family: sans-serif;
+    color: black;
+}
+
+a{
+    font-family: sans-serif;
+}
+
+div{
+    box-sizing: border-box;
+}
+
+input{
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+.strike{
+    text-decoration: line-through;
+}
+
+.pointer{
+    cursor: pointer;
+}
+
+.flex{
+    display: flex;
+}
+
+.full{
+    width: 100vw;
+    height: 100vh;
+}
+
+.mw-960{
+    max-width: 960px;
+}
+
+.h-full{
+    height: 100vh;
+}
+.w-full{
+    width: 100vw;
+}
+
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.v-center{
+    justify-content: center;
+}
+
+h1{
+    font-size: 32px;
+}
+
+p{
+    font-family: sans-serif;
+    padding: 3px 0px;
+    margin: 0;
+    flex-grow: 1;
+}
+
+article{
+    color: #333;
+    max-width: 960px;
+    width: 100%;
+    padding: 0 30px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+  
+p i{
+    font-style: italic;
+}
+  
+strong, b{
+    font-weight: bold;
+}
+  
+ul{
+    padding-left: 20px;
+    list-style-type: disc;
+    margin-bottom: 1em;
+}
+
+ul li{
+    padding: 5px 0px;
+}
+
+.li-square{
+    list-style-type: square;
+}
+
+button{
+    border: 1px solid #bbb;
+    background-color: #ccc;
+    color: white;
+    font-family: sans-serif;
+    font-size: 14px;
+    border-radius: 5px;
+    margin: 0px 2px;
+}
+button:hover{
+    background-color: #ddd;
+}
+  
+section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+  
+div.col {
+flex-basis: calc(50% - 20px);
+    flex-grow: 1;
+    min-width: 0;
+}
+  
+@media (max-width: 768px) {
+    div.col {
+        flex-basis: 100%;
+    }
+}
+
+.purple { background-color: rgb(171, 27, 171); }
+.yellow { background-color: rgb(249, 227, 31); }
+.blue { background-color: rgb(20, 148, 245); }
+
+ul.menu{
+    margin: 10px auto;
+    padding: 0 20px;
+    display: flex;
+    max-width: 960px;
+    box-sizing: border-box;
+}
+ul.menu li{
+    list-style: none;
+    padding: 10px;
+}
+
+ul.cards {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+}
+
+ul.cards li{
+    width: 250px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+h2.name{
+    margin: 0 10px;
+    padding: 16px;
+    color: #333; 
+    text-align: center;
+    border-bottom: 1px solid #555;
+    font-size: 24px;
+    font-weight: normal;
+} 
+  
+section.card-color {
+    width: 150px;
+    height: 150px;
+    border-radius: 15px;
+    margin: 10px 50px 50px;
+}
+
+.counter button{
+    margin: 0 2px 0;
+    width: 25px;
+}
+  

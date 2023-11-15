@@ -1,0 +1,75 @@
+import .lib
+
+instance demo GeneratorPack{
+    name: 'demo'
+
+FileGenerator{
+    output: 'package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+  \"version\": \"0.1.0\",
+  \"description\": \"\",
+  \"main\": \"index.js\",
+  \"scripts\": {
+    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"
+  },
+  \"lvweb\" : { \"bundle\": \"live-elements-web-cli/templates/bundles/demo/demo.lv\", \"allowBundleView\" : true},
+  \"author\": \"\",
+  \"license\": \"UNLICENSED\",
+  \"dependencies\": {
+    \"live-elements-web-server\": \"^0.1.1\",
+    \"live-elements-loader\": \"^0.1.1\",
+    \"live-elements-core\": \"^0.1.1\",
+    \"live-elements-web\": \"^0.1.1\",
+    \"live-web\": \"^0.1.1\"
+  }
+}
+```
+}
+
+FileGenerator{
+    output: 'live.package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+    \"version\" : \"0.1.0\"
+}
+```
+}
+
+FileGenerator{
+    output: 'Demo.lv'
+
+FileGeneratorContent```
+import live-web.dom
+import live-elements-web-server.view
+
+component Demo < PageView{
+
+    head: PageProperties{
+        StyleLink{ href: \'/styles/demo.css\' }
+    }
+
+    Div{ classes: [\'center\', \'full\']
+        H1\`Welcome to Live Elements!\`
+    }
+}
+```
+}
+
+} // webpackBundle Generator

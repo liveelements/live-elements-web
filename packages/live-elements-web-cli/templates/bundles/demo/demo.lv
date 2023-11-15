@@ -1,0 +1,7 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+
+instance bundle Bundle{
+    Stylesheet{ src: './templates/bundles/demo/demo.css' output: 'demo.css' }
+}
