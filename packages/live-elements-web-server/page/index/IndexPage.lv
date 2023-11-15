@@ -1,0 +1,13 @@
+import live-web.dom
+import .page
+
+component IndexPage < Page{
+    output: 'index.html'
+    title: 'Index'
+    clientRender: body
+    entryScript: 'main.bundle.js'
+
+    Body{
+        id: body
+    }
+}

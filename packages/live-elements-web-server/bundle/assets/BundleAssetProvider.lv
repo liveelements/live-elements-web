@@ -1,0 +1,6 @@
+component BundleAssetProvider{
+    
+    fn collectAssets(){
+        return []
+    }
+}

@@ -1,0 +1,9 @@
+component Bundle{
+
+    default children: []
+
+    constructor(){
+        super()
+        Bundle.prototype.__initialize.call(this)
+    }
+}

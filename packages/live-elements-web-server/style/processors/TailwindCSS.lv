@@ -1,0 +1,23 @@
+import tailwindcss from 'tailwindcss' 
+import url from 'url'
+
+component TailwindCSS{
+
+    static string classWarning = "text-center"
+
+    static fn createForPostCSS(config:Object){
+        const tailwindConfig = config ? config : {
+            media: false, // or 'media' or 'class'
+            theme: {
+                extend: {},
+            },
+            content: [url.fileURLToPath(import.meta.url)],
+            variants: {
+                extend: {},
+            },
+            plugins: [],
+        }
+        return tailwindcss(tailwindConfig)
+    }
+
+}

@@ -1,0 +1,51 @@
+import .bundle
+import .bundle.assets
+import .router
+import .page
+import path from 'path'
+import PackagePath from '../../lib/package-path.cjs'
+
+component AssetProviderCollector{
+    static fn scan(group:BaseElement){
+        let assets = []
+        for ( let i = 0; i < group.children.length; ++i ){
+            if ( group.children[i] instanceof Page ){
+                const page = group.children[i]
+                for ( var j = 0; j < page.children.length; ++j ){
+                    if ( page.children[j] instanceof BundleAssetProvider ){
+                        assets.push(page.children[j])
+                    }
+                }
+            } else if ( group.children[i] instanceof BundleAssetProvider ){
+                assets.push(group.children[i])
+            }
+        }
+        return assets
+    }
+
+    static fn collect(assetProviders:Array, collectionPath:string){
+        let assets = []
+        for ( let i = 0; i < assetProviders.length; ++i ){
+            const assetProvider = assetProviders[i]
+            if ( assetProvider.src ){
+                let packageSeparator = assetProvider.src.indexOf('/');
+                if (packageSeparator === -1) {
+                    throw new Error(`Cannot find asset location: ${assetProvider.src}`);
+                }
+                let packageName = assetProvider.src.substr(0, packageSeparator);
+                let packagePath = PackagePath.find(packageName, collectionPath);
+                let pathFromPackage = assetProvider.src.substr(packageSeparator + 1);
+                assetProvider.src =  path.join(packagePath, pathFromPackage);
+            }
+            let collectedAssets = assetProviders[i].collectAssets()
+            assets = assets.concat(collectedAssets)
+        }
+        return assets
+    }
+
+    static fn scanAndCollect(bundle:Bundle, collectionPath:String){
+        let assetProviders = AssetProviderCollector.scan(bundle)
+        return AssetProviderCollector.collect(assetProviders, collectionPath)
+    }
+}
+

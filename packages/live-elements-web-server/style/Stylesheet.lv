@@ -1,0 +1,5 @@
+component Stylesheet{
+    string src: ''
+    string output: ''
+    var process: null
+}

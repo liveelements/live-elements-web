@@ -1,0 +1,22 @@
+component PageView{
+
+    PageProperties head: null
+    Object props: null
+    Object data: null
+    
+    default children   : []
+    set children(chs:any){
+        if ( chs.length > 1 ){
+            throw new Error("Only one child is accepted inside a PageView.")
+        }
+        BaseElement.setProperty(this, 'children', chs)
+    }
+
+    get visualChildren(){  return this.children  }
+
+    fn expandTo(dom:DOMElement){
+        if ( this.children.length ){
+            this.children[0].expandTo(dom)
+        }
+    }
+}

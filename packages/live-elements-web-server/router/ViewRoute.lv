@@ -1,0 +1,23 @@
+component ViewRoute < Route{
+
+    static number CSR = 0
+    static number SSR = 1
+
+    static fn renderValueString(renderValue:number){
+        const values = ['CSR', 'SSR']
+        for ( let i = 0; i < values.length; ++i ){
+            if ( ViewRoute[values[i]] === renderValue )
+                return values[i]
+        }
+        return ''
+    }
+
+    static fn createView(c:component){
+        return c.(){}
+    }
+    
+    type = Route.Get
+    var c : null
+    Object placement : null
+    number render = ViewRoute.CSR
+}

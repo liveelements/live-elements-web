@@ -1,0 +1,15 @@
+import .bundle
+import .router
+import .style
+
+component StylesheetCollector{
+    static fn scan(group:Bundle){
+        let styles = []
+        for ( let i = 0; i < group.children.length; ++i ){
+            if ( group.children[i] instanceof Stylesheet ){
+                styles.push(group.children[i])
+            }
+        }
+        return styles
+    }
+}

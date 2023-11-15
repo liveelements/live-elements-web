@@ -1,0 +1,26 @@
+import postcss from 'postcss'
+import url from 'postcss-url'
+
+component PostCSS{
+
+    Array plugins: []
+
+    static fn create(plugins:Array){
+        const postcss = PostCSS{}
+        postcss.plugins = plugins ? plugins instanceof Array ? plugins : [plugins] : []
+        return postcss
+    }
+
+    static fn createUrlPlugin(opts:Object){
+        return url(opts)
+    }
+
+    fn process(file:string, content:string, destination:string){
+        return postcss(this.plugins)
+            .process(content, { from: file, to: destination })
+            .then(result => {
+                return { content: result.css, map: result.map ? result.map.toString() : null }
+            })
+    }
+
+}

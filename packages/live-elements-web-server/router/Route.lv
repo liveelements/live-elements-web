@@ -1,0 +1,17 @@
+component Route{
+
+    static number Get = 0
+    static number Post = 1
+    static number Middleware = 2
+
+    static fn hasParameters(route:string){
+        return /\/:[^/]+/.test(route)
+    }
+
+    string url: ''
+    any f: null
+    number type= Route.Get
+    any middleware: null
+
+    default children: []
+}

@@ -1,0 +1,36 @@
+import live-web.dom
+import .bundle
+import .router
+import .page
+import .page.index
+
+component PageCollector{
+
+    static fn scan(bundle:Bundle){
+        let pages = []
+        for ( var i = 0; i < bundle.children.length; ++i ){
+            if ( bundle.children[i] instanceof Page ){
+                pages.push(bundle.children[i])
+            }
+        }
+        return pages
+    }
+
+    static fn setupDOM(pages:Array, domInterface:Object){
+        return pages.map( page => {  return { page: page, output: page.output, dom: page.captureDOM(domInterface) } } )
+    }
+
+    static fn scanAndSetupDOM(bundle:Bundle, domInterface:Object, entryScript:string){
+        const pages = PageCollector.scan(bundle)
+        for( let i = 0; i < pages.length; ++i ){
+            pages[i].entryScript = entryScript
+        }
+        return PageCollector.setupDOM(pages, domInterface)
+    }
+
+    static fn defaultPageSetup(domInterface:Object, entryScript:string){
+        let defaultPage = IndexPage{}
+        defaultPage.entryScript = entryScript
+        return PageCollector.setupDOM([defaultPage], domInterface)
+    }
+}

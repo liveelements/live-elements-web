@@ -1,0 +1,36 @@
+import {readdirSync, statSync} from 'fs'
+
+component BundleDirectory < BundleAssetProvider{
+    var src: ''
+    var output: ''
+
+    fn recurseDirSync(path:string){
+        var files = readdirSync(path)
+        var result = []
+        for ( var i = 0; i < files.length; ++i ){
+            var fullPath = path + "/" + files[i]
+            if (statSync(fullPath).isDirectory()) {
+                result = result.concat(this.recurseDirSync(fullPath))
+            } else {
+                result.push(fullPath)
+            }
+        }
+        return result
+    }
+
+    fn collectAssets(){
+        var result = []
+
+        if ( this.src && this.output ){
+            var files = this.recurseDirSync(this.src)
+            for ( var i = 0; i < files.length; ++i ){
+                result.push({
+                    src: files[i],
+                    output: files[i].replace(this.src, this.output),
+                    type: 'any'
+                })
+            }
+        }
+        return result
+    }
+}

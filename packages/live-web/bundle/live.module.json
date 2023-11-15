@@ -1,6 +1,0 @@
-
-{
-    "name" : "bundle",
-    "package": "..",
-    "modules": ["Body", "Bundle", "Page", "PageGroup", "BundleAssetProvider", "BundleFile", "BundleDirectory"]
-}

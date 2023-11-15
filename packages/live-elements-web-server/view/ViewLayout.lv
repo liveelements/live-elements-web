@@ -1,0 +1,21 @@
+component ViewLayout{
+    PageProperties head: null
+    Object render: null
+    Object renderProperties: {}
+    default children: []
+    
+    set children(chs:any){
+        if ( chs.length > 1 ){
+            throw new Error("Only one child is accepted inside a ViewLayout.")
+        }
+        BaseElement.setProperty(this, 'children', chs)
+    }
+
+    get visualChildren(){  return this.children  }
+
+    fn expandTo(dom:DOMElement){
+        if ( this.children.length ){
+            this.children[0].expandTo(dom)
+        }
+    }
+}

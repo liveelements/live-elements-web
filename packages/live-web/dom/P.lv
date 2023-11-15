@@ -4,7 +4,8 @@ component P < DOMElement{
         super('p')
         P.prototype.__initialize.call(this)
 
-        if ( text )
+        if ( text ){
             this.children = [new T(text)]
+        }
     }
 }

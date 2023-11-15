@@ -1,0 +1,92 @@
+import .bundle
+import .router
+import .view
+import .page
+
+component RouteCollector{
+    static fn scan(bundle:Bundle){
+        return RouteCollector.scanRecurse(bundle, '', [])
+    }
+
+    static fn scanRecurse(group:BaseElement, prefix:string, userMiddleware:Array){
+        let routes = []
+        userMiddleware = userMiddleware ? userMiddleware : []
+
+        let middlewares = group.children.filter(c => c instanceof MiddlewareRoute)
+        for( let i = 0; i < middlewares.length; ++i )
+            userMiddleware.push(middlewares[i].middleware)
+
+        for ( let i = 0; i < group.children.length; ++i ){
+            if ( group.children[i] instanceof Route ){
+                let route = group.children[i]
+                let routeUserMiddleware = route.middleware 
+                    ? userMiddleware.concat(route.middleware) : userMiddleware
+                if ( route instanceof GetRoute ){
+                    routes.push({ 
+                        type: route.type, 
+                        userMiddleware: routeUserMiddleware,
+                        f: route.f, 
+                        url: prefix ? prefix + route.url : route.url
+                    })
+                } else if ( route instanceof PostRoute ){
+                    routes.push({ 
+                        type: route.type, 
+                        f: route.f, 
+                        userMiddleware: routeUserMiddleware,
+                        url: prefix ? prefix + route.url : route.url
+                    })
+                } else if ( route instanceof MiddlewareRoute ){
+                    routes.push({ 
+                        type: route.type, 
+                        f: route.f, 
+                        userMiddleware: routeUserMiddleware,
+                        url: prefix ? prefix + route.url : route.url
+                    })
+                } else if ( route instanceof ViewRoute ){
+                    let viewRoute = {
+                        type: route.type, 
+                        f: route.f, 
+                        url: prefix ? prefix + route.url : route.url, 
+                        c: route.c, 
+                        userMiddleware: routeUserMiddleware,
+                        render: route.render
+                    }
+                    if ( route.placement ){
+                        if ( typeof route.placement === 'function' && route.placement.prototype !== undefined ){
+                            viewRoute.placement = [route.placement]
+                        } else if ( route.placement instanceof Page ){
+                            viewRoute.page = route.placement
+                        } else if ( route.placement instanceof ViewPlacement ){
+                            let current = route.placement
+                            let collector = [route.placement.c]
+                            while ( current.placement ){
+                                if ( typeof current.placement === 'function' && current.placement.prototype !== undefined ){
+                                    collector.unshift(current.placement)
+                                    break
+                                } else if ( current.placement instanceof Page ){
+                                    viewRoute.page = current.placement
+                                    break
+                                } else if ( current.placement instanceof ViewPlacement ){
+                                    collector.unshift(current.placement.c)
+                                    current = current.placement
+                                } else {
+                                    throw new Error(`Unkown layout placement type for view route: ${viewRoute.url}.`)
+                                }
+                            }
+                            viewRoute.placement = collector
+                        } else {
+                            throw new Error(`Unkown placement type for view route: ${viewRoute.url}.`)
+                        }
+                    }
+                    routes.push(viewRoute)
+                }
+
+                if ( route.children.length > 0 ){
+                    var routeChildRoutes = RouteCollector.scanRecurse(route, prefix ? prefix + route.url : route.url, [...routeUserMiddleware])
+                    routes = routes.concat(routeChildRoutes)
+                }
+            }
+        }
+        return routes
+    }
+}

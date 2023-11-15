@@ -1,0 +1,13 @@
+
+component StyleLink < DOMElement{
+
+    constructor(link:string){
+        super('link')
+        StyleLink.prototype.__initialize.call(this)
+
+        if (link)
+            this.href = link
+    }
+
+    string href: ''
+}
