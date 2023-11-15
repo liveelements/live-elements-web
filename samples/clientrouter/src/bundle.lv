@@ -1,5 +1,0 @@
-import live-web.bundle
-
-instance bundle Bundle{
-    pages: [IndexPage]
-}

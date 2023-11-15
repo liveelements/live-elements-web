@@ -1,0 +1,9 @@
+body{
+    @apply w-full h-screen m-0 p-4 box-border;
+}
+h1{
+    @apply text-4xl font-sans m-0;
+}
+a{
+    @apply text-xl text-indigo-600 hover:text-indigo-800 transition duration-150 no-underline ease-in-out;
+}

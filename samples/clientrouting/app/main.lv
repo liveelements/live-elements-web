@@ -1,0 +1,92 @@
+import live-elements-web-server.view
+import live-web.dom
+import live-web.style
+import live-web.core
+import live-web.clientrouter
+import live-web
+
+component ClientRouting < PageView{
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+    
+    Div{
+        Div{
+            int a: this.b
+            on aChanged: () => { console.log(this.a) }
+            int b: 100
+            on bChanged: () => { console.log(this.b) }
+            fn completed(){
+                console.log("READY")
+            }
+        }
+
+        Router{
+            RouteSwitch{
+                id: routeSwitch
+                Route{ path: '/' 
+                    P`Main Route`
+                }
+                Route{ path: '/second' 
+                    P`Second Route`
+                }
+                Route{ path: '*'
+                    P`Page Not Found`
+                }
+            }
+        }
+
+        Button{ 
+            on click: (event) => { ClientNavigation.goTo('/'); }
+            T`Change To /`
+        }
+        Button{ 
+            on click: (event) => { ClientNavigation.goTo('/second') }
+            T`Change To /second`
+        }
+        Button{ 
+            on click: (event) => { ClientNavigation.goTo('/not-found') } 
+            T`Change To /not-found`
+        }
+        Button{ 
+            on click: (event) => { 
+                routeSwitch.children = [
+                    Route{ 
+                        path: '/' 
+                        child: P{ T`Main Route Second Option` }
+                    },
+                    Route{ 
+                        path: '/second' 
+                        child: P{ T`Second Route Second Option`}
+                    }
+                ]
+            }    
+            T`Change Children`
+        }
+        Button{ 
+            on click: (event) => { 
+                routeSwitch.children = [
+                    Route{ 
+                        path: '/' 
+                        component: component TA < P{
+                            T`Main Route Component`
+                        }
+                    },
+                    Route{ 
+                        path: '/second' 
+                        component: component TA < P{
+                            T`Second Route Component`
+                        }
+                    }
+                ]
+            }
+            T`Change To Components`
+        }
+        P{
+            NavLink{ to: '/'; T`Root link`}
+        }
+        P{
+            NavLink{ to: '/second'; T`Second link`}
+        }
+    }
+}

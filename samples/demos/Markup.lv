@@ -1,0 +1,30 @@
+import live-elements-web-server.view
+import live-web.dom
+
+// create a column component
+component Col < Div{ classes: ['col'] }
+
+component Markup < PageView{
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    Article{
+        H1`This is a heading`
+
+        P`This is a paragraph`
+
+        P{
+            T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
+              This paragraph is written on multiple lines.`
+        }
+
+        Ul{
+            Li`First list item`
+            Li`Second list item`
+        }
+
+        Section{
+            Col{ P`Paragraph in column one` }
+            Col{ P`Paragraph in column two`}
+        }
+    }
+}

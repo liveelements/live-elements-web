@@ -1,0 +1,29 @@
+import live-elements-web-server.view
+import live-web.dom
+
+// reusable card component, extends Li
+component Card < Li{
+    id: card
+    classes: ['card']
+
+    string name: ''
+    string description: ''
+    string color: ''
+
+    H2{ classes: ['name'] T{ text: card.name } }
+    P{ T{ text: card.description } }
+    Section{ classes: ['card-color', card.color] }
+}
+
+component Demo < PageView{
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    Div{ classes: ['h-full', 'center']
+        Ul{ classes: ['cards']
+            // create 3 cards
+            Card{ name: 'Purple' description: 'Description for purple card' color: 'purple' }
+            Card{ name: 'Yellow' description: 'Description for yellow card' color: 'yellow' }
+            Card{ name: 'Blue' description: 'Description for blue card' color: 'blue' }
+        }
+    }
+}

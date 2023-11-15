@@ -1,0 +1,46 @@
+import live-elements-web-server.view
+import live-web.model
+import live-web.dom
+
+component TodoItem < State{
+    string label: ''
+    bool isChecked: false
+}
+
+component TodoList < State{
+    Array<TodoItem> items: []
+
+    fn addItem(label:string){ 
+        this.items = this.items.concat([TodoItem{ label: label }])
+    }
+}
+
+component TodoListView < PageView{
+    id: todoListView
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    TodoList state: TodoList{}
+
+    Div{ classes: ['center']
+        Div{ classes: ['w-960']
+            Ul{
+                children: todoListView.state.items.map(item => Li{
+                    classes: item.isChecked ? ['strike', 'pointer', 'li-square'] : ['pointer', ['li-square']]
+                    on click: () => { item.isChecked = true }
+                    
+                    T{ text: item.label }
+                })
+            }
+            P{
+                Input{ id: newItem type: 'text' placeholder: 'item...' }
+                Button{
+                    on click: () => { 
+                        todoListView.state.addItem(newItem.currentValue)
+                        newItem.value = ''
+                    }
+                    T`Add`
+                }
+            }
+        }
+    }
+}

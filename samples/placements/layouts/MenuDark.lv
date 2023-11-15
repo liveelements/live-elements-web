@@ -1,0 +1,16 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component MenuDark < ViewLayout{
+
+    render: expand
+    head: PageProperties{
+        title: 'Dark Menu Page'
+        StyleLink{ href: '/styles/dark.css' }
+    }
+    
+    Div{ classes: ['menu']
+        H1`Menu Dark Theme`
+        Div{ id: expand }
+    }
+}

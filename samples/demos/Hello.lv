@@ -1,0 +1,12 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component Hello < PageView{
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    Div{ classes: ['center', 'full']
+
+        H1`Hello from Live Elements`
+    }
+    
+}

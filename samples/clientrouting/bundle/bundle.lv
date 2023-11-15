@@ -1,0 +1,15 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import .samples.clientrouting.app
+
+instance bundle Bundle{
+    Stylesheet{
+        src: './samples/clientrouting/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+
+    ViewRoute{ url: '/*' c: ClientRouting }
+}

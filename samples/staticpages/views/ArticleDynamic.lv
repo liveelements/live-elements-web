@@ -1,0 +1,28 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+
+component ArticleDynamic < PageView{
+
+    head: PageProperties{ title: 'Article Dynamic' }
+
+    Article{
+        H1`Article Dynamic`
+        P`Content for article dynamic.`
+
+        Button{ 
+            T`Read More` 
+            DOMBehavior{ domEvents:({
+                click: (event) => {
+                    const document = event.target.ownerDocument
+                    const readmore = document.getElementById('readmore-content')
+                    readmore.classList.remove('invisible')
+                    event.target.classList.add('invisible')
+                }
+            })}
+        }
+        P{ glid: 'readmore-content' classes: ['invisible']
+            T`Additional content for article dynamic.`
+        }
+    }
+}

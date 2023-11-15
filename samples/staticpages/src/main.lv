@@ -1,9 +1,0 @@
-import live-web
-import live-web.dom
-
-component HomeView{
-}
- 
-instance app Application{
-    index: HomeView
-}

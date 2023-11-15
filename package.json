@@ -3,6 +3,7 @@
   "version": "0.1.5",
   "description": "Live Elements for the web.",
   "private": "true",
+  "lvweb" : { "bundle": "live-elements-web-cli/templates/bundles/demo/demo.lv",  "allowBundleView" : true},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",

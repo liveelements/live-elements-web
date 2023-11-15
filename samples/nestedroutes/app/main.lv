@@ -1,0 +1,51 @@
+import live-web.dom
+import live-web.model
+import live-elements-web-server.view
+
+component RoutesData < State{
+
+    string api: ''
+    string nestedapi: ''
+    string nestedmiddlewareapi: ''
+    string nestedmiddlewarelocalapi: ''
+    string nestedmiddlewareglobalapi: ''
+
+    async fn loadRoute(url:string){
+        return (await (await window.fetch(url)).json()).route
+    }
+
+    async fn load(){
+        this.api = await this.loadRoute('/api')
+        this.nestedapi = await this.loadRoute('/nested/api')
+        this.nestedmiddlewareapi = await this.loadRoute('/nested/middleware/api')
+        this.nestedmiddlewarelocalapi = await this.loadRoute('/nested/middleware-local/api')
+        this.nestedmiddlewareglobalapi = await this.loadRoute('/nested/middleware-global/api')
+    }
+
+    fn completed(){
+        this.load()
+    }
+}
+
+component NestedRoutesApp < PageView{
+    id: app
+
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+
+    RoutesData state: RoutesData{}
+
+    Div{
+        H1`Nested routes & middleware app`
+        Div{ B`/api:` T{ text: app.state?.api } }
+        Div{ B`/nested/api:` T{ text: app.state?.nestedapi } }
+        Div{ B`/nested/middleware/api:` T{ text: app.state?.nestedmiddlewareapi } }
+        Div{ B`/nested/middleware-local/api:` T{ text: app.state?.nestedmiddlewarelocalapi } }
+        Div{ B`/nested/middleware-global/api:` T{ text: app.state?.nestedmiddlewareglobalapi } }
+    }
+
+    fn completed(){
+        console.log(this.state)
+    }
+}

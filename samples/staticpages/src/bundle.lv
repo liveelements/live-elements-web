@@ -1,5 +1,0 @@
-import live-web.Bundle
-
-instance bundle Bundle{
-    pages: [HomePage, ArticlePages]
-}

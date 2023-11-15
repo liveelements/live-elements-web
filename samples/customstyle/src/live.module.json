@@ -1,6 +1,0 @@
-
-{
-    "name" : "customstyle",
-    "package": "../../..",
-    "modules": ["main", "IndexPage", "bundle"]
-}

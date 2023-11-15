@@ -1,0 +1,33 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component Menu < ViewLayout{
+    id: menu
+
+    render: expand
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+    
+    Div{ classes: ['wrapper']
+        Div{ classes: ['menu']
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/' 
+                T`Index` 
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/article1' 
+                T`Article 1`
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/article2' 
+                T`Article 2`
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/article-dynamic' 
+                T`Article Dynamic`
+            }
+        }
+        Div{ id: expand }
+    }
+}

@@ -1,0 +1,16 @@
+import live-elements-web-server.page
+import live-web.dom
+
+component LightPage < Page{
+    output: 'light.html'
+    title: 'Page with Light Theme'
+    clientRender: body
+    entryScript: 'main.bundle.js'
+
+    StyleLink{ href: '/styles/general.css' }
+    StyleLink{ href: '/styles/light.css' }
+
+    Body{
+        id: body
+    }
+}

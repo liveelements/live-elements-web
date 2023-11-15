@@ -1,0 +1,30 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import .samples.stylesheets.app
+import .samples.stylesheets.pages
+
+instance bundle Bundle{
+    
+    LightPage{ id: lightPage }
+    DarkPage{ id: darkPage }
+
+    ViewRoute{ url: '/' c: Stylesheets placement: lightPage }
+    ViewRoute{ url: '/dark' c: Stylesheets placement: darkPage }
+
+    Stylesheet{
+        src: './samples/stylesheets/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+
+    Stylesheet{ 
+        src: './samples/stylesheets/styles/dark.css'
+        output: 'dark.css' 
+    }
+    Stylesheet{ 
+        src: './samples/stylesheets/styles/light.css'
+        output: 'light.css' 
+    }
+}

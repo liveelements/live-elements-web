@@ -1,0 +1,44 @@
+import live-web.dom
+import live-web.style
+import live-web.model
+import live-elements-web-server.view
+
+component AssetsData < State{
+
+    string file1: ''
+    string file2: ''
+    string file3: ''
+
+    async fn loadRoute(url:string){
+        return await (await window.fetch(url)).text()
+    }
+
+    async fn load(){
+        this.file1 = await this.loadRoute('/assets/file1.json')
+        this.file2 = await this.loadRoute('/assets/dir/file2.json')
+        this.file3 = await this.loadRoute('/assets/dir/file3.json')
+    }
+
+    fn completed(){
+        this.load()
+    }
+}
+
+component FileAssets < PageView{
+    id: app
+
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+
+    AssetsData state: AssetsData{}
+
+    Div{
+        H1`File assets`
+
+        Div{ B`/assets/file1:` T{ text: app.state?.file1 } }
+        Div{ B`/assets/dir/file2:` T{ text: app.state?.file2 } }
+        Div{ B`/assets/dir/file3:` T{ text: app.state?.file3 } }
+
+    }
+}

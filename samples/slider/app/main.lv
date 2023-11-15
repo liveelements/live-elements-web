@@ -1,0 +1,21 @@
+import live-web.dom
+import live-web
+
+instance container Div{
+    P{ 
+        T`Slider Value: ` T{ id: sliderValue; text: '50' } 
+    }
+    Input{
+        type: 'range'
+        min: 0
+        max: 100
+        value: 50
+        on input: () => { sliderValue.text = this.dom.value }
+    }
+}
+
+component Slider < Application{
+    run: () => {
+        container.expandTo(document.body)
+    }
+}

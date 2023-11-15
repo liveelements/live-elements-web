@@ -1,0 +1,13 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+
+component ArticleStatic2 < PageView{
+
+    head: PageProperties{ title: 'Article Static 1' }
+
+    Article{
+        H1`Article Static 2`
+        P`Content for article static 2.`
+    }
+}

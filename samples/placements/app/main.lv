@@ -1,0 +1,11 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+
+component Placements < PageView{
+    H1`Placements sample`
+}
+
+component PlacementsDark < PageView{
+    H1`Placements sample`
+}

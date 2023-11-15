@@ -1,0 +1,25 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import live-elements-web-server.view
+import .samples.staticpages.views
+import .samples.staticpages.pages
+import .samples.staticpages.layouts
+
+instance bundle Bundle{
+    
+    IndexPage{ id: indexPage }
+    ViewPlacement{ id: menu c: Menu placement: indexPage }
+
+    ViewRoute{ url: '/' c: IndexStatic placement: menu render: ViewRoute.SSR }
+    ViewRoute{ url: '/article1' c: ArticleStatic1 placement: menu render: ViewRoute.SSR }
+    ViewRoute{ url: '/article2' c: ArticleStatic2 placement: menu render: ViewRoute.SSR }
+    ViewRoute{ url: '/article-dynamic' c: ArticleDynamic placement: menu}
+    
+    Stylesheet{
+        src: './samples/staticpages/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+}

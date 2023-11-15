@@ -1,0 +1,12 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component SubMenu < ViewLayout{
+
+    render: expand
+    
+    Div{ classes: ['submenu']
+        H1`Submenu`
+        Div{ id: expand }
+    }
+}

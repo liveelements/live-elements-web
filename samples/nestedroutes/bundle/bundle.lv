@@ -1,0 +1,63 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import .samples.nestedroutes.app
+
+instance bundle Bundle{
+    Stylesheet{
+        src: './samples/nestedroutes/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+    ViewRoute{ url: '/' c: NestedRoutesApp }
+
+    GetRoute{ url: '/api' f: async(req, res) => {
+        res.json({ route: 'api' })
+    }}
+
+    Route{ url: '/nested'
+        GetRoute{ url: '/api' f: async(req, res) => {
+            res.json({ route: 'nested/api' })
+        }}
+    }
+    
+    Route{ url: '/nested/middleware-local'
+        GetRoute{ 
+            url: '/api' 
+            middleware: (req, res, next) => {
+                req.localMiddlewareData = 'local-middleware'
+                next()
+            }
+            f: async(req, res) => {
+                console.log(req.userdata)
+                res.json({ route: `nested/middleware-local/api[${req.localMiddlewareData}]` })
+            }
+        }
+    }
+
+    Route{ 
+        url: '/nested/middleware'
+        middleware: (req, res, next) => {
+            req.middlewareData = 'middleware'
+            next()
+        }
+
+        GetRoute{ url: '/api' f: async(req, res) => {
+            res.json({ route: `nested/middleware/api[${req.middlewareData}]` })
+        }}
+    }
+
+    Route{ url: '/nested/middleware-global'
+        GetRoute{ url: '/api' f: async(req, res) => {
+            res.json({ route: `nested/middleware-global[${req.globalMiddlewareData}]` })
+        }}
+    }
+
+    MiddlewareRoute{
+        middleware: (req, res, next) => {
+            req.globalMiddlewareData = 'global-middleware'
+            next()
+        }
+    }
+}

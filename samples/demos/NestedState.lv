@@ -1,0 +1,49 @@
+import live-elements-web-server.view
+import live-web.model
+import live-web.dom
+
+component Subscription < State{
+    string name: ''
+    number price: 0
+}
+
+component Service < State{
+    Subscription basic: Subscription{ name: 'Basic' price: 1.00 }
+    Subscription advanced: Subscription{ name: 'Advanced' price: 5.00 }
+}
+
+component ServiceView < PageView{
+    id: serviceView
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    Service state: Service{}
+
+    Div{ classes: ['center', 'full']
+        Div{ 
+            H2`Subscription prices`
+            Ul{
+                Li{ 
+                    T{ text: serviceView.state.basic.name + ':' }
+                    B{ T{ text: serviceView.state.basic.price.toFixed(2) + '$' }} 
+                }
+                Li{ 
+                    T{ text: serviceView.state.advanced.name + ': ' }
+                    B{ T{ text: serviceView.state.advanced.price.toFixed(2) + '$' }} 
+                }
+            }
+            P{
+                Button{
+                    on click: () => {
+                        serviceView.state.basic.price += 1
+                        serviceView.state.advanced.price += 1
+                    }
+                    T`Adjust to inflation`
+                }
+                Button{
+                    on click: () => { serviceView.state.advanced.name  = 'Premium' }
+                    T`Upgrade to premium`
+                }
+            }
+        }
+    }
+}

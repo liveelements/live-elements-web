@@ -1,0 +1,11 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import .samples.welcome.app
+
+instance bundle Bundle{
+    ViewRoute{ url: '/' c: Home }
+
+    Stylesheet{ src: './samples/welcome/styles/style.css' output: 'style.css' }
+}

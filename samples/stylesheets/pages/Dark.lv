@@ -1,0 +1,16 @@
+import live-elements-web-server.page
+import live-web.dom
+
+component DarkPage < Page{
+    output: 'dark.html'
+    title: 'Page with Dark Theme'
+    clientRender: body
+    entryScript: 'main.bundle.js'
+
+    StyleLink{ href: '/styles/general.css' }
+    StyleLink{ href: '/styles/dark.css' }
+
+    Body{
+        id: body
+    }
+}

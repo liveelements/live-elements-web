@@ -1,0 +1,16 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component Menu < ViewLayout{
+
+    render: expand
+    head: PageProperties{
+        title: 'Menu Page'
+        StyleLink{ href: '/styles/light.css' }
+    }
+    
+    Div{ classes: ['menu']
+        H1`Menu`
+        Div{ id: expand }
+    }
+}

@@ -1,0 +1,7 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import .samples.slider.app
+
+instance bundle Bundle{
+    ViewRoute{ url: '/' c: Slider }
+}

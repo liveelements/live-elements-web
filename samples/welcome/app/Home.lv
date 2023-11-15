@@ -1,0 +1,12 @@
+import live-web.dom
+import live-elements-web-server.view
+
+component Home < PageView{
+
+    head: PageProperties{
+        title: "Live Elements"
+        StyleLink{ href: '/styles/style.css' }
+    }
+
+    H1`Welcome to Live Elements!`
+}

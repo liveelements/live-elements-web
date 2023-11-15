@@ -1,0 +1,37 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import live-elements-web-server.view
+import .samples.placements.app
+import .samples.placements.pages
+import .samples.placements.layouts
+
+instance bundle Bundle{
+    
+    IndexPage{ id: indexPage }
+
+    ViewPlacement{ id: darkMenu c: MenuDark placement: indexPage }
+    ViewPlacement{ id: darkSubmenu c: SubMenu placement: darkMenu }
+
+    ViewPlacement{ id: menu c: Menu placement: indexPage }
+    ViewPlacement{ id: submenu c: SubMenu placement: menu }
+
+    ViewRoute{ url: '/' c: Placements placement: submenu }
+    ViewRoute{ url: '/dark' c: PlacementsDark placement: darkSubmenu }
+    
+    Stylesheet{
+        src: './samples/placements/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+
+    Stylesheet{ 
+        src: './samples/placements/styles/dark.css'
+        output: 'dark.css' 
+    }
+    Stylesheet{ 
+        src: './samples/placements/styles/light.css'
+        output: 'light.css' 
+    }
+}

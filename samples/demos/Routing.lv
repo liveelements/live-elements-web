@@ -1,0 +1,42 @@
+import live-elements-web-server.view
+import live-web.dom
+import live-web.clientrouter
+
+component IndexView < Article{ 
+    classes: ['w-960']
+
+    H1`Index Route`
+}
+
+component ArticleView < Article{
+    classes: ['w-960']
+
+    H1`Article Title`
+    P`Article Content`
+}
+
+component PageNotFound < Article{
+    H1`Page not found`
+}
+
+component Routing < PageView{
+    static string serverUrl = '/*'
+
+    head: PageProperties{ StyleLink`/styles/demo.css` }
+
+    Div{ classes: ['w-full']
+        Ul{ classes: ['menu', 'w-960']
+            Li{ NavLink{ href: '/' T`Index` } }
+            Li{ NavLink{ href: '/article' T`Article` } }
+        }
+
+        Router{
+            RouteSwitch{
+                Route{ path: '/' component: IndexView }
+                Route{ path: '/article' component: ArticleView }
+                Route{ path: '*' component: PageNotFound }
+            }
+        }
+    }
+    
+}

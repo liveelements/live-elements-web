@@ -1,0 +1,38 @@
+import live-web.dom
+import live-web.style
+import live-web
+import live-elements-web-server.view
+
+
+instance style Style{
+    convert: ({
+        'pixelWidth': (value) => { this.assign('width', value + 'px' ) },
+        'pixelHeight': (value) => { this.assign('height', value + 'px') }
+    })
+    int pixelWidth: 200
+    int pixelHeight: 30
+    color background: '#333'
+    Object borderRadius: '5px'
+}
+
+component CustomStyle < PageView{
+
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+
+    Div{
+        Div{
+            id: bar
+            style: style 
+        }
+        Button{
+            on click: (event) => { bar.style.pixelWidth = bar.style.pixelWidth > 20 ? bar.style.pixelWidth - 20 : 0 } 
+            T`Shrink`
+        }
+        Button{
+            on click: (event) => { bar.style.pixelWidth += 20 }; 
+            T`Expand`
+        }
+    }
+}

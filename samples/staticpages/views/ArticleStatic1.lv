@@ -1,0 +1,28 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+
+component ArticleStatic1 < PageView{
+
+    head: PageProperties{ title: 'Article Static 1' }
+
+    Article{
+        H1`Article Static 1`
+        P`Content for article static 1.`
+
+        Button{ 
+            T`Read More` 
+            DOMBehavior{ domEvents:({
+                click: (event) => {
+                    const document = event.target.ownerDocument
+                    const readmore = document.getElementById('readmore-content')
+                    readmore.classList.remove('invisible')
+                    event.target.classList.add('invisible')
+                }
+            })}
+        }
+        P{ glid: 'readmore-content' classes: ['invisible']
+            T`Additional content for article static 1.`
+        }
+    }
+}

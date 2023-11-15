@@ -1,0 +1,6 @@
+body{
+    @apply w-full h-screen flex items-center justify-center m-0;
+}
+h1{
+    @apply text-4xl font-sans;
+}

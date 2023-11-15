@@ -1,0 +1,20 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.bundle.assets
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import .samples.fileassets.app
+
+instance bundle Bundle{
+    Stylesheet{
+        src: './samples/fileassets/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+
+    BundleFile{ src: './samples/fileassets/assets/file1.json' output: 'assets/file1.json' }
+    BundleDirectory{ src: './samples/fileassets/assets/dir' output: 'assets/dir' }
+
+    ViewRoute{ url: '/' c: FileAssets }
+
+}
