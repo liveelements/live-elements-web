@@ -48,6 +48,7 @@
         "Svg",
         "Path",
         "Select",
-        "Option"
+        "Option",
+        "Body"
     ]
 }
