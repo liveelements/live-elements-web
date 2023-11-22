@@ -1,10 +1,25 @@
 if ( window._bhvs_ ){
-    for (const [behaviorId, behaviorEvents] of Object.entries(_bhvs_)) {
-        for (const [name, handler] of Object.entries(behaviorEvents)) {
-            const selector = `[data-action-${name}='${behaviorId}']`
-            const elem = document.querySelector(selector)
-            elem['on' + name] = handler
+    for (const [behaviorId, behaviorEvents] of Object.entries(window._bhvs_)) {
+        if ( behaviorEvents.target ){
+            for (const [name, handler] of Object.entries(behaviorEvents)) {
+                if ( name === 'ready' ){
+                    handler(document)
+                } else if ( name !== 'target' ){
+                    behaviorEvents.target.addEventListener(name, handler)
+                }
+            }
+        } else {
+            for (const [name, handler] of Object.entries(behaviorEvents)) {
+                const selector = `[data-action-${name}='${behaviorId}']`
+                const elem = document.querySelector(selector)
+                if ( name === 'ready' ){
+                    handler(elem)
+                } else {
+                    elem['on' + name] = handler
+                }
+            }
         }
+
     };
 }
  

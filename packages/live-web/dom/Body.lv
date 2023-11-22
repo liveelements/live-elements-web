@@ -1,0 +1,8 @@
+
+component Body < DOMElement{
+
+    constructor(){
+        super('body')
+        Body.prototype.__initialize.call(this)
+    }
+}

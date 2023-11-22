@@ -67,6 +67,7 @@ export class Watcher{
         const groups = groupNames.map(g => new WatcherGroup(g))
         for ( let i = 0; i < groups.length; ++i )
             watcher.addGroup(groups[i])
+        return watcher
     }
 
     unwatchFile(file) {

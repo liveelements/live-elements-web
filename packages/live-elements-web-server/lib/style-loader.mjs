@@ -64,6 +64,7 @@ class StyleOutput{
             }
             this._content = content
         }
+        return input
     }
 
     inputByPath(path){
@@ -101,10 +102,13 @@ export default class StyleContainer extends EventEmitter {
     }
 
     async reloadInputFile(path){
+        const outputsChanged = []
         for ( let i = 0; i < this._outputs.length; ++i ){
-            await this._outputs[i].reloadInputFile(path)
+            const hasInput = await this._outputs[i].reloadInputFile(path)
+            if ( hasInput )
+                outputsChanged.push(this._outputs[i].output)
         }
-        this.emit('change', path)
+        this.emit('change', outputsChanged)
     }
 
     static resolveSrc(src, bundleRootPath){

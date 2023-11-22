@@ -5,6 +5,7 @@ import webpack from 'webpack'
 import chalk from 'chalk'
 import path from 'path'
 import fs from 'fs'
+import memfs from 'memfs'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
 
@@ -24,7 +25,12 @@ export default class BundleWebpack extends EventEmitter {
                 : config.publicPath + '/'
             : '/') + 'scripts/'
 
+        this._publicPath = publicPath
+        this._distPath = distPath
+
         const devTool = config.mode === 'production' ? false : 'inline-source-map'
+        this._devTool = devTool
+        this._mode = config.mode ? config.mode : 'development'
 
         log.i(`Webpack baseUrl '${config.publicPath}' `)
 
@@ -37,7 +43,7 @@ export default class BundleWebpack extends EventEmitter {
             },
             devtool: devTool,
             resolve: { alias: config.alias ? config.alias : [] },
-            mode: config.mode ? config.mode : 'development',
+            mode: this._mode,
             plugins: [
                 new VirtualModulesPlugin(config.virtualModules)
             ],
@@ -53,15 +59,14 @@ export default class BundleWebpack extends EventEmitter {
 
         this._watcher = config.watcher ? config.watcher : null
         if ( this._watcher ){
-            const webpackGroup = new WatcherGroup('webpack')
-            this._watcher.addGroup(webpackGroup)
-            const webpackManualGroup = new WatcherGroup('webpack-manual')
-            webpackManualGroup.onFileChange = (file) => {
-                if ( this._middleware ){
-                    lvimport(file).catch( e => log.e(e) )
+            const manualGroup = this._watcher.findGroup('webpack-manual')
+            if ( manualGroup ){
+                manualGroup.onFileChange = (file) => {
+                    if ( this._middleware ){
+                        lvimport(file).catch( e => log.e(e) )
+                    }
                 }
             }
-            this._watcher.addGroup(webpackManualGroup)
         }
         this._compiler = webpack(webpackOptions)
         this._compiler.hooks.infrastructureLog.tap('WebpackLogPlugin', (_name, _type, args) => {
@@ -104,6 +109,75 @@ export default class BundleWebpack extends EventEmitter {
                 log.decorated('i', assetLogDecorate[i])
             }
             this.emit('compileReady', stats)
+        })
+    }
+
+    compileExternalBundle(name, files, publicPath){
+        const virtualModules = {}
+        files.filter(file => file.content).forEach(file => {
+            virtualModules[file.path] = file.content
+        })
+        const entries = files.map(file => file.path)
+        const entriesConfig = {}
+        entriesConfig[name] = entries
+
+        const entryName = `${name}.bundle.js`
+
+        const configuration = {
+            entry: entriesConfig,
+            output: {
+                filename: '[name].bundle.js',
+                path: `${this._distPath}/scripts`,
+                publicPath : publicPath
+            },
+            devtool: this._devTool,
+            mode: this._mode,
+            plugins: [
+                new VirtualModulesPlugin(virtualModules)
+            ],
+            module: {
+                rules: [
+                    {
+                        test: /\.lv$/,
+                        use: [{ loader: 'live-elements-loader' }],
+                    },
+                ]
+            }
+        }
+
+        const memfsWithVolumne = memfs.createFsFromVolume(new memfs.Volume())
+        const compiler = webpack(configuration)
+        compiler.outputFileSystem = memfsWithVolumne
+
+        return new Promise((resolve, reject) => {
+
+            compiler.run((err, stats) => {
+                if (err) 
+                    reject(err)
+                const info = stats.toJson()
+                if (stats.hasErrors()) {
+                    reject(info.errors)
+                }
+
+                if (stats.hasWarnings()) {
+                    console.warn(info.warnings)
+                }
+
+                const outputPath = configuration.output.path
+                const assets = info.assets.map(asset => {
+                    const assetPath = path.join(outputPath, asset.name)
+                    return {
+                        name: asset.name,
+                        path: assetPath,
+                        isMainEntry: asset.name === entryName ? true : false,
+                        content: memfsWithVolumne.readFileSync(assetPath).toString()
+                    }
+                })
+                resolve({
+                    warnings: stats.hasWarnings() ? info.warnings: null,
+                    assets: assets
+                })
+            });
         })
     }
 

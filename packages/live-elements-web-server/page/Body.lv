@@ -1,5 +1,0 @@
-component Body{
-    default children: []
-    Array classes: []
-    Object props: ({})
-}

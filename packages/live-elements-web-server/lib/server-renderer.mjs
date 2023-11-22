@@ -1,61 +1,100 @@
+class BehaviorReport{
+    constructor(behaviors, report){
+        this._behaviors = behaviors || []
+        this._report = report || []
+    }
+
+    get behaviors(){ return this._behaviors }
+    get report(){ return this._report }
+    get hasReport(){ return this._report.length > 0 }
+
+    unwrapAnd(cb){
+        if ( this.hasReport )
+            cb(this.report)
+        return this._behaviors
+    }
+
+    join(other){
+        return new BehaviorReport(
+            this._behaviors.concat(other.behaviors),
+            this._report.concat(other.report)
+        )
+    }
+}
+
 export default class ServerRenderer{
 
-    static __createBehaviorsRecurse(document, element, behaviors){
-
+    static scanBehaviors(document, element){
+        let behaviors = new BehaviorReport()
         if ( element.children ){
             for ( let i = 0; i < element.children.length; ++i ){
-                ServerRenderer.__createBehaviorsRecurse(document, element.children[i], behaviors)
+                behaviors = behaviors.join(ServerRenderer.scanBehaviors(document, element.children[i]))
             }
         } else if ( element.constructor.name === 'DOMBehavior' ){
-            const behaviorId = 'f_' + behaviors.count
-            behaviors.count++
-            behaviors.data[behaviorId] = {}
+            let behaviorEvents = {}
+            const behaviorDOM = element.target === element.constructor.document
+                ? document : element.target.dom
+            const reference = element.target === element.constructor.document ? 'document' : null
+
             for (const [key, value] of Object.entries(element.domEvents)) {
-                behaviors.data[behaviorId][key] = value.toString()
-                const datasetkey = 'action' + key.charAt(0).toUpperCase() + key.slice(1)
-                element.target.dom.dataset[datasetkey] = behaviorId
+                if ( reference || (`on${key}` in behaviorDOM ) ){
+                    behaviorEvents[key] = value.toString()
+                } else {
+                    behaviors.report.push(`Failed to find event '${key}' in DOM element type '${behaviorDOM.tagName}'`)
+                }
+            }
+            if ( element.domReady ){
+                behaviorEvents['ready'] = element.domReady
+            }
+
+            let behavior = {
+                id: null,
+                dom: behaviorDOM,
+                reference: reference,
+                events: behaviorEvents
+            }
+            behaviors.behaviors.push(behavior)
+        }
+        return behaviors
+    }
+
+    static assignBehaviorsId(startingId, behaviors){
+        for ( let i = 0; i < behaviors.length; ++i ){
+            behaviors[i].id = 'f_' + (startingId + i)
+        }
+    }
+
+    static assignBehaviorsToDom(behaviors){
+        for ( let i = 0; i < behaviors.length; ++i ){
+            const behavior = behaviors[i]
+            if ( !behavior.reference ){
+                for (const [key, _value] of Object.entries(behavior.events)) {
+                    const datasetkey = 'action' + key.charAt(0).toUpperCase() + key.slice(1)
+                    behavior.dom.dataset[datasetkey] = behavior.id
+                }
             }
         }
     }
 
-    static includeBehaviorDependencies(document){
-        let script = document.getElementById('behavior-script-handler')
-        if ( !script ){
-            const behaviorEvents = document.createElement('script')
-            behaviorEvents.id = 'behavior-script-handler'
-            behaviorEvents.src = '/scripts/behavior-events.js'
-            document.body.appendChild(behaviorEvents)
-        }
-    }
+    static behaviorsSource(behaviors){
+        let source = ''
+        for ( let i = 0; i < behaviors.length; ++i ){
+            const behavior = behaviors[i]
 
-    static createBehaviors(document, element){
-        let script = document.getElementById('behavior-script')
-        let behaviors = {}
-        if ( !script ){
-            script = document.createElement('script')
-            script.id = 'behavior-script'
-            script.setAttribute('data-b-count', 0)
-            script.textContent = 'const _bhvs_={}\nwindow._bhvs_=_bhvs_\n'
-            document.body.appendChild(script)
-            
-            behaviors = { count: 0, data: {} }
-        } else {
-            const count = parseInt(script.getAttribute('data-b-count'))
-            behaviors = { count: count, data: {} }
-        }
-        
-        ServerRenderer.__createBehaviorsRecurse(document, element, behaviors)
-        let scriptContent = script.textContent
-        for (const [behaviorId, behaviorEvents] of Object.entries(behaviors.data)) {
             let r = ''
-            for (const [name, handler] of Object.entries(behaviorEvents)) {
+            for (const [name, handler] of Object.entries(behavior.events)) {
                 if ( r.length !== 0 )
                     r += ',\n'
                 r += name + ':' + handler
             }
-            scriptContent += `_bhvs_['${behaviorId}'] = {${r}}\n`
+            if ( behavior.reference ){
+                if ( r.length !== 0 )
+                    r += ',\n'
+                r += 'target:' + behavior.reference
+            }
+            source += `${i > 0 ? ',\n' : ''}${behavior.id}: {${r}}`
         }
-        script.dataset.bCount = behaviors.count
-        script.textContent = scriptContent
+        return '{' + source + '}'
     }
+
 }

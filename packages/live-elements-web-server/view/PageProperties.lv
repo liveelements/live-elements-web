@@ -22,6 +22,22 @@ component PageProperties{
                     meta.setAttribute(key, value)
                 }
                 document.head.appendChild(meta)
+            } else if ( this.children[i] instanceof Script ){
+                var script = document.createElement("script")
+                script.src = this.children[i].src
+                var props = this.children[i].props
+                for (const [key, value] of Object.entries(props)) {
+                    if ( key !== 'src' )
+                        script.setAttribute(key, value)
+                }
+                document.body.appendChild(script)
+            } else if ( this.children[i] instanceof Link ){
+                var link =  document.createElement("link")
+                var props = this.children[i].props
+                for (const [key, value] of Object.entries(props)) {
+                    link[key] = value
+                }
+                document.head.appendChild(link)
             } else if ( this.children[i] instanceof StyleLink ){
                 var link =  document.createElement("link");
                 link.rel = 'stylesheet'

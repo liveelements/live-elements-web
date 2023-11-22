@@ -1,8 +1,11 @@
 import .dom
 
 component DOMBehavior{
+
+    static string document = 'document'
     
     DOMElement target: null
+    Object domReady: null
     Object domEvents : ({})
 
     constructor(){
@@ -13,9 +16,27 @@ component DOMBehavior{
     fn completed(){
         if ( !this.target )
             this.target = this.parent
-        if ( this.target ){
+        if ( this.target === DOMBehavior.document ){
+            if ( typeof window !== 'undefined' ){
+                if ( window.document ){
+                    for (const [key, value] of Object.entries(this.domEvents)) {
+                        window.document.addEventListener(key, value)
+                    }
+                }
+                if ( this.domReady ){
+                    this.domReady(window.document)
+                }
+            }    
+        } else {
             for (const [key, value] of Object.entries(this.domEvents)) {
                 this.target.on(key, value)
+            }
+            if ( typeof window !== 'undefined' && this.domReady ){
+                if ( this.target.dom )
+                    this.domReady(this.target.dom)
+                this.target.on('domChanged', () => {
+                    this.domReady(this.target.dom)
+                })
             }
         }
     }

@@ -1,3 +1,5 @@
+import live-web.dom
+
 component PageView{
 
     PageProperties head: null
@@ -15,8 +17,30 @@ component PageView{
     get visualChildren(){  return this.children  }
 
     fn expandTo(dom:DOMElement){
-        if ( this.children.length ){
-            this.children[0].expandTo(dom)
-        }
+        if ( this.children.length === 0 )
+            return
+
+        const isBody = dom.tagName.toUpperCase() === 'BODY'
+        const expandElement = this.children[0]
+
+        if ( isBody ){
+            const scripts = []
+            dom.childNodes.forEach(child => {
+                if (child.tagName && child.tagName.toUpperCase() === 'SCRIPT') {
+                    scripts.push(child)
+                }
+            })
+            if ( expandElement instanceof Body ){
+                DOMElement.patchOuter(dom, expandElement)
+            } else {
+                expandElement.expandTo(dom)
+            }
+            scripts.forEach(script => { dom.appendChild(script) })
+        } else {
+            if ( expandElement instanceof Body ){
+                throw new Error(`PageView: Element of type Body must be rendered on a dom body element(current dom element type: ${dom.tagName}), in (${this.constructor.name})`)
+            }
+            expandElement.expandTo(dom)
+        }        
     }
 }

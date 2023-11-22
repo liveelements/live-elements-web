@@ -17,6 +17,7 @@ import  { ServerBundleSocket} from './server-bundle-socket.mjs'
 import ServerRenderer from './server-renderer.mjs'
 import log from './server-log.mjs'
 import { BaseElement } from 'live-elements-core/baseelement.js'
+import chalk from 'chalk'
 
 class WebServerInit{
 
@@ -80,7 +81,7 @@ class WebServerConfiguration{
         if ( mode === 'development' )
             return WebServer.RenderMode.Development
         if ( mode === 'production' )
-            return WebServer.renderMode.Production
+            return WebServer.RenderMode.Production
         throw new Error(`Unknown render mode (development/production): ${mode}`)
     }
 }
@@ -135,6 +136,11 @@ export default class WebServer extends EventEmitter{
             ? fileName.startsWith('index') ? fileName + '_' : fileName
             : 'index'
         return fileNameResolve + '.html'
+    }
+
+    static logWarning(message){
+        log.decorated('w', chalk.yellowBright(`WARNING: ${message}`))
+        log.colorless('w', `WARNING: ${message}`)
     }
 
     static assertInit(){
@@ -205,7 +211,6 @@ export default class WebServer extends EventEmitter{
         const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
         const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
-        const clientBehaviorEvents = path.join(WebServer.currentDir(), '../client/client-behavior-events.mjs')
         let extraScripts = []
         if ( this._serverSocket ){
             const clientBundleSocketImporter = clientBundleSocket.substring(0, clientBundleSocket.length - 4) + '.loader.mjs'
@@ -224,7 +229,7 @@ export default class WebServer extends EventEmitter{
             const view = viewRoute.c
             const bundleName = view.name.toLowerCase()
 
-            const renderMode = this._renderMode === WebServer.RenderMode.Production ? viewRoute.render : WebServer.Components.ViewRoute.CSR
+            const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : WebServer.Components.ViewRoute.CSR
             if ( renderMode === WebServer.Components.ViewRoute.CSR ){
                 const viewPath = this.getComponentPath(view)
                 const placement = viewRoute.placement ? viewRoute.placement.map(p => { 
@@ -241,7 +246,7 @@ export default class WebServer extends EventEmitter{
                 entries[bundleName] = [moduleVirtualLoader].concat(extraScripts)
                 virtualModules[moduleVirtualLoader] = moduleVirtualLoaderContent
             } else {
-                entries[bundleName] = extraScripts.concat(clientBehaviorEvents)
+                entries[bundleName] = extraScripts
             }
         }
 
@@ -251,7 +256,7 @@ export default class WebServer extends EventEmitter{
             path.resolve(this._bundleLookupPath, 'dist'),
             { 
                 watcher: this._watcher,
-                mode: this._runMode === WebServer.RunMode.Production ? 'production' : 'development',
+                mode: this.config.runMode === WebServer.RunMode.Production ? 'production' : 'development',
                 publicPath: this.config.baseUrl,
                 virtualModules
             }
@@ -270,7 +275,6 @@ export default class WebServer extends EventEmitter{
         const stylePath = path.join(distPath, 'styles')
         if ( !fs.existsSync(stylePath) )
             fs.mkdirSync(stylePath)
-    
 
         for ( let i = 0; i < this._styles.outputs.length; ++i ){
             let style = this._styles.outputs[i]
@@ -293,21 +297,44 @@ export default class WebServer extends EventEmitter{
             log.i(`Asset written: ${path.relative(distPath, assetOutputPath)}`)
         }
         
+        let collectedBehaviors = []
+
         let routes = this._routes
         for ( let i = 0; i < routes.length; ++i ){
-            if ( routes[i].type === 0 && routes[i].c ){ // VIEW Route
-                const isSSR = routes[i].render === WebServer.Components.ViewRoute.SSR
-                const isParameterless = !WebServer.Components.Route.hasParameters(routes[i].url)
+            const route = routes[i]
+            if ( route.type === 0 && route.c ){ // VIEW Route
+                const isSSR = route.render === WebServer.Components.ViewRoute.SSR
+                const isParameterless = !WebServer.Components.Route.hasParameters(route.url)
                 const cacheable = isSSR && isParameterless
 
                 if ( cacheable ){
-                    const content = this.renderRouteContent(routes[i])
-                    const routePath = path.join(distPath, WebServer.urlToFileName(routes[i].url))
+                    const content = await this.renderRouteContent(route)
+                    const routePath = path.join(distPath, WebServer.urlToFileName(route.url))
                     log.i(`Route written: ${path.relative(distPath, routePath)}`)
                     fs.writeFileSync(routePath, content)
+
+                    route.behaviors.bundles.forEach(bundle => {
+                        if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
+                            collectedBehaviors.push(bundle)
+                        }
+                    })
                 }
             }
         }
+
+        if ( collectedBehaviors.length ){
+            const behaviorsPath = path.join(distPath, 'scripts', 'behavior')
+            if ( !fs.existsSync(behaviorsPath) )
+                fs.mkdirSync(behaviorsPath, { recursive: true })
+
+            for ( let j = 0; j < collectedBehaviors.length; ++j ){
+                const behavior = collectedBehaviors[j]
+                const behaviorPath = `${behaviorsPath}/${behavior.name}`
+                fs.writeFileSync(behaviorPath, behavior.content)
+                log.i(`Behavior script written: scripts/behavior/${behavior.name}`)
+            }
+        }
+
 
         this._webpack.compiler.run((error, stats) => {
             if (error) {
@@ -333,7 +360,7 @@ export default class WebServer extends EventEmitter{
         return route.pageContent
     }
 
-    renderRouteContent(route, req){
+    async renderRouteContent(route, req){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
         page.entryScript = '/scripts/' + route.c.name.toLowerCase() + '.bundle.js'
         const pageDOM = page.captureDOM(this._domEmulator)
@@ -370,10 +397,49 @@ export default class WebServer extends EventEmitter{
             v.expandTo(insertionDOM)
         }
 
-        ServerRenderer.createBehaviors(pageDOM.window.document, pagePlacements.length ? pagePlacements[0] : v)
+        const behaviorResult = ServerRenderer.scanBehaviors(pageDOM.window.document, pagePlacements.length ? pagePlacements[0] : v)
+        const behaviors = behaviorResult.unwrapAnd((report) => report.forEach(WebServer.logWarning))
+        const behaviorScriptsUrl = this.config.baseUrl === '/' ? '/scripts/behavior/' : `${this.config.baseUrl}/scripts/behavior/`
+        let compiledBundles = {}
 
-        page.addEntryScript(pageDOM.window.document)
+        const clientBehaviorEvents = path.join(WebServer.currentDir(), '../client/client-behavior-events.mjs')
+
+        if ( behaviors.length ){
+            ServerRenderer.assignBehaviorsId(0, behaviors)
+            ServerRenderer.assignBehaviorsToDom(behaviors)
+            const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
+            const viewPath = this.getComponentPath(route.c)
+            const viewPathName = path.parse(viewPath).name.toLowerCase() + '.behaviors'
+            const viewBehaviorBundlePath = path.join(path.dirname(viewPath), viewPathName + '.mjs')
+            compiledBundles = await this._webpack.compileExternalBundle(
+                viewPathName, 
+                [
+                    { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
+                    { path: clientBehaviorEvents }
+                ],
+                behaviorScriptsUrl
+            )
+        } else {
+
+        }
         
+        if ( compiledBundles.warnings ){
+            log.w(compiledBundles.warnings)
+        }
+
+        route.behaviors = {
+            bundles: compiledBundles.assets
+        }
+
+        const document = pageDOM.window.document
+        const scripts = route.behaviors.bundles.filter(cbu => cbu.isMainEntry).map(cbu => {
+            const script = document.createElement('script')
+            script.src = `${behaviorScriptsUrl}${cbu.name}`
+            return script
+        })
+
+        
+        scripts.forEach(script => document.body.appendChild(script))
         const content = this._domEmulator.serializeDOM(pageDOM)
         return content
     }
@@ -389,14 +455,18 @@ export default class WebServer extends EventEmitter{
             }
         }
 
-        route.renderContent = this.renderRouteContent(route, req)
-        res.send(route.renderContent).end()
+        this.renderRouteContent(route, req).then(content => {
+            route.renderContent = content
+            res.send(route.renderContent).end()
+        }).catch(e => {
+            log.e(e)
+        })
     }
 
     getViewRoute(route, req, res){
-        const render = this._runMode === WebServer.RunMode.Production 
+        const render = this.config.runMode === WebServer.RunMode.Production 
             ? route.render 
-            : this._renderMode === WebServer.RenderMode.Production ? route.render : WebServer.Components.ViewRoute.CSR
+            : this.config.renderMode === WebServer.RenderMode.Production ? route.render : WebServer.Components.ViewRoute.CSR
 
         if ( render === WebServer.Components.ViewRoute.CSR ){
             res.send(this.readRoutePage(route))
@@ -424,20 +494,27 @@ export default class WebServer extends EventEmitter{
 
         if ( this._watcher ){
             const styleGroup = this._watcher.findGroup('style')
-            styleGroup.onFileChange = (file) => { this._styles.reloadInputFile(file) }
+            styleGroup.onFileChange = (file) => {
+                this._styles.reloadInputFile(file).catch(e => {
+                    log.e(e)
+                })
+            }
             this._watcher.assignFiles(this._styles.inputFiles(), styleGroup)
+            
             if ( this._serverSocket ){
-                this._styles.on('change', () => {
-                    this._serverSocket.sendActionToClients('reload-style', [])
+                this._styles.on('change', (outputs) => {
+                    log.i(`Reloading styles: ${outputs.join(',')}`)
+                    this._serverSocket.sendActionToClients('reload-style', [outputs])
                 })
             }
-            if ( this._webpack ){
-                this._webpack.on('compileReady', () => {
-                    if ( this._serverSocket ){
-                        this._serverSocket.sendActionToClients('reload', [])
-                    }
-                })
-            }
+        }
+
+        if ( this._webpack ){
+            this._webpack.on('compileReady', () => {
+                if ( this._serverSocket ){
+                    this._serverSocket.sendActionToClients('reload', [])
+                }
+            })
         }
     
         /// Handle styles
@@ -457,6 +534,26 @@ export default class WebServer extends EventEmitter{
                 res.sendFile(this._assets[i].src)
             })
         }
+
+        // Handle Behaviors
+
+        this._app.get('/scripts/behavior/*', (req, res) => {
+            for ( let i = 0; i < routes.length; ++i ){
+                if ( routes[i].type === 0 && routes[i].c ){ // VIEW Route
+                    if ( routes[i].behaviors ){
+                        for ( let j = 0; j < routes[i].behaviors.bundles.length; ++j ){
+                            const bundle = routes[i].behaviors.bundles[j]
+                            if ( `/scripts/behavior/${bundle.name}` === req.url){
+                                res.setHeader('Content-Type', 'text/js')
+                                res.send(bundle.content)
+                                return
+                            }
+                        }
+                    }
+                }
+            }
+            res.status(404).send()
+        })
 
         /// Handle routes
 

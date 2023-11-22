@@ -41,7 +41,12 @@ module.exports = class PackagePath{
             return path.resolve('.')
         }
         try{
-            return path.dirname(require.resolve(`${name}/package.json`))
+            const resolvePaths = require.resolve.paths(`${name}/package.json`)
+            const resolvePathsWithCurrent = resolvePaths.includes(currentLocation)
+                ? resolvePaths
+                : resolvePaths.concat([currentLocation])
+            const resolved = require.resolve(`${name}/package.json`, { paths: resolvePathsWithCurrent })
+            return path.dirname(resolved)
         } catch ( e ){
             if (e.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED') {
                 const found = PackagePath.__findThroughMainEntryPoint(name)
@@ -57,7 +62,7 @@ module.exports = class PackagePath{
                 }
             }
             
-            throw new Error(`Failed to find package ${name} (location: ${currentLocation})`)
+            throw new Error(`Failed to find package '${name}' (location: ${currentLocation})`)
         }  
     }
 
