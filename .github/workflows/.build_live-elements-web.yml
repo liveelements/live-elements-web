@@ -37,7 +37,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
-          cd ../live-elements-core
+          cd packages/live-elements-core
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
           cd ../live-elements-loader
