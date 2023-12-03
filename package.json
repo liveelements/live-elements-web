@@ -18,7 +18,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
-        "lerna": "^4.0.0",
+        "lerna": "^8.0.0",
         "tape": "^5.5.3",
         "webpack": "^5.65.0",
         "webpack-cli": "^4.9.1",
@@ -28,6 +28,7 @@
         "live-elements-core": "file:packages/live-elements-core",
         "live-elements-js-compiler": "^0.1.10",
         "live-elements-loader": "file:packages/live-elements-loader",
+        "live-elements-web-server": "file:packages/live-elements-web-server",
         "live-testspec": "file:packages/live-testspec",
         "live-web": "file:packages/live-web"
     }
