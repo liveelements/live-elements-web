@@ -1,6 +1,6 @@
 {
     "name": "live-elements-web-server",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Live Elements Web Server tools and apis",
     "keywords": [
         "live",
@@ -34,6 +34,6 @@
         "tape": "^5.6.3",
         "webpack-dev-server": "^4.7.4",
         "webpack-virtual-modules": "^0.5.0",
-        "live-elements-core": "^0.1.6"
+        "live-elements-core": "^0.1.7"
     }
 }

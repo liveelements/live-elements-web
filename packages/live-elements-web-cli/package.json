@@ -1,6 +1,6 @@
 {
     "name": "live-elements-web-cli",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Live Elements Web Command Line Interface: lvweb",
     "keywords": [
         "live",
@@ -23,8 +23,8 @@
         "chalk": "^5.0.1",
         "jsdom": "^19.0.0",
         "live-elements-js-compiler": "^0.1.10",
-        "live-elements-core": "^0.1.6",
-        "live-elements-loader": "^0.1.6",
-        "live-web": "^0.1.6"
+        "live-elements-core": "^0.1.7",
+        "live-elements-loader": "^0.1.7",
+        "live-web": "^0.1.7"
     }
 }
