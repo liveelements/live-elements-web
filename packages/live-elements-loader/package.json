@@ -1,17 +1,17 @@
 {
-  "name": "live-elements-loader",
-  "version": "0.1.5",
-  "description": "Live Elements Loader.",
-  "keywords": [
-    "live",
-    "elements",
-    "live-elements",
-    "loader",
-    "lv"
-  ],
-  "author": "Dinu SV",
-  "license": "MIT",
-  "dependencies": {
-    "live-elements-js-compiler": "^0.1.10"
-  }
+    "name": "live-elements-loader",
+    "version": "0.1.6",
+    "description": "Live Elements Loader.",
+    "keywords": [
+        "live",
+        "elements",
+        "live-elements",
+        "loader",
+        "lv"
+    ],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "dependencies": {
+        "live-elements-js-compiler": "^0.1.10"
+    }
 }

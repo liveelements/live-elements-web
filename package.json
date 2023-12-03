@@ -1,31 +1,34 @@
 {
-  "name": "live-elements-web-source",
-  "version": "0.1.5",
-  "description": "Live Elements for the web.",
-  "private": "true",
-  "lvweb" : { "bundle": "live-elements-web-cli/templates/bundles/demo/demo.lv",  "allowBundleView" : true},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "start": "webpack-dev-server --port 8080",
-    "bootstrap": "npx lerna bootstrap --hoist",
-    "update-version": "npx lerna exec -- npm version"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "lerna": "^4.0.0",
-    "tape": "^5.5.3",
-    "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.7.4"
-  },
-  "dependencies": {
-    "live-elements-core": "file:packages/live-elements-core",
-    "live-elements-js-compiler": "^0.1.10",
-    "live-elements-loader": "file:packages/live-elements-loader",
-    "live-testspec": "file:packages/live-testspec",
-    "live-web": "file:packages/live-web"
-  }
+    "name": "live-elements-web-source",
+    "version": "0.1.6",
+    "description": "Live Elements for the web.",
+    "private": "true",
+    "lvweb": {
+        "bundle": "live-elements-web-cli/templates/bundles/demo/demo.lv",
+        "allowBundleView": true
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "webpack",
+        "start": "webpack-dev-server --port 8080",
+        "bootstrap": "npx lerna bootstrap --hoist",
+        "update-version": "npx lerna exec -- npm version"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "lerna": "^4.0.0",
+        "tape": "^5.5.3",
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1",
+        "webpack-dev-server": "^4.7.4"
+    },
+    "dependencies": {
+        "live-elements-core": "file:packages/live-elements-core",
+        "live-elements-js-compiler": "^0.1.10",
+        "live-elements-loader": "file:packages/live-elements-loader",
+        "live-testspec": "file:packages/live-testspec",
+        "live-web": "file:packages/live-web"
+    }
 }
