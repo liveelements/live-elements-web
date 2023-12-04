@@ -25,6 +25,7 @@
         "live-elements-js-compiler": "^0.1.10",
         "live-elements-core": "^0.1.7",
         "live-elements-loader": "^0.1.7",
+        "live-elements-web-server": "^0.1.7",
         "live-web": "^0.1.7"
     }
 }

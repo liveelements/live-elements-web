@@ -12,6 +12,10 @@
         "liveweb",
         "web"
     ],
+    "scripts": {
+        "build": "node ./scripts/build.js",
+        "prepare": "npm run build"
+    },
     "author": "Dinu SV",
     "license": "MIT",
     "dependencies": {

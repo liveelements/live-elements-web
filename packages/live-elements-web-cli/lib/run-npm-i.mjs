@@ -8,4 +8,3 @@ export default function runNpmI(){
         console.log(`Process exited with code ${code}`)
     })
 }
-    

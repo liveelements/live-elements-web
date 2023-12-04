@@ -34,6 +34,9 @@
         "tape": "^5.6.3",
         "webpack-dev-server": "^4.7.4",
         "webpack-virtual-modules": "^0.5.0",
-        "live-elements-core": "^0.1.7"
+        "live-elements-core": "^0.1.7",
+        "live-elements-loader" : "^0.1.7",
+        "live-elements-js-compiler": "^0.1.7",
+        "live-web" : "^0.1.7"
     }
 }

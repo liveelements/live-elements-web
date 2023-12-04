@@ -38,6 +38,7 @@ program.command('init [template]')
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
         rl.question('Do you want to run npm install? (y/n) ', answer => {
             if ( answer[0] === 'y' || answer[0] === 'Y' ){
+                console.log("Running npm install...")
                 runNpmI()
             } else {
                 console.log(
