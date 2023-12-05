@@ -15,7 +15,7 @@ import runNpmI from './lib/run-npm-i.mjs'
 program
     .name('lvweb')
     .description('Live Elements Web CLI')
-    .version('0.1.8')
+    .version('0.1.9')
 
 program.command('generate <template>')
     .description('Generate a project from a template.')
