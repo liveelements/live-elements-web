@@ -1,33 +1,36 @@
 import path from 'path'
 import fs from 'fs'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
-import WebServer from 'live-elements-web-server/lib/web-server.mjs'
 
-function findBundleInPackageFile(packagePath){
-    if ( !fs.existsSync(packagePath) )
-        return null
-    const packageObject = JSON.parse(fs.readFileSync(packagePath))
-    if ( !packageObject.hasOwnProperty('lvweb' ) || !packageObject.lvweb.hasOwnProperty('bundle') ){
-        return null
-    }
+async function loadServerModules(bundle){
+    const workDir = bundle
+        ? path.dirname(path.resolve(bundle))
+        : process.cwd() 
+    const packageJson = PackagePath.findPackageJson(workDir)
 
-    if ( path.isAbsolute(packageObject.lvweb.bundle) ){
-        return packageObject.lvweb.bundle
-    } else {
-        const bundleRelative = packageObject.lvweb.bundle
-        if ( bundleRelative.startsWith('./') ){
-            return path.join(path.dirname(packagePath), bundleRelative)
-        } else {
-            const bundlePackage = PackagePath.find(bundleRelative.substr(0, bundleRelative.indexOf('/')))
-            return path.join(bundlePackage, bundleRelative.substr(bundleRelative.indexOf('/') + 1))
+    if ( packageJson ){
+        const packageJsonDir = path.dirname(packageJson)
+        const packageNodeModules = path.join(packageJsonDir, 'node_modules')
+        const bundleServerLoaderPath = path.join(packageNodeModules, 'live-elements-web-cli', 'lib', 'server-modules.mjs')
+        if ( fs.existsSync(bundleServerLoaderPath) ){
+            return await import(bundleServerLoaderPath)
         }
     }
+    console.warn(`Failed to find local live-elements-web-cli package in '${workDir}'. This might trigger errors.`)
+    return await import('../lib/server-modules.mjs')
 }
 
 export default async function run(bundle, options){
     try{
+        const serverModules = await loadServerModules(bundle)
+        const WebServer = serverModules.WebServer
+
+        const bundleInfo = await serverModules.BundleLoader.findBundle(bundle, process.cwd())
+        if ( !bundleInfo ){
+            throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
+        }
+
         await WebServer.Init.run()
-        
         const webServerConfig = new WebServer.Configuration({
             runMode: WebServer.RunMode.Production,
             watch: false,
@@ -35,13 +38,7 @@ export default async function run(bundle, options){
             port: options.port ? options.port : undefined,
         })
 
-        bundle = bundle ? bundle : findBundleInPackageFile(path.resolve('package.json'))
-        if ( !bundle ){
-            throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
-        }
-        
-        const bundleResolved = path.resolve(bundle)
-        let server = await WebServer.load(bundleResolved, webServerConfig)
+        const server = await WebServer.load(bundleInfo.bundle, webServerConfig)
         server.run()
     } catch ( e ){
         console.error(e)

@@ -94,8 +94,8 @@ export default class WebServer extends EventEmitter{
         this._bundlePath = bundlePath
         this._bundle = bundle
 
-        this._bundleLookupPath = config.bundleUserLookupPath 
-            ? config.bundleUserLookupPath 
+        this._bundleLookupPath = config.userBundleLookupPath 
+            ? config.userBundleLookupPath 
             : BundlePackagePath.find(bundlePath)
 
         this._watcher = this._config.watch
@@ -118,6 +118,7 @@ export default class WebServer extends EventEmitter{
     get bundleFile(){ return this._bundleFile }
     get bundleLookupPath(){ return this._bundleLookupPath }
     get webpack(){ return this._webpack }
+    get watcher(){ return this._watcher }
 
     prependBaseUrl(relative){ 
         return this.config.baseUrl.endsWith('/') 
@@ -203,13 +204,37 @@ export default class WebServer extends EventEmitter{
         return path.join(moduleDirectoryPath, c.Meta.sourceFileName)
     }
 
+    createViewLoader(view, placement){
+        const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
+        const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
+        
+        const bundleName = view.name.toLowerCase()
+        const viewPath = this.getComponentPath(view)
+        const placementLocations = placement ? placement.map(p => { 
+            return { location: this.getComponentPath(p), name: p.name }
+        }) : []
+        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.location}"), name: "${p.name}" }`).join(',') + ']'
+
+        const clientLoader = ClassInfo.extends(view, WebServer.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
+        const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
+        const moduleVirtualLoaderContent = [
+            `import Loader from "${clientLoader}"`,
+            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource})`
+        ].join('\n')
+        return {
+            bundleName: bundleName,
+            loaderType: clientLoader,
+            virtualLoader: moduleVirtualLoader,
+            virtualLoaderContent: moduleVirtualLoaderContent,
+            virtualLoaderPlacementContent: placementSource
+        }
+    }
+
     addWebpack(){
         const routes = this._routes
         const views = routes.filter(route => route.type === WebServer.Components.Route.Get && route.c )
         const entries = {}, virtualModules = {}
 
-        const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
-        const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
         let extraScripts = []
         if ( this._serverSocket ){
@@ -231,20 +256,9 @@ export default class WebServer extends EventEmitter{
 
             const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : WebServer.Components.ViewRoute.CSR
             if ( renderMode === WebServer.Components.ViewRoute.CSR ){
-                const viewPath = this.getComponentPath(view)
-                const placement = viewRoute.placement ? viewRoute.placement.map(p => { 
-                    return { location: this.getComponentPath(p), name: p.name }
-                }) : []
-                const placementSource = '[' + placement.map(p => `{ module: import("${p.location}"), name: "${p.name}" }`).join(',') + ']'
-    
-                const clientLoader = ClassInfo.extends(view, WebServer.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
-                const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
-                const moduleVirtualLoaderContent = [
-                    `import Loader from "${clientLoader}"`,
-                    `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource})`
-                ].join('\n')
-                entries[bundleName] = [moduleVirtualLoader].concat(extraScripts)
-                virtualModules[moduleVirtualLoader] = moduleVirtualLoaderContent
+                const viewLoader = this.createViewLoader(view, viewRoute.placement)
+                entries[viewLoader.bundleName] = [viewLoader.virtualLoader].concat(extraScripts)
+                virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
             } else {
                 entries[bundleName] = extraScripts
             }

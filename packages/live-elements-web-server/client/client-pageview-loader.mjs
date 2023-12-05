@@ -29,7 +29,27 @@ export default class ClientPageViewLoader{
         }
 
         awaitingModule.then(module => {
-            const c = module[componentName]
+            let c = null
+            if ( componentName === "*" ){    
+                for (let [_key, value] of Object.entries(module)) {
+                    let prototype = Object.getPrototypeOf(value)
+                    while (prototype != null) {
+                        if ( prototype.name === 'PageView' )
+                            break
+                        prototype = Object.getPrototypeOf(prototype)
+                    }
+                    if ( prototype ){
+                        c = value
+                        break
+                    }
+                }
+            } else {
+                c = module[componentName]
+            }
+            if ( !c ){
+                throw new Error(`Failed to find PageView component.`)
+            }
+
             window.pageView = new c()
             BaseElement.complete(window.pageView)
 

@@ -6,12 +6,12 @@ export async function loadTemplate(template, templatePath){
 
     const generatorExport = Object.keys(generatorModule)
     if ( generatorExport.length !== 1 ){
-        throw new Error("Only a single export of type Generator is allowed in a template file.")
+        throw new Error(`Internal: Only a single export of type Generator is allowed in template file: ${template}`)
     }
 
     const generator = generatorModule[generatorExport[0]]
     if ( generator.name !== template ){
-        throw new Error("Generator name is different than the required template: " + generator.name)
+        throw new Error(`Generator name is different than the required template: '${generator.name}' != '${template}'`)
     }
     return generator
 }

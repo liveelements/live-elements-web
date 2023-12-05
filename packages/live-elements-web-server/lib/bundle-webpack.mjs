@@ -31,6 +31,7 @@ export default class BundleWebpack extends EventEmitter {
         const devTool = config.mode === 'production' ? false : 'inline-source-map'
         this._devTool = devTool
         this._mode = config.mode ? config.mode : 'development'
+        this._virtualModulesPlugin = new VirtualModulesPlugin(config.virtualModules)
 
         log.i(`Webpack baseUrl '${config.publicPath}' `)
 
@@ -44,9 +45,7 @@ export default class BundleWebpack extends EventEmitter {
             devtool: devTool,
             resolve: { alias: config.alias ? config.alias : [] },
             mode: this._mode,
-            plugins: [
-                new VirtualModulesPlugin(config.virtualModules)
-            ],
+            plugins: [this._virtualModulesPlugin],
             module: {
                 rules: [
                     {
@@ -191,4 +190,5 @@ export default class BundleWebpack extends EventEmitter {
 
     get compiler() { return this._compiler; }
     get middleware() { return this._middleware; }
+    get virtualModulesPlugin(){ return this._virtualModulesPlugin }
 }

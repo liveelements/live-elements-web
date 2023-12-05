@@ -25,7 +25,7 @@ function populatePackageFile(currentDir){
     }
 }
 
-export default function generate(templateArgument, _cmd, propArgs){
+export default async function generate(templateArgument, _cmd, propArgs){
     const template = templateArgument ? templateArgument : 'bundle'
     const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
     const templateComponent = template.replaceAll('-', '')
@@ -41,13 +41,10 @@ export default function generate(templateArgument, _cmd, propArgs){
 
     populatePackageFile(currentDir)
 
-    generateTemplateFiles(template, templatePath, props).then(files => {
-        for ( let i = 0; i < files.length; ++i ){
-            const file = files[i]
-            fs.mkdirSync(file.outputDir, {recursive: true} )
-            fs.writeFileSync(file.outputPath, file.content)
-        }
-    }).catch((err) => {
-        throw err
-    })
+    const files = await generateTemplateFiles(template, templatePath, props)
+    for ( let i = 0; i < files.length; ++i ){
+        const file = files[i]
+        fs.mkdirSync(file.outputDir, {recursive: true} )
+        fs.writeFileSync(file.outputPath, file.content)
+    }
 }

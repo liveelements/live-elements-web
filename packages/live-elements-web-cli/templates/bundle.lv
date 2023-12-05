@@ -28,6 +28,7 @@ FileGeneratorContent```
     \"live-elements-web-server\": \"^0.1.5\",
     \"live-elements-loader\": \"^0.1.5\",
     \"live-elements-core\": \"^0.1.5\",
+    \"live-elements-web-cli\": \"^0.1.5\",
     \"live-elements-web\": \"^0.1.5\",
     \"live-web\": \"^0.1.5\"
   }

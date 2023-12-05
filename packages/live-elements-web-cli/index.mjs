@@ -15,7 +15,7 @@ import runNpmI from './lib/run-npm-i.mjs'
 program
     .name('lvweb')
     .description('Live Elements Web CLI')
-    .version('0.1.4')
+    .version('0.1.8')
 
 program.command('generate <template>')
     .description('Generate a project from a template.')
@@ -29,10 +29,10 @@ program.command('generate <template>')
 program.command('init [template]')
     .description('Generate a project from a template.')
     .allowUnknownOption()
-    .action((template, cmd) => {
+    .action(async (template, cmd) => {
         const excludeKeys = []
         const props = argumentPairsToObject(process.argv, excludeKeys)
-        generate(template, cmd, props)
+        await generate(template, cmd, props)
         console.log("Project initialized.\n")
         console.log("Project dependencies need to be installed before running the project.")
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout })

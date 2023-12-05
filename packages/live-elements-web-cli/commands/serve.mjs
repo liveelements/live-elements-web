@@ -1,44 +1,40 @@
 import path from 'path'
 import fs from 'fs'
-import lvimport from 'live-elements-core/lvimport.mjs'
-import WebServer from 'live-elements-web-server/lib/web-server.mjs'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
-import ClassInfo from 'live-elements-web-server/lib/class-info.mjs'
-import { BaseElement } from 'live-elements-core/baseelement.js'
 
-async function serveBundle(bundle, config){    
-    let server = await WebServer.load(bundle, config)
-    server.serve()
-}
+async function loadServerModules(bundle){
+    const workDir = bundle
+        ? path.dirname(path.resolve(bundle))
+        : process.cwd() 
+    const packageJson = PackagePath.findPackageJson(workDir)
 
-async function serveBundleWithView(bundle, view, config){
-    await WebServer.loadComponents()
-
-    let res = await lvimport(view)
-    const keys = Object.keys(res)
-    const viewKey = keys.find(key => ClassInfo.extends(res[key],  WebServer.Components.PageView))
-    const ViewComponent = viewKey ? res[viewKey] : null
-    if ( !ViewComponent || typeof ViewComponent !== 'function' )
-        throw new Error(`View ${view} should only export a PageView component.`)
-
-    const viewRoute = new WebServer.Components.ViewRoute()
-    viewRoute.url = ViewComponent.serverUrl ? ViewComponent.serverUrl : '/'
-    viewRoute.c = ViewComponent
-    BaseElement.complete(viewRoute)
-
-    const loadedBundle = await WebServer.loadBundleFile(bundle)
-    loadedBundle.children = loadedBundle.children.concat([viewRoute])
-
-    let server = await WebServer.loadBundle(loadedBundle, bundle, config)
-    server.serve()
+    if ( packageJson ){
+        const packageJsonDir = path.dirname(packageJson)
+        const packageNodeModules = path.join(packageJsonDir, 'node_modules')
+        const bundleServerLoaderPath = path.join(packageNodeModules, 'live-elements-web-cli', 'lib', 'server-modules.mjs')
+        if ( fs.existsSync(bundleServerLoaderPath) ){
+            return await import(bundleServerLoaderPath)
+        }
+    }
+    console.warn(`Failed to find local live-elements-web-cli package in '${workDir}'. This might trigger errors.`)
+    return await import('../lib/server-modules.mjs')
 }
 
 export default async function serve(bundle, options){
     try{
-        await WebServer.Init.run()
+        const serverModules = await loadServerModules(bundle)
+        const WebServer = serverModules.WebServer
+        const bundleInfo = await serverModules.BundleLoader.findBundle(bundle, process.cwd())
+        if ( !bundleInfo ){
+            throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
+        }
 
         const viewArgument = options.hasOwnProperty('view') ? options.view : null
+        if ( viewArgument && !bundleInfo.allowBundleView ){
+            throw new Error('View argument provided but the bundle was not configured to support views.')
+        }
 
+        await WebServer.Init.run()
         const webServerConfig = new WebServer.Configuration({
             runMode : WebServer.RunMode.Development,
             watch: true,
@@ -48,43 +44,11 @@ export default async function serve(bundle, options){
             bundleLookupPath: viewArgument ? path.resolve('.') : undefined
         })
 
-        if ( bundle ){
-            if ( viewArgument )
-                throw new Error('View argument provided but the bundle was not configured to support views.')
-            return serveBundle(path.resolve(bundle), webServerConfig)
-        } else if ( !bundle && fs.existsSync('package.json') ){
-            const packagePath = path.resolve('package.json')
-            const packageObject = JSON.parse(fs.readFileSync(packagePath))
-            if ( !packageObject.hasOwnProperty('lvweb' ) || !packageObject.lvweb.hasOwnProperty('bundle') ){
-                throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
-            }
+        const server = viewArgument
+            ? await serverModules.BundleLoader.loadBundleWithView(bundleInfo.bundle, viewArgument, webServerConfig)
+            : await serverModules.BundleLoader.loadBundle(bundleInfo.bundle, webServerConfig)
 
-            if ( path.isAbsolute(packageObject.lvweb.bundle) ){
-                bundle = packageObject.lvweb.bundle
-            } else {
-                const bundleRelative = packageObject.lvweb.bundle
-                if ( bundleRelative.startsWith('./') ){
-                    bundle = path.join(path.dirname(packagePath), bundleRelative)
-                } else {
-                    const bundlePackage = PackagePath.find(bundleRelative.substr(0, bundleRelative.indexOf('/')))
-                    bundle = path.join(bundlePackage, bundleRelative.substr(bundleRelative.indexOf('/') + 1))
-                }
-            }
-
-            const allowViewArgument = packageObject.lvweb.allowBundleView ? packageObject.lvweb.allowBundleView : false
-            if ( viewArgument && !allowViewArgument )
-                throw new Error('View argument provided but the bundle was not configured to support views.')
-
-            if ( !bundle ){
-                throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
-            }
-
-            return viewArgument 
-                ? serveBundleWithView(path.resolve(bundle), viewArgument, webServerConfig) 
-                : serveBundle(path.resolve(bundle), webServerConfig)
-        } else {
-            throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
-        }
+        server.serve()
         
     } catch ( e ){
         console.error(e)
