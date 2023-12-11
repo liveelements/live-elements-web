@@ -1,0 +1,30 @@
+import live-web.dom
+import live-web.clientrouter
+import live-elements-web-server.view
+
+import .samples.tutorialroutes.app.pages
+
+//TODO: Loading
+//TODO: Error handling
+
+component Home < PageView{
+
+    head: PageProperties{
+        title: "Live Elements"
+        StyleLink{ href: '/styles/style.css' }
+    }
+
+    Body{
+        Router{
+            RouteSwitch{
+                Route{ path: '/' component: MoviePage }
+                Route{ path: '/view/:id' component: MoviePage }
+                Route{ path: '/add' component: MovieAddPage }
+                Route{ path: '/edit/:id' component: MovieEditPage }
+                Route{ path: '*' component: PageNotFound }
+            }
+        }
+    }
+
+    
+}

@@ -9,13 +9,20 @@ component TextArea < DOMElement{
     string placeholder: ''
     on placeholderChanged: () => { this.props['placeholder'] = this.placeholder; this.propsChanged.emit() }
 
-    var currentValue: ''
+    string currentValue: ''
     on input: () => { 
         this.currentValue = this.dom.value 
     }
     on domChanged: () => {
         if ( this.dom )
             this.currentValue = this.dom.value
+    }
+    string value: ''
+    on valueChanged: () => {
+        this.children = T.(this.value){}
+        if ( this.dom )
+            this.dom.value = this.value
+        this.currentValue = this.value
     }
 
     fn on(eventName:string, fn:any){

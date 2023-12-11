@@ -1,0 +1,5 @@
+import live-web.dom
+
+component PageNotFound < Div{
+    H1`404 Error: The page you have requested was not found.`
+}
