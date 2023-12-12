@@ -1,0 +1,73 @@
+import live-web.dom
+import live-web.model
+import live-web.clientrouter
+
+component MovieAddPageState < State{
+    boolean isLoading: false
+    string error: ''
+
+    fn add(title:string, description:string){
+        const data = {title, description}
+        window.fetch('/api/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (!res.ok) {
+                this.error = `HTTP error! Status: ${res.status}`
+            }
+            return res.json()
+        }).then(data => {
+            if ( data.error ){
+                this.error = data.error
+            } else {
+                ClientNavigation.goTo('/')
+            }
+        }).catch(error => {
+            this.error = error
+        })
+    }
+}
+
+component MovieAddPage < Div{
+    id: movieAddPage
+    classes: ['container']
+
+    MovieAddPageState state: MovieAddPageState{}
+
+    Div{ classes: ['main']
+        H1`New entry`
+        Form{ props = {action: '/submit-movie-url', method: 'post'}
+            Div{ classes: ['form-group']
+                Label{ props: ({for: 'movie-title'})
+                    T`Movie Title:`
+                }
+                Input{
+                    id: movieTitle
+                    glid: 'movie-title'
+                    props = {type: 'text', name: 'movieTitle', required: ''}
+                }
+            }
+            Div{ classes: ['form-group']
+                Label{ props: ({for: 'movie-description'})
+                    T`Description:`
+                }
+                TextArea{ id: movieDescription
+                    glid: 'movie-description'
+                    props = {name: 'movieDescription', required: ''}
+                }
+            }
+            Button{ 
+                classes: ['submit-btn'] 
+                props = {type: 'submit'}
+                on click: (e) => {
+                    e.preventDefault()
+                    movieAddPage.state.add(movieTitle.currentValue, movieDescription.currentValue)
+                }
+
+                T`Add Movie`
+                
+            }
+        }
+    }
+}

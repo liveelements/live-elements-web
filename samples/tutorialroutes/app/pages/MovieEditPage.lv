@@ -1,0 +1,99 @@
+import live-web.dom
+import live-web.model
+import live-web.clientrouter
+
+component MovieEditPageState < State{
+    string title: ''
+    string description: ''
+    number idx: null
+    boolean isLoading: false
+    string error: ''
+
+    fn update(title:string, description:string){
+        const data = {title, description}
+        window.fetch(`/api/update/${this.idx}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (!res.ok) {
+                this.error = `HTTP error! Status: ${res.status}`
+            }
+            return res.json()
+        }).then(data => {
+            if ( data.error ){
+                this.error = data.error
+            } else {
+                ClientNavigation.goTo('/')
+            }
+        }).catch(error => {
+            this.error = error
+        })
+    }
+
+    fn completed(){
+        window.fetch('/api/list')
+            .then(res => {
+                if ( !res.ok )
+                    this.error = `HTTP error! Status: ${res.status}`
+                return res.json()
+            })
+            .then(data => {
+                const routeInfo = ClientNavigation.currentRoute()
+                if ( routeInfo.data && routeInfo.data.id ){
+                    
+                    const current = data.find(m => m.id === parseInt(routeInfo.data.id ))
+                    this.title = current.title
+                    this.description = current.description
+                    this.idx = current.id
+                }
+            })
+            .catch(error => this.error = error )
+    }
+}
+
+component MovieEditPage < Div{
+    id: movieEditPage
+    classes: ['container']
+
+    MovieEditPageState state: MovieEditPageState{}
+
+    Div{ classes: ['main']
+        H1`New entry`
+        Form{ props = {action: '/submit-movie-url', method: 'post'}
+            Div{ classes: ['form-group']
+                Label{ props: ({for: 'movie-title'})
+                    T`Movie Title:`
+                }
+                Input{
+                    id: movieTitle
+                    props = {name: 'movieTitle', required: ''}
+                    glid: 'movie-title'
+                    type: 'text'
+                    value: movieEditPage.state.title
+                }
+            }
+            Div{ classes: ['form-group']
+                Label{ props: ({for: 'movie-description'})
+                    T`Description:`
+                }
+                TextArea{ id: movieDescription
+                    glid: 'movie-description'
+                    props = {name: 'movieDescription', required: ''}
+                    value: movieEditPage.state.description
+                }
+            }
+            Button{ 
+                classes: ['submit-btn'] 
+                props = {type: 'submit'}
+                on click: (e) => {
+                    e.preventDefault()
+                    movieEditPage.state.update(movieTitle.currentValue, movieDescription.currentValue)
+                }
+
+                T`Update`
+                
+            }
+        }
+    }
+}

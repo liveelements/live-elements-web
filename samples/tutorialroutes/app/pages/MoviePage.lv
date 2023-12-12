@@ -1,0 +1,107 @@
+import live-web.dom
+import live-web.model
+import live-web.clientrouter
+
+component MovieState < State{
+    number idx: 0
+    string title: ''
+    string description: ''
+
+    static fn fromJSON(ob:Object){
+        return MovieState{
+            idx = ob.id
+            title = ob.title
+            description = ob.description
+        }
+    }
+}
+
+component MoviePageState < State{
+    MovieState current: null
+    Array<MovieState> movies: []
+    boolean isLoading: false
+    string error: ''
+
+    fn removeCurrentEntry(){
+        if ( !this.current )
+            return
+        
+        window.fetch('/api/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({id: this.current.idx})
+        }).then(res => {
+            if (!res.ok) {
+                this.error = `HTTP error! Status: ${res.status}`
+            }
+            return res.json()
+        }).then(data => {
+            console.log("GOT DATA")
+            if ( data.error ){
+                this.error = data.error
+            } else {
+                ClientNavigation.goTo('/')
+            }
+        }).catch(error => {
+            this.error = error
+        })
+    }
+
+    fn completed(){
+        window.fetch('/api/list')
+            .then(res => {
+                if ( !res.ok )
+                    this.error = `HTTP error! Status: ${res.status}`
+                return res.json()
+            })
+            .then(data => {
+                this.movies = data.map(entry => MovieState.fromJSON(entry))
+                const routeInfo = ClientNavigation.currentRoute()
+                if ( routeInfo.data && routeInfo.data.id ){
+                    this.current = this.movies.find(m => m.idx === parseInt(routeInfo.data.id ))
+                } else if ( this.movies.length ){
+                    this.current = this.movies[this.movies.length - 1]
+                }
+            })
+            .catch(error => this.error = error )
+    }
+}
+
+component MoviePage < Div{
+    id: moviePage
+    classes: ['container']
+
+    MoviePageState state: MoviePageState{}
+
+    Div{ classes: ['sidebar']
+        H2{ 
+            T{ text: 'Movies' } 
+            A`+|/add`
+        }
+        Ul{
+            children: moviePage.state.movies.map(entry => (Li{
+                A.(entry.title){ href: `/view/${entry.idx}` }
+            }))
+        }
+    }
+    Div{ classes: ['main']
+        H1{ T{ text: moviePage.state.current?.title ? moviePage.state.current.title : ''}}
+        P{ T{ text: moviePage.state.current?.description ? moviePage.state.current?.description : ''} }
+        Button{ 
+            classes: ['edit-btn', moviePage.state.current ? '' : 'hidden'] 
+            on click: () => { ClientNavigation.goTo(`/edit/${moviePage.state.current.idx}`) }
+            T`Edit` 
+        }
+        Button{ 
+            classes: ['delete-btn', moviePage.state.current ? '' : 'hidden'] 
+            on click: () => {
+                if ( window.confirm(`Are you sure you want to delete '${moviePage.state.current.title}'?`)){
+                    moviePage.state.removeCurrentEntry()
+                }
+            }
+            T`Remove` 
+        }
+    }
+
+    
+}

@@ -1,0 +1,44 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import .samples.tutorialroutes.app
+
+import { readDb, writeDb } from '../db/db.mjs'
+
+instance bundle Bundle{
+    Stylesheet{ src: './samples/tutorialroutes/styles/style.css' output: 'style.css' }
+    
+    GetRoute{ url: '/api/list' f: async(req, res) => {
+        res.json(readDb())
+    }}
+    
+    PostRoute{ url: '/api/add' f: async(req, res) => {
+        const content = readDb()
+        const newItem = {
+            id: content.length + 1,
+            title: req.body.title,
+            description: req.body.description
+        }
+        content.push(newItem)
+        writeDb(content)
+        res.json(newItem)
+    }}
+
+    PostRoute{ url: '/api/update/:id' f: async(req, res) => {
+        const content = readDb()
+        const item = content.find(entry => entry.id === parseInt(req.params.id))
+        item.title = req.body.title
+        item.description = req.body.description
+        writeDb(content)
+        res.json(item)
+    }}
+
+    PostRoute{ url: '/api/remove' f: async(req, res) => {
+        const content = readDb()
+        const updatedContent = content.filter(entry => entry.id !== parseInt(req.body.id))
+        writeDb(updatedContent)
+        res.json({id: req.params.id})
+    }}
+
+    ViewRoute{ url: '/*' c: Home }
+}

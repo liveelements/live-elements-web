@@ -12,18 +12,8 @@ component Input < DOMElement{
     on minChanged: () => { if ( this.min !== null ) this.props['min'] = this.min; this.propsChanged.emit() }
     int max: null
     on maxChanged: () => { if ( this.max !== null ) this.props['max'] = this.max; this.propsChanged.emit() }
-    var value: ''
-    set value(val:any){
-        BaseElement.setProperty(this, 'value', val)
-        if ( this.dom ){
-            if ( this.type === 'checkbox' ){
-                this.dom.checked = this.value
-            } else {
-                this.dom.value = this.value
-            }
-        } else {
-            this.propsChanged.emit()
-        }
+    any value: ''
+    on valueChanged: () => {
         if ( this.type === 'checkbox' ){
             if ( this.value )
                 this.props['checked'] = this.value;
@@ -31,6 +21,15 @@ component Input < DOMElement{
                 delete this.props['checked']
         } else {
             this.props['value'] = this.value; 
+        }
+         if ( this.dom ){
+            if ( this.type === 'checkbox' ){
+                this.dom.checked = this.value
+            } else {
+                this.dom.value = this.value
+            }
+        } else {
+            this.propsChanged.emit()
         }
         this.currentValue = this.value
     }

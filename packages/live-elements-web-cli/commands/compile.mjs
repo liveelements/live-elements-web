@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import url from 'url'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 
 async function loadServerModules(bundle){
@@ -13,7 +14,7 @@ async function loadServerModules(bundle){
         const packageNodeModules = path.join(packageJsonDir, 'node_modules')
         const bundleServerLoaderPath = path.join(packageNodeModules, 'live-elements-web-cli', 'lib', 'server-modules.mjs')
         if ( fs.existsSync(bundleServerLoaderPath) ){
-            return await import(bundleServerLoaderPath)
+            return await import(url.pathToFileURL(bundleServerLoaderPath))
         }
     }
     console.warn(`Failed to find local live-elements-web-cli package in '${workDir}'. This might trigger errors.`)

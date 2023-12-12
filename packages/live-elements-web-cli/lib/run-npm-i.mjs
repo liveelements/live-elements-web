@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 
 export default function runNpmI(){
-    const npmInstall = spawn('npm', ['install']);
+    const npmInstall = spawn('npm', ['install'], { shell: true });
     npmInstall.stdout.on('data', d => console.log(d.toString()))
     npmInstall.stderr.on('data', d => console.error(d.toString()))
     npmInstall.on('close', (code) => {
