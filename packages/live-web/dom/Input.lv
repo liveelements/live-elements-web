@@ -13,7 +13,8 @@ component Input < DOMElement{
     int max: null
     on maxChanged: () => { if ( this.max !== null ) this.props['max'] = this.max; this.propsChanged.emit() }
     any value: ''
-    on valueChanged: () => {
+    set value(val:any){
+        BaseElement.setProperty(this, 'value', val)
         if ( this.type === 'checkbox' ){
             if ( this.value )
                 this.props['checked'] = this.value;
@@ -33,7 +34,7 @@ component Input < DOMElement{
         }
         this.currentValue = this.value
     }
-    var currentValue: 0
+    any currentValue: 0
 
     on input: () => {
         if ( this.type === 'checkbox' ){

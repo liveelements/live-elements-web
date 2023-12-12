@@ -68,15 +68,15 @@ instance test Spec{
         name: 'Null initial element assignment'
         run: (t) => {
             component User < BaseElement{
-                var name: '123'
-            }
+                any name: '123'
+            };
 
             component UserView < BaseElement{
-                var user: null
-                var userName: this.user ? this.user.name : null
-            }
+                any user: null
+                any userName: this.user ? this.user.name : null
+            };
 
-            var userView = UserView{ user: User{} }
+            let userView = UserView{ user: User{} }
             t.equals(userView.userName, '123')
             userView.user.name = '345'
             t.equals(userView.userName, '345')
@@ -87,6 +87,32 @@ instance test Spec{
             userView.user = User{}
             userView.user.name = '345'
             t.equals(userView.userName, '345')
+
+            t.end()
+        }
+    }
+
+    
+    Scenario{
+        name: 'Setter'
+        run: (t) => {
+            let setterCount = 0
+            component User{
+                string value: '100'
+                string boundValue: this.value
+                set boundValue: (val:string){
+                    ++setterCount
+                    BaseElement.setProperty(this, 'boundValue', val)
+                }
+            };
+
+            const user = User{}
+            user.value = '300'
+            t.equals(setterCount, 1)
+            t.equals(user.boundValue, '300')
+            user.boundValue = '400'
+            t.equals(setterCount, 2)
+            t.equals(user.boundValue, '400')
 
             t.end()
         }
