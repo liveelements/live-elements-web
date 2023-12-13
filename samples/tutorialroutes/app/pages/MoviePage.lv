@@ -2,6 +2,8 @@ import live-web.dom
 import live-web.model
 import live-web.clientrouter
 
+import ky from 'ky'
+
 component MovieState < State{
     number idx: 0
     string title: ''
@@ -26,34 +28,24 @@ component MoviePageState < State{
         if ( !this.current )
             return
         
-        window.fetch('/api/remove', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({id: this.current.idx})
-        }).then(res => {
-            if (!res.ok) {
-                this.error = `HTTP error! Status: ${res.status}`
-            }
-            return res.json()
-        }).then(data => {
-            console.log("GOT DATA")
-            if ( data.error ){
-                this.error = data.error
-            } else {
-                ClientNavigation.goTo('/')
-            }
-        }).catch(error => {
-            this.error = error
-        })
+        this.isLoading = true
+        ky.post('/api/remove', {json: {id: this.current.idx}}).json()
+            .then(data => {
+                this.isLoading = false
+                if ( data.error ){
+                    this.error = data.error
+                } else {
+                    ClientNavigation.goTo('/')
+                }
+            }).catch(error => {
+                this.isLoading = false
+                this.error = error
+            })
     }
 
     fn completed(){
-        window.fetch('/api/list')
-            .then(res => {
-                if ( !res.ok )
-                    this.error = `HTTP error! Status: ${res.status}`
-                return res.json()
-            })
+        this.isLoading = true
+        ky.get('/api/list').json()
             .then(data => {
                 this.movies = data.map(entry => MovieState.fromJSON(entry))
                 const routeInfo = ClientNavigation.currentRoute()
@@ -62,8 +54,12 @@ component MoviePageState < State{
                 } else if ( this.movies.length ){
                     this.current = this.movies[this.movies.length - 1]
                 }
+                this.isLoading = false
             })
-            .catch(error => this.error = error )
+            .catch (error => {
+                this.error = error
+                this.isLoading = false
+            })
     }
 }
 
@@ -80,7 +76,7 @@ component MoviePage < Div{
         }
         Ul{
             children: moviePage.state.movies.map(entry => (Li{
-                A.(entry.title){ href: `/view/${entry.idx}` }
+                NavLink.(entry.title){ href: `/view/${entry.idx}` }
             }))
         }
     }
@@ -103,5 +99,13 @@ component MoviePage < Div{
         }
     }
 
+    Div{ classes: ['modal', moviePage.state.isLoading ? 'show' : '']
+        Div{ classes: ['spinner'] }
+    }
+
+    Div{ classes: ['modal', moviePage.state.error ? 'show' : '']
+        Div{ classes: ['error-message'] T{ text: moviePage.state.error } }
+        on click: () => moviePage.state.error = ''
+    }
     
 }

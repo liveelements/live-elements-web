@@ -2,6 +2,8 @@ import live-web.dom
 import live-web.model
 import live-web.clientrouter
 
+import ky from 'ky'
+
 component MovieEditPageState < State{
     string title: ''
     string description: ''
@@ -11,44 +13,39 @@ component MovieEditPageState < State{
 
     fn update(title:string, description:string){
         const data = {title, description}
-        window.fetch(`/api/update/${this.idx}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).then(res => {
-            if (!res.ok) {
-                this.error = `HTTP error! Status: ${res.status}`
-            }
-            return res.json()
-        }).then(data => {
-            if ( data.error ){
-                this.error = data.error
-            } else {
-                ClientNavigation.goTo('/')
-            }
-        }).catch(error => {
-            this.error = error
-        })
+        this.isLoading = true
+        ky.post(`/api/update/${this.idx}`, {json: data}).json()
+            .then(data => {
+                this.isLoading = false
+                if ( data.error ){
+                    this.error = data.error
+                } else {
+                    ClientNavigation.goTo('/')
+                }
+            })
+            .catch(error => {
+                this.isLoading = false
+                this.error = error
+            })
     }
 
     fn completed(){
-        window.fetch('/api/list')
-            .then(res => {
-                if ( !res.ok )
-                    this.error = `HTTP error! Status: ${res.status}`
-                return res.json()
-            })
+        this.isLoading = true
+        ky.get('/api/list').json()
             .then(data => {
                 const routeInfo = ClientNavigation.currentRoute()
                 if ( routeInfo.data && routeInfo.data.id ){
-                    
                     const current = data.find(m => m.id === parseInt(routeInfo.data.id ))
                     this.title = current.title
                     this.description = current.description
                     this.idx = current.id
                 }
+                this.isLoading = false
             })
-            .catch(error => this.error = error )
+            .catch (error => {
+                this.error = error
+                this.isLoading = false
+            })
     }
 }
 
@@ -95,5 +92,14 @@ component MovieEditPage < Div{
                 
             }
         }
+    }
+
+    Div{ classes: ['modal', movieEditPage.state.isLoading ? 'show' : '']
+        Div{ classes: ['spinner'] }
+    }
+
+    Div{ classes: ['modal', movieEditPage.state.error ? 'show' : '']
+        Div{ classes: ['error-message'] T{ text: movieEditPage.state.error } }
+        on click: () => movieEditPage.state.error = ''
     }
 }
