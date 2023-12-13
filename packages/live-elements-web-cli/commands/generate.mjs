@@ -25,23 +25,30 @@ function populatePackageFile(currentDir){
     }
 }
 
-export default async function generate(templateArgument, _cmd, propArgs){
-    const template = templateArgument ? templateArgument : 'bundle'
+export default async function generate(location, options, propArgs){
+    const template = options.template ? options.template : 'bundle'
     const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
     const templateComponent = template.replaceAll('-', '')
     const templatePath = path.resolve(currentDir + '/../templates/' + templateComponent + '.lv')
     if ( !fs.existsSync(templatePath) ){
         throw new Error("Failed to find template: " + template)
     }
+    
+    if ( !fs.existsSync(location) )
+        fs.mkdirSync(location, { recursive: true })
+
+    console.log("Initializing:")
+    console.log(` * Template: '${template}'`)
+    console.log(` * Location: '${location}'`)
 
     const props = {
-        package: path.basename(process.cwd()),
+        package: path.basename(location),
         ...propArgs
     }
 
     populatePackageFile(currentDir)
 
-    const files = await generateTemplateFiles(template, templatePath, props)
+    const files = await generateTemplateFiles(template, templatePath, props, location)
     for ( let i = 0; i < files.length; ++i ){
         const file = files[i]
         fs.mkdirSync(file.outputDir, {recursive: true} )

@@ -47,8 +47,8 @@ export function generateFiles(generator, props, resultPath){
     return files
 }
 
-export async function generateTemplateFiles(template, templatePath, props){
+export async function generateTemplateFiles(template, templatePath, props, outputDir){
     const generator = await loadTemplate(template, templatePath)
-    const files = generateFiles(generator, props, process.cwd())
+    const files = generateFiles(generator, props, outputDir)
     return files
 }
