@@ -44,7 +44,7 @@ export class BaseElement{
     }
 
     findId(id){
-        var p = this
+        let p = this
         while ( p && !p.ids ){
             p = p.parent
         }
@@ -73,7 +73,7 @@ export class BaseElement{
     }
 
     static propertyNames(element){
-        var keys = []
+        let keys = []
         for (let [key, value] of Object.entries(element)) {
             if ( value && typeof value === 'object' && value.hasOwnProperty('expression') && key.startsWith('__') ){
                 keys.push(key.substr(2))
@@ -83,43 +83,31 @@ export class BaseElement{
     }
 
     static getProperty(obj, name){
-        var propMetaName = '__' + name
+        const propMetaName = '__' + name
         return obj[propMetaName].value
     }
 
     static setProperty(obj, name, newValue){
-        var propMetaName = '__' + name
-        var pm = obj[propMetaName]
-        if ( pm.value !== newValue ){
-            if ( pm.bindings ){
-                for ( var i = 0; i < pm.bindings.length; ++i ){
-                    BaseElement.disconnect(pm.bindings[i])
-                }
-                pm.bindings = []
-            }
-
-            pm.value = newValue
-            if ( pm.event ){
-                pm.event.emit()
-            }
-        }
+        const propMetaName = '__' + name
+        const pm = obj[propMetaName]
+        pm.value = newValue
     }
 
     static addProperty(element, propertyName, options){
-        var propMeta = {
+        const propMeta = {
             expression: undefined,
             bindings: [], // events this property listens to
             value: ('value' in options ? options['value'] : undefined)
         }
 
-        var propMetaName = '__' + propertyName
+        const propMetaName = '__' + propertyName
 
         if ('notify' in options){
             propMeta['event'] = BaseElement.addEvent(element, options['notify'], [])
         }
 
-        var isWritable = 'isWritable' in options ? options['isWritable'] : true
-        var isDefault = 'type' in options && options['type'] === 'default'
+        const isWritable = 'isWritable' in options ? options['isWritable'] : true
+        const isDefault = 'type' in options && options['type'] === 'default'
 
         element[propMetaName] = propMeta
 
@@ -127,44 +115,66 @@ export class BaseElement{
             element['__default__'] = propertyName
         }
 
+        if ( 'set' in options ){
+            propMeta.setter = options['set'].bind(element)
+        }
+
         Object.defineProperty(element, propertyName, {
             get: 'get' in options ? options['get'] : function(){ return this[propMetaName].value },
-            set: 'set' in options ? options['set'] : function(newValue){
-                var pm = this[propMetaName]
-                if ( pm.value !== newValue ){
-                    if ( pm.bindings ){
-                        for ( var i = 0; i < pm.bindings.length; ++i ){
-                            BaseElement.disconnect(pm.bindings[i])
-                        }
-                        pm.bindings = []
-                    }
-
-                    if ( isDefault ){
-                        if ( pm.value && pm.value.constructor === Array ){
-                            for ( var i = 0; i < pm.value.length; ++i ){
-                                pm.value[i].parent = null
+            set: propMeta.setter
+                ? function(newValue){ 
+                    const pm = this[propMetaName]
+                    if ( pm.value !== newValue ){
+                        if ( pm.bindings ){
+                            for ( var i = 0; i < pm.bindings.length; ++i ){
+                                BaseElement.disconnect(pm.bindings[i])
                             }
+                            pm.bindings = []
                         }
-                        if ( newValue.constructor === Array){
-                            for ( var i = 0; i < newValue.length; ++i ){
-                                newValue[i].parent = this
-                            }
+                        pm.setter(newValue)
+                        if ( pm.event ){
+                            pm.event.emit()
                         }
-                    }
-
-                    pm.value = newValue
-                    if ( pm.event ){
-                        pm.event.emit()
+                    } else {
+                        pm.setter(newValue)
                     }
                 }
-            },
+                : function(newValue){
+                    const pm = this[propMetaName]
+                    if ( pm.value !== newValue ){
+                        if ( pm.bindings ){
+                            for ( var i = 0; i < pm.bindings.length; ++i ){
+                                BaseElement.disconnect(pm.bindings[i])
+                            }
+                            pm.bindings = []
+                        }
+
+                        if ( isDefault ){
+                            if ( pm.value && pm.value.constructor === Array ){
+                                for ( var i = 0; i < pm.value.length; ++i ){
+                                    pm.value[i].parent = null
+                                }
+                            }
+                            if ( newValue.constructor === Array){
+                                for ( var i = 0; i < newValue.length; ++i ){
+                                    newValue[i].parent = this
+                                }
+                            }
+                        }
+
+                        pm.value = newValue
+                        if ( pm.event ){
+                            pm.event.emit()
+                        }
+                    }
+                },
             enumerable: true,
             isWritable: isWritable
         })
     }
 
     static addEvent(element, eventName, args){
-        var eventMeta = {
+        const eventMeta = {
             listeners: []
         }
         eventMeta['emit'] = function(){
@@ -178,7 +188,7 @@ export class BaseElement{
     }
 
     static disconnect(eventConnection){
-        var index = eventConnection.emitterObject[eventConnection.eventName].listeners.indexOf(eventConnection)
+        const index = eventConnection.emitterObject[eventConnection.eventName].listeners.indexOf(eventConnection)
         if ( index !== -1 ){
             eventConnection.emitterObject[eventConnection.eventName].listeners.splice(index, 1)
         }
@@ -187,13 +197,13 @@ export class BaseElement{
     static __debugEventBindings(eventBindings, indent, objectIds){
         objectIds = objectIds || []
         indent = indent || ''
-        var s = ''
-        for ( var i = 0; i < eventBindings.length; ++i ){
+        let s = ''
+        for ( let i = 0; i < eventBindings.length; ++i ){
             var propName = eventBindings[i].eventName
             propName = propName.substr(0, propName.lastIndexOf('Changed'))
 
-            var objectId = 0
-            var objectIdIndex = objectIds.indexOf(eventBindings[i].emitterObject)        
+            const objectId = 0
+            const objectIdIndex = objectIds.indexOf(eventBindings[i].emitterObject)        
             if ( objectIdIndex !== -1 ){
                 objectId = objectIdIndex
             } else {
@@ -210,9 +220,9 @@ export class BaseElement{
 
     // for [element, ['z', 'a', 'b']] if z changes: [element.z, 'a', 'b']
     static __createBindingFormat(connection){
-        var propName = connection.eventName.substr(0, connection.eventName.lastIndexOf('Changed'))
-        var element = connection.emitterObject[propName]
-        var result = [element]
+        const propName = connection.eventName.substr(0, connection.eventName.lastIndexOf('Changed'))
+        const element = connection.emitterObject[propName]
+        const result = [element]
         if ( connection.childEvents ){
             for ( var i = 0; i < connection.childEvents.length; ++i ){
                 result.push(BaseElement.__createBindingFormatRecurse(element, connection.childEvents[i]))
@@ -222,10 +232,10 @@ export class BaseElement{
     }
 
     static __createBindingFormatRecurse(element, connection){
-        var propName = connection.eventName.substr(0, connection.eventName.lastIndexOf('Changed'))
-        var nextElement = element[propName]
+        const propName = connection.eventName.substr(0, connection.eventName.lastIndexOf('Changed'))
+        let nextElement = element[propName]
         if ( connection.childEvents ){
-            var result = [propName]
+            const result = [propName]
             for ( var i = 0; i < connection.childEvents.length; ++i ){
                 result.push(BaseElement.__createBindingFormatRecurse(nextElement, connection.childEvents[i]))
             }
@@ -286,45 +296,48 @@ export class BaseElement{
     }
 
     static assignPropertyExpression(element, propertyName, propertyExpression, bindings){
-        var propMeta = element['__' + propertyName]
+        const propMeta = element['__' + propertyName]
         propMeta['expression'] = propertyExpression.bind(element)
 
-        var previousBindings = propMeta['bindings']
+        const previousBindings = propMeta['bindings']
 
-        for ( var i = 0; i < previousBindings.length; ++i ){
+        for ( let i = 0; i < previousBindings.length; ++i ){
             BaseElement.disconnect(previousBindings[i])
         }
 
-        var bindingEvents = BaseElement.__createEventBindings(
+        const bindingEvents = BaseElement.__createEventBindings(
             bindings, 
             element, 
             function(){
-                propMeta.value = propMeta['expression']()
+                if ( propMeta.setter )
+                    propMeta.setter(propMeta['expression']())
+                else
+                    propMeta.value = propMeta['expression']()
                 propMeta.event.emit()
             }, 
             function(){
-                var bindingFormat = this.childEventsTemplate
+                const bindingFormat = this.childEventsTemplate
 
                 // reset all child events
-                var allChildEvents = []
+                const allChildEvents = []
                 BaseElement.__collectAllChildEventsFlat(this.childEvents, allChildEvents)
-                for ( var i = 0; i < allChildEvents.length; ++i ){
+                for ( let i = 0; i < allChildEvents.length; ++i ){
                     BaseElement.disconnect(allChildEvents[i])
-                    var index = propMeta['bindings'].indexOf(allChildEvents[i])
+                    const index = propMeta['bindings'].indexOf(allChildEvents[i])
                     propMeta['bindings'].splice(index, 1)
                 }
                 this.childEvents = []
 
                 // reconfigure the events based on binding format
-                var propName = this.eventName.substr(0, this.eventName.lastIndexOf('Changed'))
+                const propName = this.eventName.substr(0, this.eventName.lastIndexOf('Changed'))
                 this.childEvents = BaseElement.__createEventBindingsRecurse(bindingFormat, element, this.emitterObject[propName], this.basicCallback, this.nestedCallback )
                 
                 // add new events to property bindings
-                var newChildEvents = []
+                let newChildEvents = []
                 BaseElement.__collectAllChildEventsFlat(this.childEvents, newChildEvents)
 
-                for ( var i = 0; i < newChildEvents.length; ++i ){
-                    var conn = newChildEvents[i]
+                for ( let i = 0; i < newChildEvents.length; ++i ){
+                    const conn = newChildEvents[i]
                     propMeta['bindings'].push(conn)
                     conn.emitterObject[conn.eventName].listeners.push(conn)
                 }
@@ -334,8 +347,8 @@ export class BaseElement{
             }
         )
 
-        for ( var i = 0; i < bindingEvents.length; ++i ){
-            var conn = bindingEvents[i]
+        for ( let i = 0; i < bindingEvents.length; ++i ){
+            const conn = bindingEvents[i]
             if ( !(conn.eventName in conn.emitterObject) ){
                 throw new Error("Failed to find event \'" + conn.eventName + "\' in object of type \'" +  conn.emitterObject.constructor.name + "\'")
             }
