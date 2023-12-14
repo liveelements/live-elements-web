@@ -36,7 +36,6 @@ component MoviePageState < State{
             }
             return res.json()
         }).then(data => {
-            console.log("GOT DATA")
             if ( data.error ){
                 this.error = data.error
             } else {

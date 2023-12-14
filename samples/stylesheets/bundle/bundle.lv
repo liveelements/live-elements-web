@@ -16,7 +16,7 @@ instance bundle Bundle{
     Stylesheet{
         src: './samples/stylesheets/styles/general.css' 
         output: 'general.css' 
-        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+        process: PostCSS.create(TailwindCSS.createForPostCSS()) 
     }
 
     Stylesheet{ 
