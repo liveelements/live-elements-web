@@ -4,9 +4,6 @@ import live-elements-web-server.view
 
 import .samples.tutorialroutes.app.pages
 
-//TODO: Loading
-//TODO: Error handling
-
 component Home < PageView{
 
     head: PageProperties{

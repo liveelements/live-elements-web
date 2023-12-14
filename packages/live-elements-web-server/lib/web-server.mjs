@@ -414,7 +414,7 @@ export default class WebServer extends EventEmitter{
         const behaviorResult = ServerRenderer.scanBehaviors(pageDOM.window.document, pagePlacements.length ? pagePlacements[0] : v)
         const behaviors = behaviorResult.unwrapAnd((report) => report.forEach(WebServer.logWarning))
         const behaviorScriptsUrl = this.config.baseUrl === '/' ? '/scripts/behavior/' : `${this.config.baseUrl}/scripts/behavior/`
-        let compiledBundles = {}
+        let compiledBundles = { assets: [] }
 
         const clientBehaviorEvents = path.join(WebServer.currentDir(), '../client/client-behavior-events.mjs')
 
@@ -433,8 +433,6 @@ export default class WebServer extends EventEmitter{
                 ],
                 behaviorScriptsUrl
             )
-        } else {
-
         }
         
         if ( compiledBundles.warnings ){

@@ -2,30 +2,28 @@ import live-web.dom
 import live-web.model
 import live-web.clientrouter
 
+import ky from 'ky'
+
 component MovieAddPageState < State{
     boolean isLoading: false
     string error: ''
 
     fn add(title:string, description:string){
         const data = {title, description}
-        window.fetch('/api/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).then(res => {
-            if (!res.ok) {
-                this.error = `HTTP error! Status: ${res.status}`
-            }
-            return res.json()
-        }).then(data => {
-            if ( data.error ){
-                this.error = data.error
-            } else {
-                ClientNavigation.goTo('/')
-            }
-        }).catch(error => {
-            this.error = error
-        })
+        this.isLoading = true
+        ky.post('/api/add', {json: data}).json()
+            .then(data => {
+                this.isLoading = false
+                if ( data.error ){
+                    this.error = data.error
+                } else {
+                    ClientNavigation.goTo('/')
+                }
+            })
+            .catch(error => {
+                this.isLoading = false
+                this.error = error
+            })
     }
 }
 
@@ -69,5 +67,14 @@ component MovieAddPage < Div{
                 
             }
         }
+    }
+
+    Div{ classes: ['modal', movieAddPage.state.isLoading ? 'show' : '']
+        Div{ classes: ['spinner'] }
+    }
+
+    Div{ classes: ['modal', movieAddPage.state.error ? 'show' : '']
+        Div{ classes: ['error-message'] T{ text: movieAddPage.state.error } }
+        on click: () => movieAddPage.state.error = ''
     }
 }

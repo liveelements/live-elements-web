@@ -45,13 +45,11 @@ component RouteSwitch{
         let router = this.parent._internal
         router.currentMatchedRoute = routeInfo
 
-        if ( this._visualChild !== child ){
-            if ( child ){
-                child.activate()
-            }
-            this._visualChild = child
-            this.parent.childrenChanged.emit()
+        if ( child ){
+            child.activate()
         }
+        this._visualChild = child
+        this.parent.childrenChanged.emit()
     }
 
     fn _handleNewChildren(){

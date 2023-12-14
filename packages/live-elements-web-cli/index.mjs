@@ -10,36 +10,45 @@ import compile from './commands/compile.mjs'
 import run from './commands/run.mjs'
 import argumentPairsToObject from './lib/argument-pairs-to-object.mjs'
 import readline from 'readline'
+import path from 'path'
 import runNpmI from './lib/run-npm-i.mjs'
 
 program
     .name('lvweb')
     .description('Live Elements Web CLI')
-    .version('0.1.8')
+    .version('0.1.9')
 
-program.command('generate <template>')
+program.command('generate [path]')
     .description('Generate a project from a template.')
+    .option("-t, --template <name>", 'Template to use.')
     .allowUnknownOption()
-    .action((template, cmd) => {
-        const excludeKeys = []
+    .action((location, options) => {
+        const excludeKeys = ['t', 'template']
         const props = argumentPairsToObject(process.argv, excludeKeys)
-        generate(template, cmd, props)
+        const usedLocation = location
+            ? path.isAbsolute(location) ? location : path.resolve(location)
+            : process.cwd()
+        generate(usedLocation, options, props)
     })
 
-program.command('init [template]')
-    .description('Generate a project from a template.')
+program.command('init [path]')
+    .description('Initialize a project from a template.')
+    .option("-t, --template <name>", 'Template to use.')
     .allowUnknownOption()
-    .action(async (template, cmd) => {
-        const excludeKeys = []
+    .action(async (location, options) => {
+        const excludeKeys = ['t', 'template']
         const props = argumentPairsToObject(process.argv, excludeKeys)
-        await generate(template, cmd, props)
+        const usedLocation = location
+            ? path.isAbsolute(location) ? location : path.resolve(location)
+            : process.cwd()
+        await generate(usedLocation, options, props)
         console.log("Project initialized.\n")
         console.log("Project dependencies need to be installed before running the project.")
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
         rl.question('Do you want to run npm install? (y/n) ', answer => {
             if ( answer[0] === 'y' || answer[0] === 'Y' ){
                 console.log("Running npm install...")
-                runNpmI()
+                runNpmI(usedLocation)
             } else {
                 console.log(
                     "Dependencies have not been installed.",
