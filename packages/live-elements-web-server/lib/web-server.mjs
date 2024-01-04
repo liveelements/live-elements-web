@@ -211,9 +211,10 @@ export default class WebServer extends EventEmitter{
         const bundleName = view.name.toLowerCase()
         const viewPath = this.getComponentPath(view)
         const placementLocations = placement ? placement.map(p => { 
-            return { location: this.getComponentPath(p), name: p.name }
+            const placementPath = this.getComponentPath(p)
+            return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
         }) : []
-        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.location}"), name: "${p.name}" }`).join(',') + ']'
+        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
 
         const clientLoader = ClassInfo.extends(view, WebServer.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
