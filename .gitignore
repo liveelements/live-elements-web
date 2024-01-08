@@ -5,6 +5,7 @@ samples/customstyle/build
 samples/slider/build
 samples/staticpages/build
 node_modules
+dist
 npm-debug.log
 .env
 .DS_Store
