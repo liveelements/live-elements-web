@@ -1,0 +1,25 @@
+{
+    "name": "live-webv-ew",
+    "version": "0.1.10",
+    "description": "Live Elements Web View Package.",
+    "keywords": [
+        "live",
+        "elements",
+        "live-elements",
+        "html",
+        "dom",
+        "live-web",
+        "liveweb",
+        "web"
+    ],
+    "scripts": {
+        "build": "node ./scripts/build.js",
+        "prepare": "npm run build"
+    },
+    "author": "Dinu SV",
+    "license": "MIT",
+    "dependencies": {
+        "incremental-dom": "^0.7.0",
+        "navigo": "^8.11.1"
+    }
+}
