@@ -1,6 +1,6 @@
 
 component Path < DOMElement{
-    constructor(text:string){
+    constructor(){
         super('path')
         Path.prototype.__initialize.call(this)
     }
