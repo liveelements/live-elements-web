@@ -23,7 +23,7 @@ instance bundle Bundle{
     Stylesheet{
         src: './samples/placements/styles/general.css' 
         output: 'general.css' 
-        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+        process: PostCSS.create(TailwindCSS.createForPostCSS()) 
     }
 
     Stylesheet{ 

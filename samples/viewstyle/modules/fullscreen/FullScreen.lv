@@ -1,0 +1,22 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Fullscreen < Nav{
+    id: fullscreen
+
+    static Array use = [ ScopedStyle{ src: './fullscreen.css' process: './FullscreenCSS.lv' } ]
+
+    classes: [ScopedStyle.className(Fullscreen)]
+
+    Svg{ 
+        classes: ['responsive-img']
+        props: ({viewBox: '0 0 1200 1200', xmlns: 'http://www.w3.org/2000/svg'})
+        Rect{ props: ({width: '1200', height: '1200', fill: '#ddd'})
+        }
+        Path{
+            props: ({d: 'M600 0L0 600h1200L600 0zm0 1200l600-600H0l600 600z', fill: '#999', fill: { opacity: '.4' } })
+        }
+    }
+}

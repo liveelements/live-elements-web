@@ -1,0 +1,38 @@
+import .bundle
+import .router
+import .style
+
+import ClassInfo from '../../lib/class-info.mjs'
+import { ScopedStyleCollection } from '../../lib/scoped-style.mjs'
+
+component ScopedStyleCollector{
+    static fn scan(group:Bundle){
+        let collection = new ScopedStyleCollection()
+        for ( let i = 0; i < group.children.length; ++i ){
+            if ( group.children[i] instanceof Route ){
+                const route = group.children[i]
+                const routeStyles = ScopedStyleCollector.scanComponentStyles(route.c, route.c)
+                collection = collection.merge(routeStyles)
+            }
+        }
+        return collection
+    }
+
+
+    static fn scanComponentStyles(c:component, rootc:component){
+        let collection = new ScopedStyleCollection()
+        if ( c.use && c.use.length ){
+            for ( let i = 0; i < c.use.length; ++i ){
+                const use = c.use[i]
+                if ( use instanceof ScopedStyle ){
+                    collection.addStyle(c, use.src, use.process, rootc)
+                } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
+                    collection.addComponent(c.use[i], rootc)
+                    const nestedCollection = ScopedStyleCollector.scanComponentStyles(use, rootc)
+                    collection = collection.merge(nestedCollection)
+                }
+            }
+        }
+        return collection
+    }
+}

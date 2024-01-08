@@ -1,0 +1,42 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import .samples.viewstyle.modules.menu
+import .samples.viewstyle.modules.fullscreen
+import .samples.viewstyle.modules.layout
+
+component ViewStyle < PageView{
+    static Array use = [
+        Menu, 
+        Fullscreen, 
+        ColLayout,
+        ScopedStyle{ src: './viewstyle.css' }
+    ]
+
+    Body{
+        classes: [ScopedStyle.className(ViewStyle)]
+
+        Menu{}
+        Fullscreen{}
+        ColLayout{
+            Col{
+                H1`Column 1`
+            }
+            Col{
+                H1`Column 2`
+            }
+        }
+        ColLayout{
+            Col{
+                H1`Column 1`
+            }
+            Col{
+                H1`Column 2`
+            }
+            Col{
+                H1`Column 3`
+            }
+        }
+    }
+}

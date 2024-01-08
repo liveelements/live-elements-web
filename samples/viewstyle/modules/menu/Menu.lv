@@ -1,0 +1,46 @@
+import live-web.dom
+import live-web.behavior
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Menu < Nav{
+    id: menu
+
+    Object brand: T`Brand`
+    Object links: ['Home', 'About', 'Services', 'Contact']
+
+    static Array use = [ ScopedStyle{ src: './menu.css' process: './MenuCSS.lv' } ]
+
+    classes: ['navbar', ScopedStyle.className(Menu)]
+
+    Div{ classes: ['brand-title']
+        children: [menu.brand]
+    }
+    A{ classes: ['toggle-button']; href: ''
+        Span{ classes: ['bar'] }
+        Span{ classes: ['bar'] }
+        Span{ classes: ['bar'] }
+
+        DOMBehavior{
+            domReady : (a) => {
+                console.log(a.parentNode)
+                a.onclick = (e) => {
+                    e.preventDefault()
+                    const ul = a.parentNode.querySelector('.navbar-links')
+                    ul.classList.toggle('active')
+                }
+            }
+        }
+    }
+    Div{ classes: ['navbar-links']
+        Ul{
+            children: menu.links.map(link => {
+                return typeof link === 'string' || link instanceof String
+                    ? Li{ A.(link){}
+                    : link
+            })
+        }
+    }
+
+}

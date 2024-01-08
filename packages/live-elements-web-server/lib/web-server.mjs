@@ -38,6 +38,7 @@ class WebServerInit{
             PageCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'PageCollector.lv'))).PageCollector,
             RouteCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'RouteCollector.lv'))).RouteCollector,
             StylesheetCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'StylesheetCollector.lv'))).StylesheetCollector,
+            ScopedStyleCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'ScopedStyleCollector.lv'))).ScopedStyleCollector,
             PageView: (await lvimport(path.resolve(path.join(packageDir, 'view', 'PageView.lv')))).PageView
         }
     }
@@ -174,7 +175,12 @@ export default class WebServer extends EventEmitter{
         }
         
         bundleServer._routes = WebServer.Components.RouteCollector.scan(bundle)
+        bundleServer._scopedStyles = WebServer.Components.ScopedStyleCollector.scan(bundle)
+        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c))
+        
         bundleServer._styles = await StyleContainer.load(bundlePath, WebServer.Components.StylesheetCollector.scan(bundle))
+        await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles)
+
         bundleServer._assets = WebServer.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
         
         const pages = WebServer.Components.PageCollector.scanAndSetupDOM(bundle, bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
@@ -216,11 +222,14 @@ export default class WebServer extends EventEmitter{
         }) : []
         const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
 
+        const viewStyles = this._scopedStyles.componentsForView(view)
+        const viewAssignemntsSource = JSON.stringify({scopedStyles: viewStyles.toViewUsageAssignmentStructure(view), scopedStyleLinks: viewStyles.styleLinks() })
+
         const clientLoader = ClassInfo.extends(view, WebServer.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
-            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource})`
+            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource}, ${viewAssignemntsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
@@ -399,6 +408,9 @@ export default class WebServer extends EventEmitter{
             }
             pagePlacements[0].children[0].expandTo(insertionDOM)
         }
+        
+        const viewStyles = this._scopedStyles.componentsForView(route.c)
+        viewStyles.populateViewComponent(route.c)
 
         const v = WebServer.Components.ViewRoute.createView(route.c)
         if ( v instanceof WebServer.Components.PageView ){
@@ -453,6 +465,17 @@ export default class WebServer extends EventEmitter{
 
         
         scripts.forEach(script => document.body.appendChild(script))
+        const scopedStyleLinks = viewStyles.styleLinks(route.c)
+        if ( scopedStyleLinks ){
+            scopedStyleLinks.forEach(sl => {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet'
+                link.type = 'text/css'
+                link.href = sl
+                document.head.appendChild(link)
+            })
+        }
+
         const content = this._domEmulator.serializeDOM(pageDOM)
         return content
     }

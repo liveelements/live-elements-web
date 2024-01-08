@@ -3,6 +3,7 @@ import fs from 'fs'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import { EventEmitter } from 'node:events'
 import { BundlePackagePath } from 'live-elements-web-server/lib/bundle-package-path.mjs'
+import { ScopedStyleCollection } from './scoped-style.mjs'
 
 class StyleInput{
     constructor(file, processor){
@@ -39,6 +40,16 @@ class StyleOutput{
         const input = new StyleInput(file, processor)
         this._inputs.push(input)
         return input
+    }
+
+    addInputUnique(file, processor){
+        const exists = this._inputs.find(inp => inp._file === file)
+        if ( !exists ){
+            const input = new StyleInput(file, processor)
+            this._inputs.push(input)
+            return input
+        }
+        return exists
     }
 
     allInputPaths(){
@@ -153,6 +164,22 @@ export default class StyleContainer extends EventEmitter {
         }
 
         return styles
+    }
+
+    async addScopedStyles(scopedStyleCollection){
+        if ( scopedStyleCollection.size() ){
+            const componentSelectorTransformations = scopedStyleCollection.componentSelectorTransformations()
+            const ScopedProcessor = await ScopedStyleCollection.loadScopedProcessor()
+            const scopedStylesOutput = this.configureOutput('scoped.css')
+            for ( let i = 0; i < scopedStyleCollection.size(); ++i ){
+                const ct = scopedStyleCollection._components[i]
+                for ( let j = 0; j < ct._styles.length; ++j ){
+                    const sst = ct._styles[j]
+                    scopedStylesOutput.addInputUnique(sst.absoluteSrc, ScopedProcessor.create(componentSelectorTransformations, `${ct.classNameWithPrefix}`, await sst.processFunction()))
+                }
+            }
+            await scopedStylesOutput.reload()
+        }
     }
 
     inputFiles(){
