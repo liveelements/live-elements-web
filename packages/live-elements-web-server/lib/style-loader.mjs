@@ -4,6 +4,7 @@ import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import { EventEmitter } from 'node:events'
 import { BundlePackagePath } from 'live-elements-web-server/lib/bundle-package-path.mjs'
 import { ScopedStyleCollection } from './scoped-style.mjs'
+import ClassInfo from './class-info.mjs'
 
 class StyleInput{
     constructor(file, processor){
@@ -171,11 +172,15 @@ export default class StyleContainer extends EventEmitter {
             const componentSelectorTransformations = scopedStyleCollection.componentSelectorTransformations()
             const ScopedProcessor = await ScopedStyleCollection.loadScopedProcessor()
             const scopedStylesOutput = this.configureOutput('scoped.css')
+
+            const rootViews = scopedStyleCollection.rootViews()
             for ( let i = 0; i < scopedStyleCollection.size(); ++i ){
                 const ct = scopedStyleCollection._components[i]
+                const isRoot = rootViews.includes(ct.component)
+                const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
                 for ( let j = 0; j < ct._styles.length; ++j ){
                     const sst = ct._styles[j]
-                    scopedStylesOutput.addInputUnique(sst.absoluteSrc, ScopedProcessor.create(componentSelectorTransformations, `${ct.classNameWithPrefix}`, await sst.processFunction()))
+                    scopedStylesOutput.addInputUnique(sst.absoluteSrc, ScopedProcessor.create(componentSelectorTransformations, `${classNameWithPrefix}`, await sst.processFunction()))
                 }
             }
             await scopedStylesOutput.reload()

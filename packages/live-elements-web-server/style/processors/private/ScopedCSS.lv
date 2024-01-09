@@ -1,12 +1,10 @@
 import postcss from 'postcss'
-import prefixer from 'postcss-prefix-selector'
 
 component ScopedCSS{
 
     string lookups: ''
     string defaultPrefix: ''
     any transform: null
-    
 
     static fn create(lookups:Object, defaultPrefix:string, transform:any){
         const scopedcss = ScopedCSS{ lookups: lookups defaultPrefix: defaultPrefix transform: transform }

@@ -1,13 +1,14 @@
 import path from 'path'
 import url from 'url'
 import lvimport from 'live-elements-core/lvimport.mjs'
+import PackagePath from './package-path.cjs'
 
 export class ScopedStyle{
     constructor(src, process){
         this._src = src
         this._srcResolved = src
         this._process = process
-        this._processResolved = process
+        this._processResolved = null
     }
 
     get src(){ return this._src }
@@ -143,18 +144,54 @@ export class ScopedStyleCollection{
         return result
     }
 
-    resolveRelativePaths(componentPathResolve){
+    resolveRelativePaths(componentPathResolve, bundleRootPath){
         for ( let i = 0; i < this._components.length; ++i ){
             const c = this._components[i]
             for ( let j = 0; j < c._styles.length; ++j ){
                 const s = c._styles[j]
 
                 s._srcResolved = path.resolve(path.join(path.dirname(componentPathResolve(c.component)), s.src))
-                s._processResolved = s.process 
-                    ? path.resolve(path.join(path.dirname(componentPathResolve(c.component)), s.process))
-                    : null
+
+                if ( s.process ) {
+                    if ( s.process.startsWith('.') ){
+                        s._processResolved = path.resolve(path.join(path.dirname(componentPathResolve(c.component)), s.process))
+                    } else {
+                        s._processResolved = ScopedStyleCollection.resolveSrc(s.process, bundleRootPath)
+                    }
+                }
             }
         }
+    }
+
+    
+    rootViews(){
+        const rv = []
+        for ( let i = 0; i < this._components.length; ++i ){
+            const c = this._components[i]
+            for ( let j = 0; j < c._viewUsages.length; ++j ){
+                rv.push(c._viewUsages[j])
+            }
+        }
+        return rv
+    }
+
+    static resolveSrc(src, bundleRootPath){
+        let packageSeparator = src.indexOf('/');
+        if (packageSeparator === -1) {
+            throw new Error(`Cannot find style file: ${src}`);
+        }
+        let packageName = src.substr(0, packageSeparator)
+        if ( packageName.startsWith('@') ){
+            let nextPackageSeparator = src.indexOf('/', packageSeparator + 1)
+            if ( nextPackageSeparator !== -1 ){
+                packageSeparator = nextPackageSeparator
+                packageName = src.substr(0, nextPackageSeparator)
+            }
+        }
+
+        let packagePath = PackagePath.find(packageName, bundleRootPath)
+        let pathFromPackage = src.substr(packageSeparator + 1)
+        return path.join(packagePath, pathFromPackage)
     }
 
     componentsForView(view){

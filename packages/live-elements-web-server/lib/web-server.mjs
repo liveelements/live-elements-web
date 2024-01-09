@@ -176,7 +176,7 @@ export default class WebServer extends EventEmitter{
         
         bundleServer._routes = WebServer.Components.RouteCollector.scan(bundle)
         bundleServer._scopedStyles = WebServer.Components.ScopedStyleCollector.scan(bundle)
-        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c))
+        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c), bundleServer.bundleLookupPath)
         
         bundleServer._styles = await StyleContainer.load(bundlePath, WebServer.Components.StylesheetCollector.scan(bundle))
         await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles)
@@ -333,7 +333,8 @@ export default class WebServer extends EventEmitter{
 
                 if ( cacheable ){
                     const content = await this.renderRouteContent(route)
-                    const routePath = path.join(distPath, WebServer.urlToFileName(route.url))
+                    const routeUrl = route.url.replaceAll('*', '-')
+                    const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
                     log.i(`Route written: ${path.relative(distPath, routePath)}`)
                     fs.writeFileSync(routePath, content)
 
