@@ -1,0 +1,49 @@
+&TopNav{
+    @apply fixed flex flex-col justify-between w-full min-h-16 bg-black text-white z-50;
+}
+&TopNav .navbar-always-top{
+    @apply flex justify-between items-center h-full px-4  min-h-16;
+}
+&TopNav .brand-title {
+    @apply text-lg font-semibold;
+}
+&TopNav .navbar-links {
+    @apply flex hidden bg-black w-full items-center;
+}
+&TopNav .navbar-links ul {
+    @apply flex flex-col pt-2 px-3;
+}
+&TopNav .navbar-links ul li {
+    @apply list-none;
+}
+&TopNav .navbar-links ul li a {
+    @apply text-white py-1 my-2 px-2 hover:bg-gray-900 no-underline w-full inline-block;
+}
+&TopNav .toggle-button {
+    @apply block;
+}
+&TopNav .bar {
+    @apply block w-6 h-0.5 mt-1 bg-white my-1.5;
+}
+
+&TopNav&.active .navbar-links{
+    @apply block;
+}
+
+@screen md {
+    &TopNav{
+        @apply flex-row;
+    }
+    &TopNav .navbar {
+        @apply flex;
+    }
+    &TopNav .toggle-button {
+        @apply hidden;
+    }
+    &TopNav .navbar-links {
+        @apply flex justify-between w-auto mt-0;
+    }
+    &TopNav .navbar-links ul{
+        @apply flex-row space-x-4;
+    }
+}

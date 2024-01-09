@@ -1,0 +1,50 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component TopNav < Nav{
+    id: menu
+
+    Object brand: T`Brand`
+    Object links: ['Home', 'About', 'Services', 'Contact']
+
+    static Array use = [ 
+        ScopedStyle{ src: './style/topnav.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    classes: ['navbar', ScopedStyle.className(TopNav)]
+
+    Div{ classes: ['navbar-always-top']
+        Div{ classes: ['brand-title']
+            children: [menu.brand]
+        }
+        A{ classes: ['toggle-button']; href: ''
+            Span{ classes: ['bar'] }
+            Span{ classes: ['bar'] }
+            Span{ classes: ['bar'] }
+
+            DOMBehavior{
+                domReady : (a) => {
+                    a.onclick = (e) => {
+                        e.preventDefault()
+                        const activateElement = a.parentNode.parentNode
+                        activateElement.classList.toggle('active')
+                    }
+                }
+            }
+        }
+    }
+    
+    Div{ classes: ['navbar-links']
+        Ul{
+            children: menu.links.map(link => {
+                return typeof link === 'string' || link instanceof String
+                    ? Li{ A.(link){}
+                    : link
+            })
+        }
+    }
+
+}
