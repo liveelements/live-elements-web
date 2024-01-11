@@ -270,7 +270,12 @@ export default class WebServer extends EventEmitter{
                 entries[viewLoader.bundleName] = [viewLoader.virtualLoader].concat(extraScripts)
                 virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
             } else {
-                entries[bundleName] = extraScripts
+                if ( extraScripts.length ) {
+                    entries[bundleName] = extraScripts
+                } else {
+                    const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
+                    entries[bundleName] = [clientApplicationLoader]
+                }
             }
         }
 
