@@ -1,0 +1,7 @@
+
+component Circle < DOMElement{
+    constructor(){
+        super('circle')
+        Circle.prototype.__initialize.call(this)
+    }
+}

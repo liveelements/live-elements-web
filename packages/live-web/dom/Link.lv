@@ -19,4 +19,12 @@ component Link < DOMElement{
         this.props['type'] = this.type
         this.propsChanged.emit()
     }
+    string crossorigin: false
+    on crossoriginChanged: () => {
+        if ( this.crossorigin )
+            this.props['crossorigin'] = this.crossorigin
+        else
+            delete this.props['crossorigin']
+        this.propsChanged.emit()
+    }
 }

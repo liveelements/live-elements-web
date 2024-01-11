@@ -13,7 +13,7 @@ component ScopedCSS{
 
     fn process(file:string, content:string, destination:string){
         const plugin = () => {
-            const df = `.${this.defaultPrefix}`
+            const df = this.defaultPrefix ? `.${this.defaultPrefix}` : ''
             return {
                 postcssPlugin: 'rename-component-selectors',
                 Once: (root) => {
@@ -22,7 +22,7 @@ component ScopedCSS{
                         rule.selector = rule.selector.replace(/&([A-Za-z0-9_.-]+)\&?/g, (match, componentName) => {
                             return this.lookups[componentName] ? `.${this.lookups[componentName]}` : match
                         })
-                        if ( !rule.selector.startsWith(df) )
+                        if ( df && !rule.selector.startsWith(df) )
                             rule.selector = `${df} ${rule.selector}`;
                     })
                 }

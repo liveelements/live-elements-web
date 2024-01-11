@@ -32,10 +32,11 @@ component PageProperties{
                 }
                 document.body.appendChild(script)
             } else if ( this.children[i] instanceof Link ){
+                
                 var link =  document.createElement("link")
                 var props = this.children[i].props
                 for (const [key, value] of Object.entries(props)) {
-                    link[key] = value
+                    link.setAttribute(key, value)
                 }
                 document.head.appendChild(link)
             } else if ( this.children[i] instanceof StyleLink ){
