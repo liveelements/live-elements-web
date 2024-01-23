@@ -179,7 +179,7 @@ export default class WebServer extends EventEmitter{
         bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c), bundleServer.bundleLookupPath)
         
         bundleServer._styles = await StyleContainer.load(bundlePath, WebServer.Components.StylesheetCollector.scan(bundle))
-        await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles)
+        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }
 
         bundleServer._assets = WebServer.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
         
@@ -538,7 +538,7 @@ export default class WebServer extends EventEmitter{
             const styleGroup = this._watcher.findGroup('style')
             styleGroup.onFileChange = (file) => {
                 this._styles.reloadInputFile(file).catch(e => {
-                    log.e(e)
+                    log.e(e.message)
                 })
             }
             this._watcher.assignFiles(this._styles.inputFiles(), styleGroup)

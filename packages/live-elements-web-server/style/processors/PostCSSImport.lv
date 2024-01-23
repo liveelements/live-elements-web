@@ -1,0 +1,10 @@
+import postcssimp from 'postcss-import' 
+import url from 'url'
+
+component PostCSSImport{
+
+    static fn create(){
+        return postcssimp()
+    }
+
+}

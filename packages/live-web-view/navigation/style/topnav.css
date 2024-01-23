@@ -27,7 +27,7 @@
 }
 
 &TopNav&.active .navbar-links{
-    @apply block;
+    @apply block md:flex;
 }
 
 @screen md {
