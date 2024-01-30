@@ -19,6 +19,10 @@ component ScopedCSS{
                 Once: (root) => {
                     root.walkRules(rule => {
                         let selectorModified = false
+                        if (rule.parent.type === 'atrule' && rule.parent.name === 'keyframes'){
+                            return
+                        }
+                        
                         rule.selector = rule.selector.replace(/&([A-Za-z0-9_.-]+)\&?/g, (match, componentName) => {
                             return this.lookups[componentName] ? `.${this.lookups[componentName]}` : match
                         })
