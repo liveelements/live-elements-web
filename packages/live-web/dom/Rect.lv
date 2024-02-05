@@ -1,0 +1,7 @@
+
+component Rect < DOMElement{
+    constructor(){
+        super('rect')
+        Rect.prototype.__initialize.call(this)
+    }
+}

@@ -1,0 +1,7 @@
+
+component Video < DOMElement{
+    constructor(){
+        super('video')
+        Video.prototype.__initialize.call(this)
+    }
+}

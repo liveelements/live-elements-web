@@ -34,7 +34,8 @@ class WebServerInit{
             PageCollector: path.join(packageDir, 'bundle', 'collectors', 'PageCollector.lv'),
             RouteCollector: path.join(packageDir, 'bundle', 'collectors', 'RouteCollector.lv'),
             StylesheetCollector: path.join(packageDir, 'bundle', 'collectors', 'StylesheetCollector.lv'),
-            PageView: path.resolve(path.join(packageDir, 'view', 'PageView.lv'))
+            ScopedStyleCollector: path.join(packageDir, 'bundle', 'collectors', 'ScopedStyleCollector.lv'),
+            PageView: path.join(packageDir, 'view', 'PageView.lv')
         })
         await ComponentRegistry.update()
     }
@@ -171,7 +172,12 @@ export default class WebServer extends EventEmitter{
         }
         
         bundleServer._routes = ComponentRegistry.Components.RouteCollector.scan(bundle)
+        bundleServer._scopedStyles = ComponentRegistry.Components.ScopedStyleCollector.scan(bundle)
+        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c), bundleServer.bundleLookupPath)
+        
         bundleServer._styles = await StyleContainer.load(bundlePath, ComponentRegistry.Components.StylesheetCollector.scan(bundle))
+        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }
+
         bundleServer._assets = ComponentRegistry.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
         
         const pages = ComponentRegistry.Components.PageCollector.scanAndSetupDOM(bundle, bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
@@ -195,17 +201,21 @@ export default class WebServer extends EventEmitter{
         const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         
         const bundleName = view.name.toLowerCase()
-        const viewPath = ComponentRegistry.findComponentPath(view)
+        const viewPath = ComponentRegistry.findComponentPath(view, this._bundleLookupPath)
         const placementLocations = placement ? placement.map(p => { 
-            return { location: ComponentRegistry.findComponentPath(p), name: p.name }
+            const placementPath = ComponentRegistry.findComponentPath(p, this._bundleLookupPath)
+            return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
         }) : []
-        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.location}"), name: "${p.name}" }`).join(',') + ']'
+        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
+
+        const viewStyles = this._scopedStyles.componentsForView(view)
+        const viewAssignemntsSource = JSON.stringify({scopedStyles: viewStyles.toViewUsageAssignmentStructure(view), scopedStyleLinks: viewStyles.styleLinks() })
 
         const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
-            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource})`
+            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource}, ${viewAssignemntsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
@@ -250,7 +260,8 @@ export default class WebServer extends EventEmitter{
                 virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
                 viewRoute.addScript(viewLoaderScript)    
             }
-            entries[bundleName] = viewRoute.scripts.map(script => script.location)
+            if ( viewRoute.scripts.length )
+                entries[bundleName] = viewRoute.scripts.map(script => script.location)
         }
 
         this._webpack = new BundleWebpack(
@@ -311,7 +322,8 @@ export default class WebServer extends EventEmitter{
 
             if ( cacheable ){
                 const content = await this.renderRouteContent(route)
-                const routePath = path.join(distPath, WebServer.urlToFileName(route.url))
+                const routeUrl = route.url.replaceAll('*', '-')
+                const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
                 log.i(`Route written: ${path.relative(distPath, routePath)}`)
                 fs.writeFileSync(routePath, content)
 
@@ -422,7 +434,7 @@ export default class WebServer extends EventEmitter{
             const styleGroup = this._watcher.findGroup('style')
             styleGroup.onFileChange = (file) => {
                 this._styles.reloadInputFile(file).catch(e => {
-                    log.e(e)
+                    log.e(e.message)
                 })
             }
             this._watcher.assignFiles(this._styles.inputFiles(), styleGroup)

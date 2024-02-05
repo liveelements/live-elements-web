@@ -1,0 +1,9 @@
+component ScopedStyle{
+    string src: ''
+    string process: null
+    any c: null
+
+    static fn className(c:component){
+        return c.renderProperties && c.renderProperties.classes ? c.renderProperties.classes : ''
+    }
+}

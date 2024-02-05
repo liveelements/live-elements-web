@@ -1,0 +1,7 @@
+
+component Source < DOMElement{
+    constructor(){
+        super('source')
+        Source.prototype.__initialize.call(this)
+    }
+}

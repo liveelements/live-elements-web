@@ -149,6 +149,9 @@ component Page{
             document.body.appendChild(script);
         }
 
+        if ( this.head )
+            this.head.expand(document)
+
         return domContainer
     }
 

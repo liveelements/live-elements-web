@@ -1,0 +1,8 @@
+
+&Fullscreen {
+    @apply  overflow-hidden relative w-full h-screen flex items-center justify-center;
+}
+
+&Fullscreen .responsive {
+    @apply absolute min-w-full min-h-full object-cover;
+}

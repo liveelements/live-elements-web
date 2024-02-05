@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+&Menu{
+    @apply fixed flex items-center justify-between w-full h-16 px-4 bg-black text-white z-50;
+}
+&Menu .brand-title {
+    @apply text-lg font-semibold;
+}
+&Menu .navbar-links ul {
+    @apply flex flex-col pt-2;
+}
+&Menu .navbar-links ul li {
+    @apply list-none mx-2;
+}
+&Menu .navbar-links ul li a {
+    @apply text-white py-1 my-2 px-2 hover:bg-gray-900 no-underline w-full inline-block;
+}
+&Menu .toggle-button {
+    @apply block absolute right-4 top-4;
+}
+&Menu .bar {
+    @apply block w-6 h-0.5 mt-1 bg-white my-1.5;
+}
+&Menu .navbar-links {
+    @apply hidden bg-black w-full fixed left-0 top-0 mt-16;
+}
+
+&Menu .navbar-links.active{
+    @apply block;
+}
+
+@screen md {
+    &Menu .navbar {
+        @apply flex ;
+    }
+    &Menu .toggle-button {
+        @apply hidden;
+    }
+    &Menu .navbar-links {
+        @apply flex justify-between static w-auto mt-0;
+    }
+    &Menu .navbar-links ul{
+        @apply flex-row pt-0 space-x-4;
+    }
+}

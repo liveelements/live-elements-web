@@ -1,0 +1,11 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.style
+
+component ColLayout < Div{
+    static Array use = [ Col, ScopedStyle{ src: './collayout.css' process: './ColLayoutCSS.lv' } ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(ColLayout)])
+
+}

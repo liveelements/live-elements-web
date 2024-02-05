@@ -1,0 +1,7 @@
+&ColLayout {
+    @apply flex flex-wrap;
+}
+
+&ColLayout &Col {
+    @apply w-full md:flex-1 p-2 border border-gray-300;
+}

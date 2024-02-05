@@ -32,7 +32,8 @@ export default async function compile(bundle, _options){
 
         await WebServer.Init.run()
         const webServerConfig = new WebServer.Configuration({
-            runMode : WebServer.RunMode.Production
+            runMode : WebServer.RunMode.Production,
+            useSocket: false
         })
 
         let server = await WebServer.load(bundleInfo.bundle, webServerConfig)

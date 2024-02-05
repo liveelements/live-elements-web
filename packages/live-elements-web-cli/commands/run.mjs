@@ -35,6 +35,7 @@ export default async function run(bundle, options){
         const webServerConfig = new WebServer.Configuration({
             runMode: WebServer.RunMode.Production,
             watch: false,
+            useSocket: false,
             baseUrl: options.baseUrl ? options.baseUrl : undefined,
             port: options.port ? options.port : undefined,
         })

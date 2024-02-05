@@ -1,7 +1,8 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
 
 export default class ClientPageViewLoader{
-    static async loadAwaitingModule(awaitingModule, componentName, placements){
+
+    static async loadAwaitingModule(awaitingModule, componentName, placements, serverData){
         const locations = document.querySelectorAll('[data-content-type="main"]')
         if ( locations.length === 0 ){
             throw new Error("Failed to find insertion location.")
@@ -28,6 +29,7 @@ export default class ClientPageViewLoader{
             pagePlacements[0].children[0].expandTo(renderLocaiton)
         }
 
+
         awaitingModule.then(module => {
             let c = null
             if ( componentName === "*" ){    
@@ -50,6 +52,8 @@ export default class ClientPageViewLoader{
                 throw new Error(`Failed to find PageView component.`)
             }
 
+            ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c)
+
             window.pageView = new c()
             BaseElement.complete(window.pageView)
 
@@ -61,8 +65,31 @@ export default class ClientPageViewLoader{
             } else {
                 window.pageView.expandTo(renderLocaiton)
             }
+
+            if ( serverData.scopedStyleLinks  ){
+                serverData.scopedStyleLinks.forEach(sl => {
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet'
+                    link.type = 'text/css'
+                    link.href = sl
+                    document.head.appendChild(link)
+                })
+            }
+
         }).catch((e) => {
             console.error("Failed to load module:", e)
         })
+    }
+
+    static __populateScopedStyles(scopedStyles, c){
+        if ( scopedStyles ){
+            c.renderProperties = scopedStyles.renderProperties
+        }
+        if ( c.use ){
+            for ( let i = 0; i < c.use.length && i < scopedStyles.use.length; ++i ){
+                if ( typeof c.use[i] === 'function' && c.use[i].name )
+                    ClientPageViewLoader.__populateScopedStyles(scopedStyles.use[i], c.use[i])
+            }
+        }
     }
 }

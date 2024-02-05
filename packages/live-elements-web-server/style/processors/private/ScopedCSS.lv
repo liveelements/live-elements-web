@@ -1,0 +1,49 @@
+import postcss from 'postcss'
+
+component ScopedCSS{
+
+    string lookups: ''
+    string defaultPrefix: ''
+    any transform: null
+
+    static fn create(lookups:Object, defaultPrefix:string, transform:any){
+        const scopedcss = ScopedCSS{ lookups: lookups defaultPrefix: defaultPrefix transform: transform }
+        return scopedcss
+    }
+
+    fn process(file:string, content:string, destination:string){
+        const plugin = () => {
+            const df = this.defaultPrefix ? `.${this.defaultPrefix}` : ''
+            return {
+                postcssPlugin: 'rename-component-selectors',
+                Once: (root) => {
+                    root.walkRules(rule => {
+                        let selectorModified = false
+                        if (rule.parent.type === 'atrule' && rule.parent.name === 'keyframes'){
+                            return
+                        }
+                        
+                        rule.selector = rule.selector.replace(/&([A-Za-z0-9_.-]+)\&?/g, (match, componentName) => {
+                            return this.lookups[componentName] ? `.${this.lookups[componentName]}` : match
+                        })
+                        if ( df && !rule.selector.startsWith(df) )
+                            rule.selector = `${df} ${rule.selector}`;
+                    })
+                }
+            }
+        }
+        plugin.postcss = true
+
+        return postcss([plugin])
+            .process(content, { from: file, to: destination })
+            .then(result => {
+                if ( this.transform ){
+                    return typeof this._processor === 'function'
+                        ? this.transform(file, result.css, destination)
+                        : this.transform.process(file, result.css, destination)
+                }
+                return { content: result.css, map: result.map ? result.map.toString() : null }
+            })
+    }
+
+}
