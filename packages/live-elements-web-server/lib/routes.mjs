@@ -60,7 +60,7 @@ export class ServerViewRoute extends ServerRoute{
 
     static isType(ob){ return ob instanceof ServerViewRoute }
 
-    static async createRender(route, reqUrl, page, domEmulator, baseUrl, bundleLookupPath, webpack){
+    static async createRender(route, reqUrl, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -70,7 +70,7 @@ export class ServerViewRoute extends ServerRoute{
         })
         await ComponentRegistry.update()
 
-        page.entryScript = '/scripts/' + route.c.name.toLowerCase() + '.bundle.js'
+        page.entryScript = route.scripts.length ? '/scripts/' + route.c.name.toLowerCase() + '.bundle.js' : null
         const pageDOM = page.captureDOM(domEmulator)
         const insertionDOM = page.constructor.findInsertionElement(pageDOM.window.document)
 
@@ -146,6 +146,18 @@ export class ServerViewRoute extends ServerRoute{
         })
    
         scripts.forEach(script => document.body.appendChild(script))
+        
+        const scopedStyleLinks = viewScopedStyles.styleLinks(route.c)
+        if ( scopedStyleLinks ){
+            scopedStyleLinks.forEach(sl => {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet'
+                link.type = 'text/css'
+                link.href = sl
+                document.head.appendChild(link)
+            })
+        }
+
         const content = domEmulator.serializeDOM(pageDOM)
         return new ResultWithReport(content, behaviorReport)
     }

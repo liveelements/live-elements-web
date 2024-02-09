@@ -52,7 +52,24 @@ export default class ClientPageViewLoader{
                 throw new Error(`Failed to find PageView component.`)
             }
 
-            ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c)
+            const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
+            if ( !result.value ){
+                if ( serverData.scopedStyleAssertionSupport && window.clientBundleSocket ){
+                    const usages = ClientPageViewLoader.__usagesToObject(c)
+                    window.clientBundleSocket.sendActionToServer('update-use', usages)
+                    window.clientBundleSocket.onAction('reload-use', (serverData) => {
+                        const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, true)
+                        if ( !result.value ){
+                            throw new Error(result.error)
+                        }
+                        console.info("Scoped styles reloaded.", serverData)
+                    })
+                    console.warn(`Error while loading scoped styles '${result.error}, attempting to reload styles...`)
+                } else {
+                    throw new Error(result.error)
+                }
+            }
+
 
             window.pageView = new c()
             BaseElement.complete(window.pageView)
@@ -81,15 +98,43 @@ export default class ClientPageViewLoader{
         })
     }
 
-    static __populateScopedStyles(scopedStyles, c){
+    static __usagesToObject(c){
+        return { 
+            type: 'component', 
+            path: `${c.Meta.module}.${c.name}`, 
+            file: `${c.Meta.sourceFileName}`,
+            use: c.use ? c.use.map(u => {
+                if ( typeof u === 'function' && u.name ){
+                    return ClientPageViewLoader.__usagesToObject(u)
+                } else if ( u.constructor && u.constructor.name === 'ScopedStyle' ){
+                    return { type: 'ScopedStyle', src: u.src, process: u.process }
+                }
+                return null
+            }) : null
+        }
+    }
+
+    static __populateScopedStyles(scopedStyles, c, assertionSupport){
         if ( scopedStyles ){
+            if ( assertionSupport ){
+                if ( scopedStyles.renderProperties.name !== c.name ){
+                    return { value: undefined, error: `${scopedStyles.renderProperties.name} !== ${c.name}` }
+                }
+            }
             c.renderProperties = scopedStyles.renderProperties
+        } else { 
+            return { value: undefined, error: `Undefined style for ${c.name}` }
         }
         if ( c.use ){
             for ( let i = 0; i < c.use.length && i < scopedStyles.use.length; ++i ){
-                if ( typeof c.use[i] === 'function' && c.use[i].name )
-                    ClientPageViewLoader.__populateScopedStyles(scopedStyles.use[i], c.use[i])
+                if ( typeof c.use[i] === 'function' && c.use[i].name ){
+                    const result = ClientPageViewLoader.__populateScopedStyles(scopedStyles.use[i], c.use[i], assertionSupport)
+                    if ( !result.value )
+                        return result
+                }
             }
         }
+        return { value: true }
     }
+
 }

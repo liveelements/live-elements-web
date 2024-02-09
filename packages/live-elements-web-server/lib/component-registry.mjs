@@ -62,6 +62,39 @@ export default class ComponentRegistry{
         const moduleDirectoryPath = path.join(modulePackagePath, moduleSegments.slice(1).join('/'))
         return path.join(moduleDirectoryPath, c.Meta.sourceFileName)
     }
+
+    static findComponentByUriId(uriId, searchLocation){
+        const uriSegments = ComponentRegistry.componentUriIdSegments(uriId)
+        const packagePath = PackagePath.find(uriSegments.package, searchLocation)
+        const modulePath = path.join(packagePath, uriSegments.modules.join('/'))
+        return modulePath
+    }
+
+    static componentUriIdSegments(uriId){
+        const uriSegments = uriId.split('.')
+        if ( uriSegments.length < 2 )
+            throw new Error(`ComponentRegistry: Invalid component uri: ${uriId}`)
+        return {
+            package: uriSegments[0],
+            modules: uriSegments.slice(1, uriSegments.length - 1),
+            name: uriSegments[uriSegments.length - 1]
+        }
+    }
+
+    static async importComponentFromUriId(uriId, file, searchLocation){
+        console.log(uriId)
+        const componentModulePath = ComponentRegistry.findComponentByUriId(uriId, searchLocation)
+        const componentPath = path.join(componentModulePath, file)
+        const componentName = ComponentRegistry.componentUriIdSegments(uriId).name
+        console.log(componentPath)
+        const componentModule = await lvimport(componentPath)
+        console.log("COMPONENT MODULE:", componentModule)
+        return componentModule[componentName]
+    }
+
+    static componentUriId(c){
+        return `${c.Meta.module}.${c.name}`
+    }
 }
 
 ComponentRegistry.loadQueue = []

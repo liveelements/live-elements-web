@@ -19,6 +19,7 @@ import chalk from 'chalk'
 import { ServerApiRoute, ServerMiddlewareRoute, ServerViewRoute } from './routes.mjs'
 import { VirtualScript } from './scripts.mjs'
 import ComponentRegistry from './component-registry.mjs'
+import { ScopedViewAssignmentCache } from './scoped-style.mjs'
 
 class WebServerInit{
 
@@ -102,10 +103,15 @@ export default class WebServer extends EventEmitter{
         
         this._domEmulator = new LvDOMEmulator({beautify: true})
 
+        this._scopedViewAssignmentCache = new ScopedViewAssignmentCache()
+
         this._app = express()
         this._app.use(express.json())
         this._webpack = null
-        this._serverSocket = this._config.useSocket ? new ServerBundleSocket(this._app) : null
+        if ( this._config.useSocket ){
+            this._serverSocket = new ServerBundleSocket(this._app)
+            this._serverSocket.onAction('update-use', rootView => this.updateUse(rootView))
+        }
 
         this._assets = null
         this._pages = []
@@ -117,12 +123,6 @@ export default class WebServer extends EventEmitter{
     get bundleLookupPath(){ return this._bundleLookupPath }
     get webpack(){ return this._webpack }
     get watcher(){ return this._watcher }
-
-    prependBaseUrl(relative){ 
-        return this.config.baseUrl.endsWith('/') 
-            ? this.config.baseUrl + relative 
-            : this.config.baseUrl + '/' + relative 
-    }
 
     static currentDir(){ 
         return path.dirname(url.fileURLToPath(import.meta.url)) 
@@ -173,7 +173,7 @@ export default class WebServer extends EventEmitter{
         
         bundleServer._routes = ComponentRegistry.Components.RouteCollector.scan(bundle)
         bundleServer._scopedStyles = ComponentRegistry.Components.ScopedStyleCollector.scan(bundle)
-        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c), bundleServer.bundleLookupPath)
+        bundleServer._scopedStyles.resolveRelativePaths(bundleServer.bundleLookupPath)
         
         bundleServer._styles = await StyleContainer.load(bundlePath, ComponentRegistry.Components.StylesheetCollector.scan(bundle))
         try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }
@@ -209,7 +209,12 @@ export default class WebServer extends EventEmitter{
         const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
 
         const viewStyles = this._scopedStyles.componentsForView(view)
-        const viewAssignemntsSource = JSON.stringify({scopedStyles: viewStyles.toViewUsageAssignmentStructure(view), scopedStyleLinks: viewStyles.styleLinks() })
+        const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
+        const viewAssignemntsSource = JSON.stringify({
+            scopedStyles: viewAssignmentStructure,
+            scopedStyleLinks: viewStyles.styleLinks(),
+            scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
+        })
 
         const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
@@ -275,6 +280,31 @@ export default class WebServer extends EventEmitter{
                 virtualModules
             }
         )
+    }
+
+    async updateUse(rootView){
+        await this._scopedStyles.updateStylesFromClient(rootView, this._bundleLookupPath)
+        this._scopedStyles.resolveRelativePaths(this.bundleLookupPath)
+
+        const view = this._scopedStyles.findViewByName(rootView.path)
+        const viewStyles = this._scopedStyles.componentsForView(view)
+        const viewAssignmentStructure = this._scopedViewAssignmentCache.updateAssignmentStructure(viewStyles, rootView)
+        const viewAssignemntsToSend = {
+            scopedStyles: viewAssignmentStructure,
+            scopedStyleLinks: viewStyles.styleLinks()
+        }
+
+        try{ await this._styles.addScopedStyles(this._scopedStyles) } catch ( e ) { throw new Error(e.message) }
+        
+        this._serverSocket.sendActionToClients('reload-use', [viewAssignemntsToSend])
+        
+        const viewRoutes = this._routes.viewRoutes()
+        const viewRoute = viewRoutes.find(vr => vr.c === view)
+        if ( viewRoute ){
+            const viewLoader = this.createViewLoader(view, viewRoute.placement)
+            const virtualModules = this._webpack.virtualModulesPlugin
+            virtualModules.writeModule(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
+        }
     }
 
     async compile(){
@@ -375,8 +405,18 @@ export default class WebServer extends EventEmitter{
 
     async renderRouteContent(route, req){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
+
+        const viewStyles = this._scopedStyles.componentsForView(route.c)
+        viewStyles.populateViewComponent(route.c)
+
         const renderResult = await ServerViewRoute.createRender(
-            route, req ? req.url : null, page, this._domEmulator, this.config.baseUrl, this._bundleLookupPath, this.webpack
+            route, req ? req.url : null, 
+            page, 
+            this._domEmulator, 
+            this.config.baseUrl, 
+            this._bundleLookupPath, 
+            this.webpack,
+            viewStyles
         )
         const render = renderResult.unwrapAnd(report => report.forEach(WebServer.logWarning))
         return render
