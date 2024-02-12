@@ -1,6 +1,7 @@
 import ComponentRegistry from "./component-registry.mjs"
 import ResultWithReport from "./result-with.report.mjs"
 import ServerRenderer from "./server-renderer.mjs"
+import { BaseElement } from 'live-elements-core/baseelement.js'
 
 import path from 'path'
 import url from 'url'
@@ -60,7 +61,7 @@ export class ServerViewRoute extends ServerRoute{
 
     static isType(ob){ return ob instanceof ServerViewRoute }
 
-    static async createRender(route, reqUrl, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
+    static async createRender(route, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 

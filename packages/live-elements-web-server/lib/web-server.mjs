@@ -10,7 +10,6 @@ import ClassInfo from './class-info.mjs'
 import StyleContainer from './style-loader.mjs'
 import ErrorHandler from './error-handler.mjs'
 import { Watcher, WatcherGroup } from './watcher.mjs'
-import { BundlePackagePath } from './bundle-package-path.mjs'
 import BundleWebpack from './bundle-webpack.mjs'
 import  { ServerBundleSocket} from './server-bundle-socket.mjs'
 import log from './server-log.mjs'
@@ -20,6 +19,7 @@ import { ServerApiRoute, ServerMiddlewareRoute, ServerViewRoute } from './routes
 import { VirtualScript } from './scripts.mjs'
 import ComponentRegistry from './component-registry.mjs'
 import { ScopedViewAssignmentCache } from './scoped-style.mjs'
+import BundleData from './bundle-data.mjs'
 
 class WebServerInit{
 
@@ -87,15 +87,14 @@ class WebServerConfiguration{
 
 export default class WebServer extends EventEmitter{
 
-    constructor(config, bundlePath, bundle){
+    constructor(config, bundle){
         super()
         this._config = config
-        this._bundlePath = bundlePath
         this._bundle = bundle
 
         this._bundleLookupPath = config.userBundleLookupPath 
             ? config.userBundleLookupPath 
-            : BundlePackagePath.find(bundlePath)
+            : bundle.packagePath
 
         this._watcher = this._config.watch
             ? Watcher.createFromGroups(['server', 'style', 'webpack', 'webpack-manual'])
@@ -119,7 +118,7 @@ export default class WebServer extends EventEmitter{
     }
 
     get config(){ return this._config }
-    get bundleFile(){ return this._bundleFile }
+    get bundleFile(){ return this._bundle.file }
     get bundleLookupPath(){ return this._bundleLookupPath }
     get webpack(){ return this._webpack }
     get watcher(){ return this._watcher }
@@ -161,39 +160,34 @@ export default class WebServer extends EventEmitter{
         return bundle
     }
 
-    static async loadBundle(bundle, bundlePath, config){
+    static async loadBundle(bundle, config){
         WebServer.assertInit()
 
-        const bundleRootPath = BundlePackagePath.find(bundlePath)
-        const bundleServer = new WebServer(config, bundlePath, bundle)
+        const bundleServer = new WebServer(config, bundle)
         if ( bundleServer._watcher ){
-            const files = Watcher.scanPackage(bundleRootPath, '*.lv')
+            const files = Watcher.scanPackage(bundle.packagePath, '*.lv')
             bundleServer._watcher.assignFiles(files, bundleServer._watcher.findGroup('server'))
         }
         
-        bundleServer._routes = ComponentRegistry.Components.RouteCollector.scan(bundle)
-        bundleServer._scopedStyles = ComponentRegistry.Components.ScopedStyleCollector.scan(bundle)
-        bundleServer._scopedStyles.resolveRelativePaths(bundleServer.bundleLookupPath)
-        
-        bundleServer._styles = await StyleContainer.load(bundlePath, ComponentRegistry.Components.StylesheetCollector.scan(bundle))
-        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }
+        const bundleScan = await bundle.scan([
+            ComponentRegistry.Components.RouteCollector.create(),
+            ComponentRegistry.Components.AssetProviderCollector.create(),
+            ComponentRegistry.Components.ScopedStyleCollector.create(),
+            ComponentRegistry.Components.StylesheetCollector.create(),
+            ComponentRegistry.Components.PageCollector.create(bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
+        ])
 
-        bundleServer._assets = ComponentRegistry.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
-        
-        const pages = ComponentRegistry.Components.PageCollector.scanAndSetupDOM(bundle, bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
-        bundleServer._pages = pages.length 
-            ? pages
-            : ComponentRegistry.Components.PageCollector.defaultPageSetup(bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
+        bundleServer._routes = bundleScan.routes
+        bundleServer._assets = bundleScan.assets.data
+        bundleServer._scopedStyles = bundleScan.scopedStyles
+        bundleServer._styles = await StyleContainer.load(bundle.file, bundleScan.styles)
+        bundleServer._pages = bundleScan.pages
+
+        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }        
 
         bundleServer.addWebpack()
 
         return bundleServer
-    }
-
-    static async load(bundlePath, config){
-        WebServer.assertInit()
-        const bundle = await WebServer.loadBundleFile(bundlePath)
-        return WebServer.loadBundle(bundle, bundlePath, config)
     }
 
     createViewLoader(view, placement){
@@ -201,16 +195,16 @@ export default class WebServer extends EventEmitter{
         const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         
         const bundleName = view.name.toLowerCase()
-        const viewPath = ComponentRegistry.findComponentPath(view, this._bundleLookupPath)
+        const viewPath = ComponentRegistry.findComponentPath(view, this.bundleLookupPath)
         const placementLocations = placement ? placement.map(p => { 
-            const placementPath = ComponentRegistry.findComponentPath(p, this._bundleLookupPath)
+            const placementPath = ComponentRegistry.findComponentPath(p, this.bundleLookupPath)
             return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
         }) : []
         const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
 
         const viewStyles = this._scopedStyles.componentsForView(view)
         const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
-        const viewAssignemntsSource = JSON.stringify({
+        const viewAssignmentsSource = JSON.stringify({
             scopedStyles: viewAssignmentStructure,
             scopedStyleLinks: viewStyles.styleLinks(),
             scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
@@ -220,14 +214,15 @@ export default class WebServer extends EventEmitter{
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
-            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource}, ${viewAssignemntsSource})`
+            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource}, ${viewAssignmentsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
             loaderType: clientLoader,
             virtualLoader: moduleVirtualLoader,
             virtualLoaderContent: moduleVirtualLoaderContent,
-            virtualLoaderPlacementContent: placementSource
+            virtualLoaderPlacementContent: placementSource,
+            virtualLoaderViewAssignments: viewAssignmentsSource
         }
     }
 
@@ -272,7 +267,7 @@ export default class WebServer extends EventEmitter{
         this._webpack = new BundleWebpack(
             entries, 
             this._bundlePath, 
-            path.resolve(this._bundleLookupPath, 'dist'),
+            path.resolve(this.bundleLookupPath, 'dist'),
             { 
                 watcher: this._watcher,
                 mode: this.config.runMode === WebServer.RunMode.Production ? 'production' : 'development',
@@ -283,7 +278,7 @@ export default class WebServer extends EventEmitter{
     }
 
     async updateUse(rootView){
-        await this._scopedStyles.updateStylesFromClient(rootView, this._bundleLookupPath)
+        await this._scopedStyles.updateStylesFromClient(rootView, this.bundleLookupPath)
         this._scopedStyles.resolveRelativePaths(this.bundleLookupPath)
 
         const view = this._scopedStyles.findViewByName(rootView.path)
@@ -312,7 +307,7 @@ export default class WebServer extends EventEmitter{
             return
         }
         
-        const distPath = path.join(this._bundleLookupPath, 'dist')
+        const distPath = path.join(this.bundleLookupPath, 'dist')
         if ( !fs.existsSync(distPath) )
             fs.mkdirSync(distPath)
 
@@ -327,7 +322,7 @@ export default class WebServer extends EventEmitter{
             log.i(`Asset written: ${path.relative(distPath, styleOutputPath)}`)
         }
 
-        const assetPath = path.join(this._bundleLookupPath, 'dist', 'assets')
+        const assetPath = path.join(this.bundleLookupPath, 'dist', 'assets')
         if ( !fs.existsSync(assetPath) )
             fs.mkdirSync(assetPath, { recursive: true })
 
@@ -410,11 +405,12 @@ export default class WebServer extends EventEmitter{
         viewStyles.populateViewComponent(route.c)
 
         const renderResult = await ServerViewRoute.createRender(
-            route, req ? req.url : null, 
+            route, 
+            req, 
             page, 
             this._domEmulator, 
             this.config.baseUrl, 
-            this._bundleLookupPath, 
+            this.bundleLookupPath, 
             this.webpack,
             viewStyles
         )
@@ -555,7 +551,7 @@ export default class WebServer extends EventEmitter{
     }
 
     async run(){
-        const distPath = path.join(this._bundleLookupPath, 'dist')
+        const distPath = path.join(this.bundleLookupPath, 'dist')
 
         this._app.use('/scripts', express.static(path.join(distPath, 'scripts')))
         this._app.use('/styles', express.static(path.join(distPath, 'styles')))

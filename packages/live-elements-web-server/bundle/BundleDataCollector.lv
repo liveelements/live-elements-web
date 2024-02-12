@@ -1,0 +1,22 @@
+component BundleDataCollector{
+    constructor(){
+        super()
+        BundleDataCollector.prototype.__initialize.call(this)
+    }
+
+    fn name(){
+        throw new Error(`${this.constructor.name} requires implementation of 'name' method.`)
+    }
+    
+    // returns trail object
+    fn start(_bundle:Bundle, _trail:Object):Object {}
+    // returns trail object
+    fn iterateStart(_group:BaseElement, _trail:Object):Object {}
+    fn iterateEnd(_group:BaseElement, _trail:Object){}
+
+    fn visit(_node:BaseElement, _trail:Object, _control:Object){
+        throw new Error(`${this.constructor.name} requires implementation of 'visit' method.`)
+    }
+
+    fn end():Object { return null }
+}

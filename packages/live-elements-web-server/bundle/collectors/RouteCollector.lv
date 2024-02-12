@@ -3,94 +3,112 @@ import .router
 import .view
 import .page
 
-import { RouteCollection, ServerApiRoute, ServerViewRoute, ServerMiddlewareRoute } from '../../lib/route-collection.mjs'
+import { RouteCollection, ServerApiRoute, ServerViewRoute, ServerMiddlewareRoute } from '../../lib/routes.mjs'
 
-component RouteCollector{
-    static fn scan(bundle:Bundle){
-        return RouteCollector.scanRecurse(bundle, '', [])
+component RouteCollector < BundleDataCollector{
+
+    constructor(){
+        super()
+        this._routes = new RouteCollection()
+
+        RouteCollector.prototype.__initialize.call(this)
     }
 
-    static fn scanRecurse(group:BaseElement, prefix:string, userMiddleware:Array){
-        let routes = new RouteCollection()
-        userMiddleware = userMiddleware ? userMiddleware : []
+    static fn create(){ return RouteCollector{} }
 
-        let middlewares = group.children.filter(c => c instanceof MiddlewareRoute)
+    fn name(){ return 'routes' }
+
+    fn iterateStart(group:BaseElement, trail:Object){
+        const nestedMiddleware = []
+        const middlewares = group.children.filter(c => c instanceof MiddlewareRoute)
         for( let i = 0; i < middlewares.length; ++i )
-            userMiddleware.push(middlewares[i].middleware)
+            nestedMiddleware.push(middlewares[i].middleware)
 
-        for ( let i = 0; i < group.children.length; ++i ){
-            if ( group.children[i] instanceof Route ){
-                let route = group.children[i]
-                let routeUserMiddleware = route.middleware 
-                    ? userMiddleware.concat(route.middleware) : userMiddleware
-                if ( route instanceof GetRoute ){
-                    routes.add(new ServerApiRoute(
-                        prefix ? prefix + route.url : route.url,
-                        routeUserMiddleware,
-                        route.f,
-                        ServerApiRoute.GET
-                    ))
-                } else if ( route instanceof PostRoute ){
-                    routes.add(new ServerApiRoute(
-                        prefix ? prefix + route.url : route.url,
-                        routeUserMiddleware,
-                        route.f,
-                        ServerApiRoute.POST
-                    ))
-                } else if ( route instanceof MiddlewareRoute ){
-                    routes.push(new ServerMiddlewareRoute(
-                        prefix ? prefix + route.url : route.url,
-                        routeUserMiddleware,
-                        route.f
-                    ))
-                } else if ( route instanceof ViewRoute ){
-                    let placement = []
-                    let page = undefined
-                    const routeUrl = prefix ? prefix + route.url : route.url
-                    if ( route.placement ){
-                        if ( typeof route.placement === 'function' && route.placement.prototype !== undefined ){
-                            placement = [route.placement]
-                        } else if ( route.placement instanceof Page ){
-                            page = route.placement
-                        } else if ( route.placement instanceof ViewPlacement ){
-                            let current = route.placement
-                            let collector = [route.placement.c]
-                            while ( current.placement ){
-                                if ( typeof current.placement === 'function' && current.placement.prototype !== undefined ){
-                                    collector.unshift(current.placement)
-                                    break
-                                } else if ( current.placement instanceof Page ){
-                                    page = current.placement
-                                    break
-                                } else if ( current.placement instanceof ViewPlacement ){
-                                    collector.unshift(current.placement.c)
-                                    current = current.placement
-                                } else {
-                                    throw new Error(`Unkown layout placement type for view route: ${routeUrl}.`)
-                                }
-                            }
-                            placement = collector
+        const trailMiddleware = trail.routeMiddleware ? trail.routeMiddleware : []
+        const currentMiddleware = group instanceof Route && group.middleware ? group.middleware : []
+
+        const routeMiddleware = nestedMiddleware.concat(trailMiddleware).concat(currentMiddleware)
+        return {...trail, routeMiddleware: routeMiddleware }
+    }
+
+    fn visit(route:BaseElement, trail:Object, control:Object){
+        if ( !(route instanceof Route) )
+            return
+
+        const middleware = trail.routeMiddleware ? trail.routeMiddleware : []
+        const prefix = trail.routePrefix ? trail.routePrefix : ''
+
+        const routeUserMiddleware = route.middleware ? middleware.concat(route.middleware) : middleware
+        if ( route instanceof GetRoute ){
+            this._routes.add(new ServerApiRoute(
+                prefix ? prefix + route.url : route.url,
+                routeUserMiddleware,
+                route.f,
+                ServerApiRoute.GET
+            ))
+        } else if ( route instanceof PostRoute ){
+            this._routes.add(new ServerApiRoute(
+                prefix ? prefix + route.url : route.url,
+                routeUserMiddleware,
+                route.f,
+                ServerApiRoute.POST
+            ))
+        } else if ( route instanceof MiddlewareRoute && route.f && route.url ){
+            this._routes.add(new ServerMiddlewareRoute(
+                prefix ? prefix + route.url : route.url,
+                routeUserMiddleware,
+                route.f
+            ))
+        } else if ( route instanceof ViewRoute ){
+            let placement = []
+            let page = undefined
+            const routeUrl = prefix ? prefix + route.url : route.url
+            if ( route.placement ){
+                if ( typeof route.placement === 'function' && route.placement.prototype !== undefined ){
+                    placement = [route.placement]
+                } else if ( route.placement instanceof Page ){
+                    page = route.placement
+                } else if ( route.placement instanceof ViewPlacement ){
+                    let current = route.placement
+                    let collector = [route.placement.c]
+                    while ( current.placement ){
+                        if ( typeof current.placement === 'function' && current.placement.prototype !== undefined ){
+                            collector.unshift(current.placement)
+                            break
+                        } else if ( current.placement instanceof Page ){
+                            page = current.placement
+                            break
+                        } else if ( current.placement instanceof ViewPlacement ){
+                            collector.unshift(current.placement.c)
+                            current = current.placement
                         } else {
-                            throw new Error(`Unkown placement type for view route: ${routeUrl}.`)
+                            throw new Error(`Unkown layout placement type for view route: ${routeUrl}.`)
                         }
                     }
-                    routes.add(new ServerViewRoute(
-                        routeUrl,
-                        routeUserMiddleware,
-                        route.f,
-                        route.c,
-                        route.render,
-                        placement,
-                        page
-                    ))
-                }
-
-                if ( route.children.length > 0 ){
-                    var routeChildRoutes = RouteCollector.scanRecurse(route, prefix ? prefix + route.url : route.url, [...routeUserMiddleware])
-                    routes = routes.merge(routeChildRoutes)
+                    placement = collector
+                } else {
+                    throw new Error(`Unkown placement type for view route: ${routeUrl}.`)
                 }
             }
+            this._routes.add(new ServerViewRoute(
+                routeUrl,
+                routeUserMiddleware,
+                route.f,
+                route.c,
+                route.render,
+                placement,
+                page
+            ))
         }
-        return routes
+
+        if ( route.children.length > 0 ){
+            control.iterate(route, {...trail, routePrefix: prefix + route.url})
+        }
+    }
+
+    fn end(trail:Object):Object{ 
+        const r = this._routes; 
+        this._routes = null; 
+        return r 
     }
 }

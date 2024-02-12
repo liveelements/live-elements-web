@@ -2,9 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import { EventEmitter } from 'node:events'
-import { BundlePackagePath } from 'live-elements-web-server/lib/bundle-package-path.mjs'
 import { ScopedStyleCollection } from './scoped-style.mjs'
 import ClassInfo from './class-info.mjs'
+import BundleData from './bundle-data.mjs'
 
 class StyleInput{
     constructor(file, processor){
@@ -143,7 +143,7 @@ export default class StyleContainer extends EventEmitter {
     }
 
     static async load(bundlePath, configuredStyles){
-        let bundleRootPath = BundlePackagePath.find(bundlePath)
+        let bundleRootPath = BundleData.findPackagePath(bundlePath)
         const styles = new StyleContainer(path.join(bundleRootPath, 'styles'))
 
         for (var i = 0; i < configuredStyles.length; ++i) {

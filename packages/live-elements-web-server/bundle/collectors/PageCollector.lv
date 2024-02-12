@@ -4,28 +4,40 @@ import .router
 import .page
 import .page.index
 
-component PageCollector{
+component PageCollector < BundleDataCollector{
 
-    static fn scan(bundle:Bundle){
-        let pages = []
-        for ( var i = 0; i < bundle.children.length; ++i ){
-            if ( bundle.children[i] instanceof Page ){
-                pages.push(bundle.children[i])
-            }
+    constructor(domEmulator:Object, entryScriptUrl:String){
+        super()
+        this._pages = []
+        this._domEmulator = domEmulator
+        this._entryScriptUrl = entryScriptUrl
+        PageCollector.prototype.__initialize.call(this)
+    }
+
+    static fn create(domEmulator:Object, entryScriptUrl:String){
+        return PageCollector.(domEmulator, entryScriptUrl){}
+    }
+
+    fn name(){ return 'pages' }
+
+    fn visit(node:BaseElement, trail:Object, control:Object){
+        if ( node instanceof Page ){
+            this._pages.push(node)
         }
-        return pages
+    }
+
+    fn end(_trail:Object):Object{
+        const pages = this._pages
+        this._pages = []
+        for( let i = 0; i < pages.length; ++i ){
+            pages[i].entryScript = this._entryScriptUrl
+        }
+        const pagesSetup = PageCollector.setupDOM(pages, this._domEmulator)
+        return pagesSetup.length > 0 ? pagesSetup : PageCollector.defaultPageSetup(this._domEmulator, this._entryScriptUrl)
     }
 
     static fn setupDOM(pages:Array, domInterface:Object){
-        return pages.map( page => {  return { page: page, output: page.output, dom: page.captureDOM(domInterface) } } )
-    }
-
-    static fn scanAndSetupDOM(bundle:Bundle, domInterface:Object, entryScript:string){
-        const pages = PageCollector.scan(bundle)
-        for( let i = 0; i < pages.length; ++i ){
-            pages[i].entryScript = entryScript
-        }
-        return PageCollector.setupDOM(pages, domInterface)
+        return pages.map( page => { return { page: page, output: page.output, dom: page.captureDOM(domInterface) } } )
     }
 
     static fn defaultPageSetup(domInterface:Object, entryScript:string){

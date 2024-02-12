@@ -82,13 +82,10 @@ export default class ComponentRegistry{
     }
 
     static async importComponentFromUriId(uriId, file, searchLocation){
-        console.log(uriId)
         const componentModulePath = ComponentRegistry.findComponentByUriId(uriId, searchLocation)
         const componentPath = path.join(componentModulePath, file)
         const componentName = ComponentRegistry.componentUriIdSegments(uriId).name
-        console.log(componentPath)
         const componentModule = await lvimport(componentPath)
-        console.log("COMPONENT MODULE:", componentModule)
         return componentModule[componentName]
     }
 
