@@ -1,0 +1,29 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component NavToggleButton < A{
+    classes: ['nav-toggle-button']
+
+    Span{ classes: ['bar'] }
+    Span{ classes: ['bar'] }
+    Span{ classes: ['bar'] }
+
+    DOMBehavior{
+        domReady : (a) => {
+            a.onclick = (e) => {
+                e.preventDefault()
+                const topNavClass = ScopedStyle.className(TopNav)
+                let topNav = a.parentNode
+                while ( topNav ){
+                    if ( topNav.classList.contains(topNavClass) ){
+                        topNav.classList.toggle('active')
+                        break
+                    }
+                    topNav = topNav.parentNode
+                }
+            }
+        }
+    }
+}
