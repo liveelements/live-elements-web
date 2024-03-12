@@ -1,0 +1,8 @@
+
+component TBody < DOMElement{
+
+    constructor(){
+        super('tbody')
+        TBody.prototype.__initialize.call(this)
+    }
+}

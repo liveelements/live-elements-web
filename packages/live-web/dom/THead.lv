@@ -1,0 +1,8 @@
+
+component THead < DOMElement{
+
+    constructor(){
+        super('thead')
+        THead.prototype.__initialize.call(this)
+    }
+}
