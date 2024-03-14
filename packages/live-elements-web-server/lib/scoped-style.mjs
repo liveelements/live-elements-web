@@ -1,6 +1,8 @@
 import path from 'path'
 import url from 'url'
 import lvimport from 'live-elements-core/lvimport.mjs'
+import ClassInfo from 'live-elements-web-server/lib/class-info.mjs'
+import { BaseElement } from 'live-elements-core/baseelement.js'
 
 export class ScopedStyle{
     constructor(src, process){
@@ -28,6 +30,7 @@ export class ScopedComponent{
         this._name = c.name
         this._viewUsages = [view]
         this._styles = []
+        this._inherits = null
     }
 
     get component(){ return this._c }
@@ -37,6 +40,11 @@ export class ScopedComponent{
     get className(){ return this._name.replaceAll('.', '-').toLowerCase() }
     get classNameWithPrefix(){ return `${ScopedComponent.classPrefix}${this.className}` }
     get styles(){ return this._styles }
+    get inherits(){ return this._inherits }
+
+    setInheritance(inherits){
+        this._inherits = inherits
+    }
 
     addStyle(style){
         const exists = this._styles.find(s => s.src === style.src)
@@ -85,6 +93,10 @@ export class ScopedStyleCollection{
         return ScopedStyleCollection.ScopedProcessor
     }
 
+    findScopedComponent(c){
+        return this._components.find(s => s.component === c)
+    }
+
     addComponent(c, view){
         const exists = this._components.find(s => s.component === c )
         if ( exists ){
@@ -106,6 +118,8 @@ export class ScopedStyleCollection{
                 for ( let i = 0; i < newComp._viewUsages.length; ++i ){
                     exists._viewUsages.push(newComp._viewUsages[i])
                 }
+                if ( newComp.inherits )
+                    exists.setInheritance(newComp.inherits)
             }
             return exists
         }
@@ -167,6 +181,38 @@ export class ScopedStyleCollection{
         return ['/styles/scoped.css']
     }
 
+    componentSelectorTransformationsFromComponent(c){
+        const result = {}
+        for ( let i = 0; i < this._components.length; ++i ){
+            const s = this._components[i]
+            if ( s.component === c ){
+                result[s.component.name] = s.classNameWithPrefix
+                result[s.fullName] = s.classNameWithPrefix
+            }
+        }
+
+        if ( c.use ){
+            for ( let i = 0; i < c.use.length; ++i ){
+                const use = c.use[i]
+                if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
+                    const useTransformations = this.componentSelectorTransformationsFromComponent(use)
+                    for (let [key, value] of Object.entries(useTransformations)) {
+                        if ( !result.hasOwnProperty(key) ){
+                            result[key] = value
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    componentSelectorTransformationsFrom(c){
+        const res = this.componentSelectorTransformationsFromComponent(c.component)
+        return res
+    }
+
     componentSelectorTransformations(){
         const result = {}
         for ( let i = 0; i < this._components.length; ++i ){
@@ -181,7 +227,14 @@ export class ScopedStyleCollection{
         const result = {}
         for ( let i = 0; i < this._components.length; ++i ){
             const s = this._components[i]
-            result[s.name] = { classes: s.classNameWithPrefix }
+
+            const componentClasses = [s.classNameWithPrefix]
+            let next = s.inherits
+            while ( next ){
+                componentClasses.push(next.classNameWithPrefix)
+                next = next.inherits
+            }
+            result[s.name] = { classes: componentClasses }
         }
         return result
     }
