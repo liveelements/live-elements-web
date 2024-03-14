@@ -4,6 +4,6 @@ component ScopedStyle{
     any c: null
 
     static fn className(c:component){
-        return c.renderProperties && c.renderProperties.classes ? c.renderProperties.classes : ''
+        return c.renderProperties && c.renderProperties.classes ? c.renderProperties.classes.join(' ') : ''
     }
 }

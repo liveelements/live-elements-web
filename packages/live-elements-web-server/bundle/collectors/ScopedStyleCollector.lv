@@ -29,6 +29,19 @@ component ScopedStyleCollector < BundleDataCollector{
         collection.resolveRelativePaths(trail.bundlePackagePath)
         return collection
     }
+    
+    static fn findInheritedViewComponent(c:component){
+        let prototype = Object.getPrototypeOf(c)
+        while ( prototype ){
+            if ( prototype instanceof BaseElement )
+                return null
+            if ( prototype.use && Array.isArray(prototype.use) ){
+                return prototype
+            }
+            prototype = Object.getPrototypeOf(prototype)
+        }
+        return null
+    }
 
     static fn scanComponentStyles(c:component, rootc:component){
         let collection = new ScopedStyleCollection()
@@ -44,6 +57,14 @@ component ScopedStyleCollector < BundleDataCollector{
                 }
             }
         }
+
+        const inherited = ScopedStyleCollector.findInheritedViewComponent(c)
+        if ( inherited ){
+            const scopedInherited = collection.addComponent(inherited, rootc)
+            const scopedCurrent = collection.findScopedComponent(c)
+            scopedCurrent.setInheritance(scopedInherited)
+        }
+
         return collection
     }
 }

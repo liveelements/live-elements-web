@@ -169,16 +169,17 @@ export default class StyleContainer extends EventEmitter {
 
     async addScopedStyles(scopedStyleCollection){
         if ( scopedStyleCollection.size() ){
-            const componentSelectorTransformations = scopedStyleCollection.componentSelectorTransformations()
             const ScopedProcessor = await ScopedStyleCollection.loadScopedProcessor()
             const scopedStylesOutput = this.configureOutput('scoped.css')
 
             const rootViews = scopedStyleCollection.rootViews()
             for ( let i = 0; i < scopedStyleCollection.size(); ++i ){
                 const ct = scopedStyleCollection._components[i]
+                const componentSelectorTransformations = scopedStyleCollection.componentSelectorTransformationsFrom(ct)
                 const isRoot = rootViews.includes(ct.component)
                 const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
                 for ( let j = 0; j < ct._styles.length; ++j ){
+                    // add each component input style with it's own component selector transformations
                     const sst = ct._styles[j]
                     scopedStylesOutput.addInputUnique(sst.absoluteSrc, ScopedProcessor.create(componentSelectorTransformations, `${classNameWithPrefix}`, await sst.processFunction()))
                 }
