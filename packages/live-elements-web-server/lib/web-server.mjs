@@ -6,7 +6,6 @@ import { EventEmitter } from 'node:events'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
 import LvDOMEmulator from './lvdomemulator.mjs'
-import PackagePath from './package-path.cjs'
 import ClassInfo from './class-info.mjs'
 import StyleContainer from './style-loader.mjs'
 import ErrorHandler from './error-handler.mjs'
@@ -14,33 +13,32 @@ import { Watcher, WatcherGroup } from './watcher.mjs'
 import { BundlePackagePath } from './bundle-package-path.mjs'
 import BundleWebpack from './bundle-webpack.mjs'
 import  { ServerBundleSocket} from './server-bundle-socket.mjs'
-import ServerRenderer from './server-renderer.mjs'
 import log from './server-log.mjs'
 import { BaseElement } from 'live-elements-core/baseelement.js'
 import chalk from 'chalk'
+import { ServerApiRoute, ServerMiddlewareRoute, ServerViewRoute } from './routes.mjs'
+import { VirtualScript } from './scripts.mjs'
+import ComponentRegistry from './component-registry.mjs'
+import { ScopedViewAssignmentCache } from './scoped-style.mjs'
 
 class WebServerInit{
 
     static async run(){
-        if ( !WebServer.Components )
-            WebServer.Components = await WebServerInit.loadComponents()
-    }
-
-    static async loadComponents(){
         const packageDir = path.dirname(WebServer.currentDir())
-        return {
-            Route: (await lvimport(path.join(packageDir, 'router', 'Route.lv'))).Route,
-            GetRoute: (await lvimport(path.join(packageDir, 'router', 'GetRoute.lv'))).GetRoute,
-            MiddlewareRoute: (await lvimport(path.join(packageDir, 'router', 'MiddlewareRoute.lv'))).MiddlewareRoute,
-            PostRoute: (await lvimport(path.join(packageDir, 'router', 'PostRoute.lv'))).PostRoute,
-            ViewRoute: (await lvimport(path.join(packageDir, 'router', 'ViewRoute.lv'))).ViewRoute,
-            AssetProviderCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'AssetProviderCollector.lv'))).AssetProviderCollector,
-            PageCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'PageCollector.lv'))).PageCollector,
-            RouteCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'RouteCollector.lv'))).RouteCollector,
-            StylesheetCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'StylesheetCollector.lv'))).StylesheetCollector,
-            ScopedStyleCollector: (await lvimport(path.join(packageDir, 'bundle', 'collectors', 'ScopedStyleCollector.lv'))).ScopedStyleCollector,
-            PageView: (await lvimport(path.resolve(path.join(packageDir, 'view', 'PageView.lv')))).PageView
-        }
+        ComponentRegistry.add({
+            Route: path.join(packageDir, 'router', 'Route.lv'),
+            GetRoute: path.join(packageDir, 'router', 'GetRoute.lv'),
+            MiddlewareRoute: path.join(packageDir, 'router', 'MiddlewareRoute.lv'),
+            PostRoute: path.join(packageDir, 'router', 'PostRoute.lv'),
+            ViewRoute: path.join(packageDir, 'router', 'ViewRoute.lv'),
+            AssetProviderCollector: path.join(packageDir, 'bundle', 'collectors', 'AssetProviderCollector.lv'),
+            PageCollector: path.join(packageDir, 'bundle', 'collectors', 'PageCollector.lv'),
+            RouteCollector: path.join(packageDir, 'bundle', 'collectors', 'RouteCollector.lv'),
+            StylesheetCollector: path.join(packageDir, 'bundle', 'collectors', 'StylesheetCollector.lv'),
+            ScopedStyleCollector: path.join(packageDir, 'bundle', 'collectors', 'ScopedStyleCollector.lv'),
+            PageView: path.join(packageDir, 'view', 'PageView.lv')
+        })
+        await ComponentRegistry.update()
     }
 }
 
@@ -105,10 +103,15 @@ export default class WebServer extends EventEmitter{
         
         this._domEmulator = new LvDOMEmulator({beautify: true})
 
+        this._scopedViewAssignmentCache = new ScopedViewAssignmentCache()
+
         this._app = express()
         this._app.use(express.json())
         this._webpack = null
-        this._serverSocket = this._config.useSocket ? new ServerBundleSocket(this._app) : null
+        if ( this._config.useSocket ){
+            this._serverSocket = new ServerBundleSocket(this._app)
+            this._serverSocket.onAction('update-use', rootView => this.updateUse(rootView))
+        }
 
         this._assets = null
         this._pages = []
@@ -120,12 +123,6 @@ export default class WebServer extends EventEmitter{
     get bundleLookupPath(){ return this._bundleLookupPath }
     get webpack(){ return this._webpack }
     get watcher(){ return this._watcher }
-
-    prependBaseUrl(relative){ 
-        return this.config.baseUrl.endsWith('/') 
-            ? this.config.baseUrl + relative 
-            : this.config.baseUrl + '/' + relative 
-    }
 
     static currentDir(){ 
         return path.dirname(url.fileURLToPath(import.meta.url)) 
@@ -146,8 +143,8 @@ export default class WebServer extends EventEmitter{
     }
 
     static assertInit(){
-        if ( !WebServer.Components )
-            throw new Error(`WebServer.Components have not been initialized. Run 'await WebServer.Init.run()' before using WebServer.`)
+        if ( !ComponentRegistry.Components.Route )
+            throw new Error(`ComponentRegistry.Components have not been initialized. Run 'await WebServer.Init.run()' before using WebServer.`)
     }
 
     static async loadBundleFile(bundlePath){
@@ -174,19 +171,19 @@ export default class WebServer extends EventEmitter{
             bundleServer._watcher.assignFiles(files, bundleServer._watcher.findGroup('server'))
         }
         
-        bundleServer._routes = WebServer.Components.RouteCollector.scan(bundle)
-        bundleServer._scopedStyles = WebServer.Components.ScopedStyleCollector.scan(bundle)
-        bundleServer._scopedStyles.resolveRelativePaths(c => bundleServer.getComponentPath(c))
+        bundleServer._routes = ComponentRegistry.Components.RouteCollector.scan(bundle)
+        bundleServer._scopedStyles = ComponentRegistry.Components.ScopedStyleCollector.scan(bundle)
+        bundleServer._scopedStyles.resolveRelativePaths(bundleServer.bundleLookupPath)
         
-        bundleServer._styles = await StyleContainer.load(bundlePath, WebServer.Components.StylesheetCollector.scan(bundle))
-        await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles)
+        bundleServer._styles = await StyleContainer.load(bundlePath, ComponentRegistry.Components.StylesheetCollector.scan(bundle))
+        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }
 
-        bundleServer._assets = WebServer.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
+        bundleServer._assets = ComponentRegistry.Components.AssetProviderCollector.scanAndCollect(bundle, bundleRootPath)
         
-        const pages = WebServer.Components.PageCollector.scanAndSetupDOM(bundle, bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
+        const pages = ComponentRegistry.Components.PageCollector.scanAndSetupDOM(bundle, bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
         bundleServer._pages = pages.length 
             ? pages
-            : WebServer.Components.PageCollector.defaultPageSetup(bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
+            : ComponentRegistry.Components.PageCollector.defaultPageSetup(bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
 
         bundleServer.addWebpack()
 
@@ -199,33 +196,27 @@ export default class WebServer extends EventEmitter{
         return WebServer.loadBundle(bundle, bundlePath, config)
     }
 
-    getComponentPath(c){
-        var module = c.Meta.module
-        var moduleSegments = module.split('.')
-        if ( moduleSegments.length === 0 ){
-            throw new Error(`Cannot determine components '${c.name}' module. Result is empty.`)
-        }
-        const modulePackagePath = PackagePath.find(moduleSegments[0], this._bundleLookupPath);
-        const moduleDirectoryPath = path.join(modulePackagePath, moduleSegments.slice(1).join('/'))
-        return path.join(moduleDirectoryPath, c.Meta.sourceFileName)
-    }
-
     createViewLoader(view, placement){
         const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
         const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         
         const bundleName = view.name.toLowerCase()
-        const viewPath = this.getComponentPath(view)
+        const viewPath = ComponentRegistry.findComponentPath(view, this._bundleLookupPath)
         const placementLocations = placement ? placement.map(p => { 
-            const placementPath = this.getComponentPath(p)
+            const placementPath = ComponentRegistry.findComponentPath(p, this._bundleLookupPath)
             return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
         }) : []
         const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
 
         const viewStyles = this._scopedStyles.componentsForView(view)
-        const viewAssignemntsSource = JSON.stringify({scopedStyles: viewStyles.toViewUsageAssignmentStructure(view), scopedStyleLinks: viewStyles.styleLinks() })
+        const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
+        const viewAssignemntsSource = JSON.stringify({
+            scopedStyles: viewAssignmentStructure,
+            scopedStyleLinks: viewStyles.styleLinks(),
+            scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
+        })
 
-        const clientLoader = ClassInfo.extends(view, WebServer.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
+        const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
@@ -242,7 +233,7 @@ export default class WebServer extends EventEmitter{
 
     addWebpack(){
         const routes = this._routes
-        const views = routes.filter(route => route.type === WebServer.Components.Route.Get && route.c )
+        const views = routes.viewRoutes()
         const entries = {}, virtualModules = {}
 
         const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
@@ -254,7 +245,8 @@ export default class WebServer extends EventEmitter{
                 `import ClientBundleSocket from "${clientBundleSocket}"`,
                 `window.clientBundleSocket = new ClientBundleSocket("${this.config.socketUrl}")`
             ].join('\n')
-            extraScripts.push(clientBundleSocketImporterAbsolute)
+            const vscript = new VirtualScript(clientBundleSocketImporterAbsolute, clientBundleSocketImporterContent)
+            extraScripts.push(vscript)
             virtualModules[clientBundleSocketImporterAbsolute] = clientBundleSocketImporterContent
         }
 
@@ -264,14 +256,17 @@ export default class WebServer extends EventEmitter{
             const view = viewRoute.c
             const bundleName = view.name.toLowerCase()
 
-            const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : WebServer.Components.ViewRoute.CSR
-            if ( renderMode === WebServer.Components.ViewRoute.CSR ){
+            extraScripts.forEach(script => viewRoute.addScript(script))
+
+            const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : ComponentRegistry.Components.ViewRoute.CSR
+            if ( renderMode === ComponentRegistry.Components.ViewRoute.CSR ){
                 const viewLoader = this.createViewLoader(view, viewRoute.placement)
-                entries[viewLoader.bundleName] = [viewLoader.virtualLoader].concat(extraScripts)
+                const viewLoaderScript = new VirtualScript(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
                 virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
-            } else {
-                entries[bundleName] = extraScripts
+                viewRoute.addScript(viewLoaderScript)    
             }
+            if ( viewRoute.scripts.length )
+                entries[bundleName] = viewRoute.scripts.map(script => script.location)
         }
 
         this._webpack = new BundleWebpack(
@@ -285,6 +280,31 @@ export default class WebServer extends EventEmitter{
                 virtualModules
             }
         )
+    }
+
+    async updateUse(rootView){
+        await this._scopedStyles.updateStylesFromClient(rootView, this._bundleLookupPath)
+        this._scopedStyles.resolveRelativePaths(this.bundleLookupPath)
+
+        const view = this._scopedStyles.findViewByName(rootView.path)
+        const viewStyles = this._scopedStyles.componentsForView(view)
+        const viewAssignmentStructure = this._scopedViewAssignmentCache.updateAssignmentStructure(viewStyles, rootView)
+        const viewAssignemntsToSend = {
+            scopedStyles: viewAssignmentStructure,
+            scopedStyleLinks: viewStyles.styleLinks()
+        }
+
+        try{ await this._styles.addScopedStyles(this._scopedStyles) } catch ( e ) { throw new Error(e.message) }
+        
+        this._serverSocket.sendActionToClients('reload-use', [viewAssignemntsToSend])
+        
+        const viewRoutes = this._routes.viewRoutes()
+        const viewRoute = viewRoutes.find(vr => vr.c === view)
+        if ( viewRoute ){
+            const viewLoader = this.createViewLoader(view, viewRoute.placement)
+            const virtualModules = this._webpack.virtualModulesPlugin
+            virtualModules.writeModule(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
+        }
     }
 
     async compile(){
@@ -323,26 +343,25 @@ export default class WebServer extends EventEmitter{
         
         let collectedBehaviors = []
 
-        let routes = this._routes
-        for ( let i = 0; i < routes.length; ++i ){
-            const route = routes[i]
-            if ( route.type === 0 && route.c ){ // VIEW Route
-                const isSSR = route.render === WebServer.Components.ViewRoute.SSR
-                const isParameterless = !WebServer.Components.Route.hasParameters(route.url)
-                const cacheable = isSSR && isParameterless
+        const viewRoutes = this._routes.viewRoutes()
+        for ( let i = 0; i < viewRoutes.length; ++i ){
+            const route = viewRoutes[i]
+            const isSSR = route.render === ComponentRegistry.Components.ViewRoute.SSR
+            const isParameterless = !ComponentRegistry.Components.Route.hasParameters(route.url)
+            const cacheable = isSSR && isParameterless
 
-                if ( cacheable ){
-                    const content = await this.renderRouteContent(route)
-                    const routePath = path.join(distPath, WebServer.urlToFileName(route.url))
-                    log.i(`Route written: ${path.relative(distPath, routePath)}`)
-                    fs.writeFileSync(routePath, content)
+            if ( cacheable ){
+                const content = await this.renderRouteContent(route)
+                const routeUrl = route.url.replaceAll('*', '-')
+                const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
+                log.i(`Route written: ${path.relative(distPath, routePath)}`)
+                fs.writeFileSync(routePath, content)
 
-                    route.behaviors.bundles.forEach(bundle => {
-                        if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
-                            collectedBehaviors.push(bundle)
-                        }
-                    })
-                }
+                route.behaviors.bundles.forEach(bundle => {
+                    if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
+                        collectedBehaviors.push(bundle)
+                    }
+                })
             }
         }
 
@@ -386,98 +405,21 @@ export default class WebServer extends EventEmitter{
 
     async renderRouteContent(route, req){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
-        page.entryScript = '/scripts/' + route.c.name.toLowerCase() + '.bundle.js'
-        const pageDOM = page.captureDOM(this._domEmulator)
-        const insertionDOM = page.constructor.findInsertionElement(pageDOM.window.document)
 
-        const placements = route.placement ? route.placement : []
-        const pagePlacements = placements.map(p => {
-            const instance = new p()
-            instance.renderProperties = { url: req ? req.url : route.url }
-            BaseElement.complete(instance)
-            return instance
-        })
-
-        let expandLocation = null
-        if ( pagePlacements.length ){
-            pagePlacements.forEach(l => { if ( l.head ) l.head.expand(pageDOM.window.document) })
-            expandLocation = pagePlacements[0].render
-            for ( let i = 1; i < pagePlacements.length; ++i ){
-                expandLocation.children = [pagePlacements[i]]
-                expandLocation = pagePlacements[i].render
-            }
-            pagePlacements[0].children[0].expandTo(insertionDOM)
-        }
-        
         const viewStyles = this._scopedStyles.componentsForView(route.c)
         viewStyles.populateViewComponent(route.c)
 
-        const v = WebServer.Components.ViewRoute.createView(route.c)
-        if ( v instanceof WebServer.Components.PageView ){
-            if ( v.head )
-                v.head.expand(pageDOM.window.document)
-        }
-
-        if ( expandLocation ){
-            expandLocation.children = [v]
-        } else {
-            v.expandTo(insertionDOM)
-        }
-
-        const behaviorResult = ServerRenderer.scanBehaviors(pageDOM.window.document, pagePlacements.length ? pagePlacements[0] : v)
-        const behaviors = behaviorResult.unwrapAnd((report) => report.forEach(WebServer.logWarning))
-        const behaviorScriptsUrl = this.config.baseUrl === '/' ? '/scripts/behavior/' : `${this.config.baseUrl}/scripts/behavior/`
-        let compiledBundles = { assets: [] }
-
-        const clientBehaviorEvents = path.join(WebServer.currentDir(), '../client/client-behavior-events.mjs')
-
-        if ( behaviors.length ){
-            ServerRenderer.assignBehaviorsId(0, behaviors)
-            ServerRenderer.assignBehaviorsToDom(behaviors)
-            const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
-            const viewPath = this.getComponentPath(route.c)
-            const viewPathName = path.parse(viewPath).name.toLowerCase() + '.behaviors'
-            const viewBehaviorBundlePath = path.join(path.dirname(viewPath), viewPathName + '.mjs')
-            compiledBundles = await this._webpack.compileExternalBundle(
-                viewPathName, 
-                [
-                    { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
-                    { path: clientBehaviorEvents }
-                ],
-                behaviorScriptsUrl
-            )
-        }
-        
-        if ( compiledBundles.warnings ){
-            log.w(compiledBundles.warnings)
-        }
-
-        route.behaviors = {
-            bundles: compiledBundles.assets
-        }
-
-        const document = pageDOM.window.document
-        const scripts = route.behaviors.bundles.filter(cbu => cbu.isMainEntry).map(cbu => {
-            const script = document.createElement('script')
-            script.src = `${behaviorScriptsUrl}${cbu.name}`
-            return script
-        })
-
-        
-        scripts.forEach(script => document.body.appendChild(script))
-        const scopedStyleLinks = viewStyles.styleLinks(route.c)
-        if ( scopedStyleLinks ){
-            scopedStyleLinks.forEach(sl => {
-                var link = document.createElement('link');
-                link.rel = 'stylesheet'
-                link.type = 'text/css'
-                link.href = sl
-                document.head.appendChild(link)
-            })
-        }
-
-        const content = this._domEmulator.serializeDOM(pageDOM)
-        return content
+        const renderResult = await ServerViewRoute.createRender(
+            route, req ? req.url : null, 
+            page, 
+            this._domEmulator, 
+            this.config.baseUrl, 
+            this._bundleLookupPath, 
+            this.webpack,
+            viewStyles
+        )
+        const render = renderResult.unwrapAnd(report => report.forEach(WebServer.logWarning))
+        return render
     }
 
     renderRoute(route, req, res, cacheDir){
@@ -502,22 +444,22 @@ export default class WebServer extends EventEmitter{
     getViewRoute(route, req, res){
         const render = this.config.runMode === WebServer.RunMode.Production 
             ? route.render 
-            : this.config.renderMode === WebServer.RenderMode.Production ? route.render : WebServer.Components.ViewRoute.CSR
+            : this.config.renderMode === WebServer.RenderMode.Production ? route.render : ComponentRegistry.Components.ViewRoute.CSR
 
-        if ( render === WebServer.Components.ViewRoute.CSR ){
+        if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
             res.send(this.readRoutePage(route))
             res.end()
-        } else if ( render === WebServer.Components.ViewRoute.SSR ){
+        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR ){
             this.renderRoute(route, req, res)
         }
     }
 
     getViewRouteUseDist(route, cacheDir, req, res){
         const render = route.render
-        if ( render === WebServer.Components.ViewRoute.CSR ){
+        if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
             res.send(this.readRoutePage(route))
             res.end()
-        } else if ( render === WebServer.Components.ViewRoute.SSR ){
+        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR ){
             this.renderRoute(route, req, res, cacheDir)
         }
     }
@@ -532,7 +474,7 @@ export default class WebServer extends EventEmitter{
             const styleGroup = this._watcher.findGroup('style')
             styleGroup.onFileChange = (file) => {
                 this._styles.reloadInputFile(file).catch(e => {
-                    log.e(e)
+                    log.e(e.message)
                 })
             }
             this._watcher.assignFiles(this._styles.inputFiles(), styleGroup)
@@ -573,12 +515,13 @@ export default class WebServer extends EventEmitter{
 
         // Handle Behaviors
 
+        const viewRoutes = routes.viewRoutes()
         this._app.get('/scripts/behavior/*', (req, res) => {
-            for ( let i = 0; i < routes.length; ++i ){
-                if ( routes[i].type === 0 && routes[i].c ){ // VIEW Route
-                    if ( routes[i].behaviors ){
-                        for ( let j = 0; j < routes[i].behaviors.bundles.length; ++j ){
-                            const bundle = routes[i].behaviors.bundles[j]
+            for ( let i = 0; i < viewRoutes.length; ++i ){
+                if ( ServerViewRoute.isType(viewRoutes[i]) ){ // VIEW Route
+                    if ( viewRoutes[i].behaviors ){
+                        for ( let j = 0; j < viewRoutes[i].behaviors.bundles.length; ++j ){
+                            const bundle = viewRoutes[i].behaviors.bundles[j]
                             if ( `/scripts/behavior/${bundle.name}` === req.url){
                                 res.setHeader('Content-Type', 'text/js')
                                 res.send(bundle.content)
@@ -593,17 +536,17 @@ export default class WebServer extends EventEmitter{
 
         /// Handle routes
 
-        for ( let i = 0; i < routes.length; ++i ){
-            if ( routes[i].type === 0 && routes[i].f ){ // GET Route
-                this._app.get(routes[i].url, routes[i].userMiddleware, ErrorHandler.forward(routes[i].f))
-            } else if ( routes[i].type === 1 && routes[i].f ){ // POST Route
-                this._app.post(routes[i].url, routes[i].userMiddleware, ErrorHandler.forward(routes[i].f))
-            } else if ( routes[i].type === 0 && routes[i].c ){ // VIEW Route
-                this._app.get(routes[i].url, routes[i].userMiddleware, this.getViewRoute.bind(this, routes[i]))
-            } else if ( routes[i].type === 2 && routes[i].f ){ // MIDDLEWARE Route
-                this._app.use(routes[i].url, routes[i].f)
+        routes.each((route) => {
+            if ( ServerViewRoute.isType(route) ){
+                this._app.get(route.url, route.userMiddleware, this.getViewRoute.bind(this, route))
+            } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.GET ){
+                this._app.get(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
+            } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.POST ){
+                this._app.post(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
+            } else if ( ServerMiddlewareRoute.isType(route) ){
+                this._app.use(route.url, route.f)
             }
-        }
+        })
 
         if ( this._serverSocket )
             this._serverSocket.listen(this.config.port, () => log.i(`Listening on port ${this.config.port}!`));
@@ -621,17 +564,17 @@ export default class WebServer extends EventEmitter{
         /// Handle routes
 
         let routes = this._routes
-        for ( let i = 0; i < routes.length; ++i ){
-            if ( routes[i].type === 0 && routes[i].f ){ // GET Route
-                this._app.get(routes[i].url, ErrorHandler.forward(routes[i].f))
-            } else if ( routes[i].type === 1 && routes[i].f ){ // POST Route
-                this._app.post(routes[i].url, ErrorHandler.forward(routes[i].f))
-            } else if ( routes[i].type === 0 && routes[i].c ){ // VIEW Route
-                this._app.get(routes[i].url, this.getViewRouteUseDist.bind(this, routes[i], distPath))
-            } else if ( routes[i].type === 2 && routes[i].f ){ // MIDDLEWARE Route
-                this._app.use(routes[i].url, routes[i].f)
+        routes.each(route => {
+            if ( ServerViewRoute.isType(route) ){
+                this._app.get(route.url, this.getViewRouteUseDist.bind(this, route, distPath))
+            } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.GET ){
+                this._app.get(route.url, ErrorHandler.forward(route.f))
+            } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.POST ){
+                this._app.post(route.url, ErrorHandler.forward(route.f))
+            } else if ( ServerMiddlewareRoute.isType(route) ){
+                this._app.use(route.url, route.f)
             }
-        }
+        })
 
         if ( this._serverSocket )
             this._serverSocket.listen(this.config.port, () => log.i(`Listening on port ${this.config.port}!`));
@@ -652,4 +595,3 @@ WebServer.RenderMode = {
 
 WebServer.Configuration = WebServerConfiguration
 WebServer.Init          = WebServerInit
-WebServer.Components    = null

@@ -10,6 +10,18 @@ export default class ClientBundleSocket{
             }
         })
     }
+
+    sendToServer(message) {
+        this.socket.send(message)
+    }
+
+    sendActionToServer(action, params){
+        this.sendToServer(JSON.stringify({ action, params }))
+    }
+
+    onAction(name, handler){
+        this.actions[name] = handler
+    }
 }
 
 ClientBundleSocket.defaultActions = {

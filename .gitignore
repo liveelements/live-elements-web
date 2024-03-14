@@ -1,4 +1,5 @@
 /build
+/dist
 packages/live-web/build
 packages/live-testspec/build
 samples/customstyle/build

@@ -3,13 +3,15 @@ import url from 'url'
 import lvimport from 'live-elements-core/lvimport.mjs'
 import ClassInfo from 'live-elements-web-server/lib/class-info.mjs'
 import { BaseElement } from 'live-elements-core/baseelement.js'
+import PackagePath from './package-path.cjs'
+import ComponentRegistry from './component-registry.mjs'
 
 export class ScopedStyle{
     constructor(src, process){
         this._src = src
         this._srcResolved = src
         this._process = process
-        this._processResolved = process
+        this._processResolved = null
     }
 
     get src(){ return this._src }
@@ -157,18 +159,59 @@ export class ScopedStyleCollection{
         return result
     }
 
-    resolveRelativePaths(componentPathResolve){
+    resolveRelativePaths(bundleRootPath){
         for ( let i = 0; i < this._components.length; ++i ){
             const c = this._components[i]
             for ( let j = 0; j < c._styles.length; ++j ){
                 const s = c._styles[j]
+                s._srcResolved = path.resolve(path.join(path.dirname(ComponentRegistry.findComponentPath(c.component, bundleRootPath)), s.src))
 
-                s._srcResolved = path.resolve(path.join(path.dirname(componentPathResolve(c.component)), s.src))
-                s._processResolved = s.process 
-                    ? path.resolve(path.join(path.dirname(componentPathResolve(c.component)), s.process))
-                    : null
+                if ( s.process ) {
+                    if ( s.process.startsWith('.') ){
+                        s._processResolved = path.resolve(path.join(path.dirname(ComponentRegistry.findComponentPath(c.component, bundleRootPath)), s.process))
+                    } else {
+                        s._processResolved = ScopedStyleCollection.resolveSrc(s.process, bundleRootPath)
+                    }
+                }
+
             }
         }
+    }
+
+    
+    rootViews(){
+        const rv = []
+        for ( let i = 0; i < this._components.length; ++i ){
+            const c = this._components[i]
+            for ( let j = 0; j < c._viewUsages.length; ++j ){
+                rv.push(c._viewUsages[j])
+            }
+        }
+        return rv
+    }
+
+    static resolveSrc(src, bundleRootPath){
+        let packageSeparator = src.indexOf('/');
+        if (packageSeparator === -1) {
+            throw new Error(`Cannot find style file: ${src}`);
+        }
+        let packageName = src.substr(0, packageSeparator)
+        if ( packageName.startsWith('@') ){
+            let nextPackageSeparator = src.indexOf('/', packageSeparator + 1)
+            if ( nextPackageSeparator !== -1 ){
+                packageSeparator = nextPackageSeparator
+                packageName = src.substr(0, nextPackageSeparator)
+            }
+        }
+
+        let packagePath = PackagePath.find(packageName, bundleRootPath)
+        let pathFromPackage = src.substr(packageSeparator + 1)
+        return path.join(packagePath, pathFromPackage)
+    }
+
+    findViewByName(viewName){
+        const sc = this._components.find(c => (c.component.Meta.module + '.' + c.component.name) === viewName)
+        return sc ? sc.component : null
     }
 
     componentsForView(view){
@@ -178,7 +221,7 @@ export class ScopedStyleCollection{
     }
 
     styleLinks(){
-        return ['/styles/scoped.css']
+        return this._components.length ? ['/styles/scoped.css'] : []
     }
 
     componentSelectorTransformationsFromComponent(c){
@@ -223,7 +266,7 @@ export class ScopedStyleCollection{
         return result
     }
 
-    toAssignmentStructure(){
+    componentAssignmentMap(){
         const result = {}
         for ( let i = 0; i < this._components.length; ++i ){
             const s = this._components[i]
@@ -239,42 +282,45 @@ export class ScopedStyleCollection{
         return result
     }
 
-    toViewUsageAssignmentStructure(view){
-        const scopedStyles = this.toAssignmentStructure()
-        return this.__toViewUsageAssignmentStructure(view, scopedStyles)
-    }
-
-    __toViewUsageAssignmentStructure(c, scopedStyles){
-        const usage = []
-        if ( c.use ){
-            for ( let i = 0; i < c.use.length; ++i ){
-                if ( typeof c.use[i] === 'function' && c.use[i].name ){
-                    usage.push(this.toViewUsageAssignmentStructure(c.use[i], scopedStyles))
-                } else {
-                    usage.push(null)
-                }
-            }
-        }
-        const fullName = c.Meta.module + '.' + c.name
-        const renderProperties = scopedStyles.hasOwnProperty(fullName)
-            ? { classes: scopedStyles[fullName].classes }
-            : scopedStyles.hasOwnProperty(c.name) ? { classes: scopedStyles[c.name].classes } : {}
-        renderProperties['name'] = c.name
-
-        return {
-            renderProperties: renderProperties,
-            use: usage
-        }
-    }
-
     size(){ return this._components.length }
 
     toString(){
         return this._components.map(s => s.toString()).join('\n')
     }
 
+    findComponent(uriId){
+        return this._components.find(sc => ComponentRegistry.componentUriId(sc.component) === uriId)
+    }
+
+    async __updateStylesFromClient(c, rootc, componentLocation){
+        if ( c.use && c.use.length ){
+            for ( let i = 0; i < c.use.length; ++i ){
+                const use = c.use[i]
+                if ( use.type === 'ScopedStyle' ){
+                    const scopedComponent = this.findComponent(c.path)
+                    let component = scopedComponent ? scopedComponent.component : null
+                    if ( !component ){
+                        component = await ComponentRegistry.importComponentFromUriId(c.path, c.file, componentLocation)
+                    }
+                    this.addStyle(component, use.src, use.process, rootc)
+                } else if ( use.type === 'component' ){
+                    await this.__updateStylesFromClient(use, rootc, componentLocation)
+                }
+            }
+        }
+    }
+
+    async updateStylesFromClient(c, componentLocation){
+        const scopedComponent = this.findComponent(c.path)
+        let component = scopedComponent ? scopedComponent.component : null
+        if ( !component ){
+            component = await ComponentRegistry.importComponentFromUriId(c.path, c.file, componentLocation)
+        }
+        await this.__updateStylesFromClient(c, component, componentLocation)
+    }
+
     populateViewComponent(c){
-        this.__populateViewComponent(this.toAssignmentStructure(), c)
+        this.__populateViewComponent(this.componentAssignmentMap(), c)
     }
 
     __populateViewComponent(scopedStyles, c){
@@ -294,3 +340,78 @@ export class ScopedStyleCollection{
 }
 
 ScopedStyleCollection.ScopedProcessor = null
+
+export class ScopedViewAssignmentCache{
+    constructor(){
+        this._assignments = {}
+    }
+
+    static componentFullName(c){
+        return `${c.Meta.module}.${c.name}`
+    }
+
+    assignmentStructure(scopedStyles, view){
+        const viewName = ScopedViewAssignmentCache.componentFullName(view)
+        if ( this._assignments.hasOwnProperty(viewName) )
+            return this._assignments[viewName]
+
+        const assignmentMap = scopedStyles.componentAssignmentMap()
+        const result = this.__toViewUsageAssignmentStructure(assignmentMap, view)
+        this._assignments[viewName] = result
+        return result
+    }
+
+    __toViewUsageAssignmentStructure(assignmentMap, c){
+        const usage = []
+        if ( c.use ){
+            for ( let i = 0; i < c.use.length; ++i ){
+                if ( typeof c.use[i] === 'function' && c.use[i].name ){
+                    usage.push(this.__toViewUsageAssignmentStructure(assignmentMap, c.use[i]))
+                } else {
+                    usage.push(null)
+                }
+            }
+        }
+        const fullName = c.Meta.module + '.' + c.name
+        const renderProperties = assignmentMap.hasOwnProperty(fullName)
+            ? { classes: assignmentMap[fullName].classes }
+            : assignmentMap.hasOwnProperty(c.name) ? { classes: assignmentMap[c.name].classes } : {}
+        renderProperties['name'] = c.name
+
+        return {
+            renderProperties: renderProperties,
+            use: usage
+        }
+    }
+
+    updateAssignmentStructure(scopedStyles, cassign){
+        const assignmentMap = scopedStyles.componentAssignmentMap()
+        const result = this.__toViewUsageAssignmentStructureFromAssignments(assignmentMap, cassign)
+        this._assignments[cassign.path] = result
+        return result
+    }
+
+    __toViewUsageAssignmentStructureFromAssignments(assignmentMap, cassign){
+        const usage = []
+        if ( cassign.use ){
+            for ( let i = 0; i < cassign.use.length; ++i ){
+                if ( cassign.use[i].type === 'component' ){
+                    usage.push(this.__toViewUsageAssignmentStructureFromAssignments(assignmentMap, cassign.use[i]))
+                } else {
+                    usage.push(null)
+                }
+            }
+        }
+        const fullName = cassign.path
+        const name = cassign.path.substr(cassign.path.lastIndexOf('.') + 1)
+        const renderProperties = assignmentMap.hasOwnProperty(fullName)
+            ? { classes: assignmentMap[fullName].classes }
+            : assignmentMap.hasOwnProperty(name) ? { classes: assignmentMap[name].classes } : {}
+        renderProperties['name'] = name
+
+        return {
+            renderProperties: renderProperties,
+            use: usage
+        }
+    }
+}

@@ -24,9 +24,10 @@ component BundleDirectory < BundleAssetProvider{
         if ( this.src && this.output ){
             var files = this.recurseDirSync(this.src)
             for ( var i = 0; i < files.length; ++i ){
+                const output = files[i].replace(this.src, this.output)
                 result.push({
                     src: files[i],
-                    output: files[i].replace(this.src, this.output),
+                    output: output.startsWith('/') ? output.substr(1) : output,
                     type: 'any'
                 })
             }
