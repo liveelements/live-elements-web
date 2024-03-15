@@ -249,19 +249,22 @@ export default class WebServer extends EventEmitter{
             const viewRoute = views[i]
 
             const view = viewRoute.c
-            const bundleName = view.name.toLowerCase()
+            const viewToBundle = view.name.toLowerCase()
+            const bundleName = entries.hasOwnProperty(viewToBundle) ? viewRoute.urlPathToFileName() : viewToBundle
 
             extraScripts.forEach(script => viewRoute.addScript(script))
-
+            
             const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : ComponentRegistry.Components.ViewRoute.CSR
             if ( renderMode === ComponentRegistry.Components.ViewRoute.CSR ){
                 const viewLoader = this.createViewLoader(view, viewRoute.placement)
                 const viewLoaderScript = new VirtualScript(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
                 virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
-                viewRoute.addScript(viewLoaderScript)    
+                viewRoute.addScript(viewLoaderScript)
             }
-            if ( viewRoute.scripts.length )
+            if ( viewRoute.scripts.length ){
                 entries[bundleName] = viewRoute.scripts.map(script => script.location)
+                viewRoute.setBundleScript(`${bundleName}.bundle.js`)
+            }
         }
 
         this._webpack = new BundleWebpack(
@@ -341,12 +344,21 @@ export default class WebServer extends EventEmitter{
         const viewRoutes = this._routes.viewRoutes()
         for ( let i = 0; i < viewRoutes.length; ++i ){
             const route = viewRoutes[i]
-            const isSSR = route.render === ComponentRegistry.Components.ViewRoute.SSR
+            const isSSR = route.render === ComponentRegistry.Components.ViewRoute.SSR || route.render === ComponentRegistry.Components.ViewRoute.SSC
             const isParameterless = !ComponentRegistry.Components.Route.hasParameters(route.url)
-            const cacheable = isSSR && isParameterless
+            const cacheable = isSSR && isParameterless && ((!route.data) || route.render === ComponentRegistry.Components.ViewRoute.SSC)
 
             if ( cacheable ){
-                const content = await this.renderRouteContent(route)
+                let data = null
+                if ( route.data ){
+                    if ( typeof route.data === 'function' ){
+                        const functionResult = route.data(null)
+                        data = functionResult instanceof Promise ? await functionResult : functionResult
+                    } else {
+                        data = route.data
+                    }
+                }
+                const content = await this.renderRouteContent(route, data)
                 const routeUrl = route.url.replaceAll('*', '-')
                 const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
                 log.i(`Route written: ${path.relative(distPath, routePath)}`)
@@ -388,17 +400,34 @@ export default class WebServer extends EventEmitter{
         return this._pages.find( page => page.output === output )
     }
 
-    readRoutePage(route){
+    async renderRouteCSR(route, req, res){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
-        if ( !route.pageContent ){
-            page.entryScript = '/scripts/' + route.c.name.toLowerCase() + '.bundle.js'
+        if ( !route.pageDOM ){
+            page.entryScript = '/scripts/' + route.bundleScript
             route.pageDOM = page.captureDOM(this._domEmulator)
-            route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
         }
-        return route.pageContent
+        if ( route.data ){
+            let data = null
+            if ( typeof route.data === 'function' ){
+                const functionResult = route.data(req)
+                data = functionResult instanceof Promise ? await functionResult : functionResult
+            } else {
+                data = route.data
+            }
+            const scriptEl = route.pageDOM.window.document.createElement('script')
+            scriptEl.text = `window.__serverData__ = ${JSON.stringify(data)};`
+            route.pageDOM.window.document.head.appendChild(scriptEl)
+            route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
+        } else {
+            if ( !route.pageContent )
+                route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
+        }
+
+        res.send(route.pageContent)
+        res.end()
     }
 
-    async renderRouteContent(route, req){
+    async renderRouteContent(route, data, req){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
 
         const viewStyles = this._scopedStyles.componentsForView(route.c)
@@ -406,6 +435,7 @@ export default class WebServer extends EventEmitter{
 
         const renderResult = await ServerViewRoute.createRender(
             route, 
+            data,
             req, 
             page, 
             this._domEmulator, 
@@ -418,23 +448,41 @@ export default class WebServer extends EventEmitter{
         return render
     }
 
-    renderRoute(route, req, res, cacheDir){
-        if ( route.renderContent )
-            return res.send(route.renderContent)
-
-        if ( cacheDir ){
-            const cachePath = path.join(cacheDir, WebServer.urlToFileName(route.url))
-            if ( fs.existsSync(cachePath ) ){
-                return res.sendFile(cachePath)
+    async renderRouteSSR(route, req, res, cacheDir){
+        if ( route.data ){
+            let data = null
+            if ( typeof route.data === 'function' ){
+                const functionResult = route.data(req)
+                data = functionResult instanceof Promise ? await functionResult : functionResult
+            } else {
+                data = route.data
             }
-        }
 
-        this.renderRouteContent(route, req).then(content => {
-            route.renderContent = content
-            res.send(route.renderContent).end()
-        }).catch(e => {
-            log.e(e)
-        })
+            this.renderRouteContent(route, data, req).then(content => {
+                route.renderContent = content
+                res.send(route.renderContent).end()
+            }).catch(e => {
+                log.e(e)
+            })
+
+        } else {
+            if ( route.renderContent )
+                return res.send(route.renderContent)
+
+            if ( cacheDir ){
+                const cachePath = path.join(cacheDir, WebServer.urlToFileName(route.url))
+                if ( fs.existsSync(cachePath ) ){
+                    return res.sendFile(cachePath)
+                }
+            }
+
+            this.renderRouteContent(route, null, req).then(content => {
+                route.renderContent = content
+                res.send(route.renderContent).end()
+            }).catch(e => {
+                log.e(e)
+            })
+        }
     }
 
     getViewRoute(route, req, res){
@@ -443,20 +491,18 @@ export default class WebServer extends EventEmitter{
             : this.config.renderMode === WebServer.RenderMode.Production ? route.render : ComponentRegistry.Components.ViewRoute.CSR
 
         if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            res.send(this.readRoutePage(route))
-            res.end()
-        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR ){
-            this.renderRoute(route, req, res)
+            this.renderRouteCSR(route, req, res)
+        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
+            this.renderRouteSSR(route, req, res)
         }
     }
 
     getViewRouteUseDist(route, cacheDir, req, res){
         const render = route.render
         if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            res.send(this.readRoutePage(route))
-            res.end()
-        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR ){
-            this.renderRoute(route, req, res, cacheDir)
+            this.renderRouteCSR(route, req, res)
+        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
+            this.renderRouteSSR(route, req, res, cacheDir)
         }
     }
 

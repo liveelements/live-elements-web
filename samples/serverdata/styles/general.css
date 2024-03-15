@@ -1,0 +1,24 @@
+body{
+    @apply w-full h-screen m-0 p-4 box-border;
+}
+h1{
+    @apply text-4xl font-sans m-0;
+}
+.menu{
+    @apply w-full border-0 border-b border-solid border-gray-500;
+}
+.invisible{
+    @apply hidden;
+}
+button{
+    @apply bg-indigo-600 text-white font-semibold py-2 px-4 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 transition duration-150 ease-in-out mr-1;
+}
+a{
+    @apply font-sans text-xl text-gray-600 hover:text-indigo-800 transition duration-150 no-underline ease-in-out m-4;
+}
+a.active{
+    @apply text-indigo-600;
+}
+article, section{
+    @apply font-sans p-6;
+}

@@ -41,27 +41,46 @@ export class ServerMiddlewareRoute extends ServerRoute{
 
 export class ServerViewRoute extends ServerRoute{
 
-    constructor(url, userMiddleware, f, c, render, placement, page){
+    constructor(url, userMiddleware, f, c, render, data, placement, page){
         super(url, userMiddleware, f)
-        this._c         = c
-        this._render    = render
-        this._placement = placement
-        this._page      = page
-        this._renders   = []
-        this._scripts   = []
+        this._c            = c
+        this._render       = render
+        this._data         = data
+        this._placement    = placement
+        this._page         = page
+        this._renders      = []
+        this._scripts      = []
+        this._bundleScript = null
     }
 
     get c(){ return this._c }
     get render(){ return this._render }
     get placement(){ return this._placement }
+    get data(){ return this._data }
     get page(){ return this._page }
     get scripts(){ return this._scripts }
+    get bundleScript(){ return this._bundleScript }
 
     addScript(script){ this._scripts.push(script) }
+    setBundleScript(script){ this._bundleScript = script }
 
     static isType(ob){ return ob instanceof ServerViewRoute }
 
-    static async createRender(route, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
+    urlPathToFileName(){
+        let filename = this.url.replace(/_/g, '__')
+        filename = filename.replace(/\//g, '_')
+        filename = filename.replace(/:/g, '_')
+        const queryParamIndex = filename.indexOf('?');
+        if (queryParamIndex !== -1) {
+            filename = filename.substring(0, queryParamIndex);
+        }
+        if (filename.startsWith('_')) {
+            filename = filename.substring(1);
+        }
+        return filename
+    }
+
+    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -71,7 +90,7 @@ export class ServerViewRoute extends ServerRoute{
         })
         await ComponentRegistry.update()
 
-        page.entryScript = route.scripts.length ? '/scripts/' + route.c.name.toLowerCase() + '.bundle.js' : null
+        page.entryScript = route.bundleScript ? '/scripts/' + route.bundleScript : null
         const pageDOM = page.captureDOM(domEmulator)
         const insertionDOM = page.constructor.findInsertionElement(pageDOM.window.document)
 
@@ -94,7 +113,7 @@ export class ServerViewRoute extends ServerRoute{
             pagePlacements[0].children[0].expandTo(insertionDOM)
         }
 
-        const v = ComponentRegistry.Components.ViewRoute.createView(route.c)
+        const v = ComponentRegistry.Components.ViewRoute.createView(route.c, data)
         if ( v instanceof ComponentRegistry.Components.PageView ){
             if ( v.head )
                 v.head.expand(pageDOM.window.document)

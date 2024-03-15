@@ -1,0 +1,41 @@
+import live-elements-web-server.view
+import live-web.dom
+
+component Menu < ViewLayout{
+    id: menu
+
+    render: expand
+    head: PageProperties{
+        StyleLink{ href: '/styles/general.css' }
+    }
+    
+    Div{ classes: ['wrapper']
+        Div{ classes: ['menu']
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/' 
+                T`Static CSR` 
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/dynamic-csr' 
+                T`Dynamic CSR`
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/dynamic-ssr' 
+                T`Dynamic SSR`
+            } 
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/dynamic-ssc' 
+                T`Dynamic SSC`
+            }
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/dynamic-param/one' 
+                T`Param-1`
+            }
+            A{  classes: menu.renderProperties?.url === this.href ? ['active'] : '' 
+                href: '/dynamic-param/two' 
+                T`Param-2`
+            }
+        }
+        Div{ id: expand }
+    }
+}

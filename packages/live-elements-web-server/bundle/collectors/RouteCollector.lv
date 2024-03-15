@@ -96,6 +96,7 @@ component RouteCollector < BundleDataCollector{
                 route.f,
                 route.c,
                 route.render,
+                route.data,
                 placement,
                 page
             ))

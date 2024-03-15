@@ -1,0 +1,27 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import live-elements-web-server.view
+import .samples.serverdata.views
+import .samples.serverdata.pages
+import .samples.serverdata.layouts
+
+instance bundle Bundle{
+    
+    IndexPage{ id: indexPage }
+    ViewPlacement{ id: menu c: Menu placement: indexPage }
+
+    ViewRoute{ url: '/' c: DisplayData placement: menu data: ({ message: 'hello' }) render: ViewRoute.CSR }
+    ViewRoute{ url: '/dynamic-csr' c: DisplayData placement: menu data: () => { return Promise.resolve({message: 'hello' }) } render: ViewRoute.CSR }
+    ViewRoute{ url: '/dynamic-ssr' c: DisplayData placement: menu data: () => { return Promise.resolve({message: 'hello' }) } render: ViewRoute.SSR }
+    ViewRoute{ url: '/dynamic-ssc' c: DisplayData placement: menu data: () => { return Promise.resolve({message: 'hello' }) } render: ViewRoute.SSC }
+
+    ViewRoute{ url: '/dynamic-param/:p' c: DisplayData placement: menu data: (req) => { return Promise.resolve({message: `param: ${req.params.p}` }) } render: ViewRoute.SSR }
+    
+    Stylesheet{
+        src: './samples/staticpages/styles/general.css' 
+        output: 'general.css' 
+        process: process: PostCSS.create(TailwindCSS.createForPostCSS()) 
+    }
+}

@@ -1,0 +1,21 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+
+component DisplayData < PageView{
+    id: displayData
+
+    head: PageProperties{ title: 'Server Data' }
+
+    constructor(data:Object){
+        super()
+        this.data = data
+        DisplayData.prototype.__initialize.call(this)
+    }
+
+    Article{
+        P{
+            T`Server Message: `B{ T{ text: displayData.data.message } }
+        }
+    }
+}
