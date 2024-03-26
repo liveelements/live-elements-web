@@ -11,5 +11,6 @@ component TopNav < Nav{
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
 
-    classes: ['navbar', ScopedStyle.className(TopNav)]
+    Array extraClasses: []
+    classes: ['navbar', ScopedStyle.className(TopNav)].concat(this.extraClasses)
 }
