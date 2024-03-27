@@ -6,6 +6,10 @@ import live-elements-web-server.style
 component NavToggleButton < A{
     classes: ['nav-toggle-button']
 
+    props = {
+        data : { toggle: ScopedStyle.className(TopNav) }
+    }
+
     Span{ classes: ['bar'] }
     Span{ classes: ['bar'] }
     Span{ classes: ['bar'] }
@@ -14,7 +18,7 @@ component NavToggleButton < A{
         domReady : (a) => {
             a.onclick = (e) => {
                 e.preventDefault()
-                const topNavClass = ScopedStyle.className(TopNav)
+                const topNavClass = a.dataset.toggle
                 let topNav = a.parentNode
                 while ( topNav ){
                     if ( topNav.classList.contains(topNavClass) ){
