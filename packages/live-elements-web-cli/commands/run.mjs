@@ -26,8 +26,8 @@ export default async function run(bundle, options){
         const serverModules = await loadServerModules(bundle)
         const WebServer = serverModules.WebServer
 
-        const bundleInfo = await serverModules.BundleLoader.findBundle(bundle, process.cwd())
-        if ( !bundleInfo ){
+        const bundleData = await serverModules.BundleData.findAndLoad(bundle, process.cwd())
+        if ( !bundleData ){
             throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
         }
 
@@ -40,7 +40,7 @@ export default async function run(bundle, options){
             port: options.port ? options.port : undefined,
         })
 
-        const server = await WebServer.load(bundleInfo.bundle, webServerConfig)
+        const server = await WebServer.loadBundle(bundleData, webServerConfig)
         server.run()
     } catch ( e ){
         console.error(e)

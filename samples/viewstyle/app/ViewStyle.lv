@@ -3,12 +3,16 @@ import live-web
 import live-elements-web-server.view
 import live-elements-web-server.style
 import .samples.viewstyle.modules.menu
+import .samples.viewstyle.modules.menuduplicate as MDup
+import .samples.viewstyle.modules.menuextension
 import .samples.viewstyle.modules.fullscreen
 import .samples.viewstyle.modules.layout
 
 component ViewStyle < PageView{
     static Array use = [
         Menu, 
+        MDup.Menu,
+        MenuExtension,
         Fullscreen, 
         ColLayout,
         ScopedStyle{ src: './viewstyle.css' }
@@ -18,6 +22,8 @@ component ViewStyle < PageView{
         classes: [ScopedStyle.className(ViewStyle)]
 
         Menu{}
+        MDup.Menu{}
+        MenuExtension{}
         Fullscreen{}
         ColLayout{
             Col{

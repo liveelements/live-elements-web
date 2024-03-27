@@ -5,11 +5,24 @@ import { EventEmitter } from 'node:events';
 export class ServerBundleSocket extends EventEmitter {
     constructor(app) {
         super();
-        this._httpServer = createServer(app);
-        this._socketServer = new WebSocketServer({ noServer: true });
+        this._httpServer = createServer(app)
+        this._socketServer = new WebSocketServer({ noServer: true })
+        this._actionListeners = {}
 
         this._socketServer.on('connection', ws => {
             this.emit('connectionOpen', ws);
+            ws.on('message', (message) => {
+                const e = JSON.parse(message)
+                if ( e.action ){
+                    if ( this._actionListeners.hasOwnProperty(e.action) ){
+                        this._actionListeners[e.action](e.params)
+                    } else {
+                        this.emit('action', e.action, e.params)
+                    }
+                } else {
+                    this.emit('message', e)
+                }
+            })
             ws.on('close', () => {
                 this.emit('connectionClose', ws);
             });
@@ -23,6 +36,10 @@ export class ServerBundleSocket extends EventEmitter {
     }
 
     get clients() { return this._socketServer.clients; }
+
+    onAction(actionName, actionFn){
+        this._actionListeners[actionName] = actionFn
+    }
 
     sendToClients(message) {
         this._socketServer.clients.forEach(client => {

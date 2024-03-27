@@ -5,22 +5,38 @@ import .page
 import path from 'path'
 import PackagePath from '../../lib/package-path.cjs'
 
-component AssetProviderCollector{
-    static fn scan(group:BaseElement){
-        let assets = []
-        for ( let i = 0; i < group.children.length; ++i ){
-            if ( group.children[i] instanceof Page ){
-                const page = group.children[i]
-                for ( var j = 0; j < page.children.length; ++j ){
-                    if ( page.children[j] instanceof BundleAssetProvider ){
-                        assets.push(page.children[j])
-                    }
+component AssetProviderCollector < BundleDataCollector{
+
+    constructor(){
+        super()
+        this._providers = []
+        AssetProviderCollector.prototype.__initialize.call(this)
+    }
+
+    static fn create(){ return AssetProviderCollector{} }
+
+    fn name(){ return 'assets' }
+    fn visit(node:BaseElement, _trail:Object, _control:Object){
+        if ( node instanceof Page ){
+            const page = node
+            for ( var j = 0; j < page.children.length; ++j ){
+                if ( page.children[j] instanceof BundleAssetProvider ){
+                    this._providers.push(page.children[j])
                 }
-            } else if ( group.children[i] instanceof BundleAssetProvider ){
-                assets.push(group.children[i])
             }
+        } else if ( node instanceof BundleAssetProvider ){
+            this._providers.push(node)
         }
-        return assets
+    }
+
+    fn end(trail:Object):Object{
+        const providers = this._providers
+        this._providers = []
+        const assets = AssetProviderCollector.collect(providers, trail.bundlePackagePath)
+        return {
+            providers: providers,
+            data: assets
+        }
     }
 
     static fn collect(assetProviders:Array, collectionPath:string){
@@ -41,11 +57,6 @@ component AssetProviderCollector{
             assets = assets.concat(collectedAssets)
         }
         return assets
-    }
-
-    static fn scanAndCollect(bundle:Bundle, collectionPath:String){
-        let assetProviders = AssetProviderCollector.scan(bundle)
-        return AssetProviderCollector.collect(assetProviders, collectionPath)
     }
 }
 

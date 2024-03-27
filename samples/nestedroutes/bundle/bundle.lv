@@ -30,7 +30,6 @@ instance bundle Bundle{
                 next()
             }
             f: async(req, res) => {
-                console.log(req.userdata)
                 res.json({ route: `nested/middleware-local/api[${req.localMiddlewareData}]` })
             }
         }

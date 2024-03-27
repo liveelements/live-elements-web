@@ -25,13 +25,13 @@ export default async function serve(bundle, options){
     try{
         const serverModules = await loadServerModules(bundle)
         const WebServer = serverModules.WebServer
-        const bundleInfo = await serverModules.BundleLoader.findBundle(bundle, process.cwd())
-        if ( !bundleInfo ){
+        const bundleData = await serverModules.BundleData.findAndLoad(bundle, process.cwd())
+        if ( !bundleData ){
             throw new Error(`No bundle file specified and package.json not found or does not contain bundle info.`)
         }
 
         const viewArgument = options.hasOwnProperty('view') ? options.view : null
-        if ( viewArgument && !bundleInfo.allowBundleView ){
+        if ( viewArgument && !bundleData.supportsExtraViews ){
             throw new Error('View argument provided but the bundle was not configured to support views.')
         }
 
@@ -46,8 +46,8 @@ export default async function serve(bundle, options){
         })
 
         const server = viewArgument
-            ? await serverModules.BundleLoader.loadBundleWithView(bundleInfo.bundle, viewArgument, webServerConfig)
-            : await serverModules.BundleLoader.loadBundle(bundleInfo.bundle, webServerConfig)
+            ? await serverModules.loadBundleWithView(bundleData, viewArgument, webServerConfig)
+            : await serverModules.WebServer.loadBundle(bundleData, webServerConfig)
 
         server.serve()
         

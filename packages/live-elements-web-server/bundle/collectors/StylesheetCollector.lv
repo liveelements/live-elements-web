@@ -2,15 +2,25 @@ import .bundle
 import .router
 import .style
 
-component StylesheetCollector{
-    static fn scan(group:Bundle){
-        let styles = []
-        for ( let i = 0; i < group.children.length; ++i ){
-            if ( group.children[i] instanceof Stylesheet ){
-                styles.push(group.children[i])
-            }
-        }
-        return styles
+component StylesheetCollector < BundleDataCollector{
+    constructor(){
+        super()
+        this._styles = []
+        StylesheetCollector.prototype.__initialize.call(this)
     }
-    
+
+    static fn create(){ return StylesheetCollector{} }
+
+    fn name(){ return 'styles' }
+    fn visit(node:BaseElement, _trail:Object, _control:Object){
+        if ( node instanceof Stylesheet ){
+            this._styles.push(node)
+        }
+    }
+
+    fn end(_trail:Object):Object{
+        const s = this._styles
+        this._styles = []
+        return s
+    }
 }

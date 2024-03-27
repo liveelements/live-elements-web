@@ -5,19 +5,43 @@ import .style
 import ClassInfo from '../../lib/class-info.mjs'
 import { ScopedStyleCollection } from '../../lib/scoped-style.mjs'
 
-component ScopedStyleCollector{
-    static fn scan(group:Bundle){
-        let collection = new ScopedStyleCollection()
-        for ( let i = 0; i < group.children.length; ++i ){
-            if ( group.children[i] instanceof Route ){
-                const route = group.children[i]
-                const routeStyles = ScopedStyleCollector.scanComponentStyles(route.c, route.c)
-                collection = collection.merge(routeStyles)
-            }
-        }
-        return collection
+component ScopedStyleCollector < BundleDataCollector{
+
+    constructor(){
+        super()
+        this._collection = new ScopedStyleCollection()
+        ScopedStyleCollector.prototype.__initialize.call(this)
     }
 
+    static fn create(){ return ScopedStyleCollector{} }
+    fn name(){ return 'scopedStyles' }
+
+    fn visit(node:BaseElement, _trail:Object, _control:Object){
+        if ( node instanceof ViewRoute ){
+            const routeStyles = ScopedStyleCollector.scanComponentStyles(node.c, node.c)
+            this._collection = this._collection.merge(routeStyles)
+        }
+    }
+
+    fn end(trail:Object):Object{
+        const collection = this._collection
+        this._collection = new ScopedStyleCollection()
+        collection.resolveRelativePaths(trail.bundlePackagePath)
+        return collection
+    }
+    
+    static fn findInheritedViewComponent(c:component){
+        let prototype = Object.getPrototypeOf(c)
+        while ( prototype ){
+            if ( prototype instanceof BaseElement )
+                return null
+            if ( prototype.use && Array.isArray(prototype.use) ){
+                return prototype
+            }
+            prototype = Object.getPrototypeOf(prototype)
+        }
+        return null
+    }
 
     static fn scanComponentStyles(c:component, rootc:component){
         let collection = new ScopedStyleCollection()
@@ -33,6 +57,14 @@ component ScopedStyleCollector{
                 }
             }
         }
+
+        const inherited = ScopedStyleCollector.findInheritedViewComponent(c)
+        if ( inherited ){
+            const scopedInherited = collection.addComponent(inherited, rootc)
+            const scopedCurrent = collection.findScopedComponent(c)
+            scopedCurrent.setInheritance(scopedInherited)
+        }
+
         return collection
     }
 }

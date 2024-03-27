@@ -2,6 +2,7 @@ component ViewRoute < Route{
 
     static number CSR = 0
     static number SSR = 1
+    static number SSC = 2
 
     static fn renderValueString(renderValue:number){
         const values = ['CSR', 'SSR']
@@ -12,12 +13,13 @@ component ViewRoute < Route{
         return ''
     }
 
-    static fn createView(c:component){
-        return c.(){}
+    static fn createView(c:component, data:Object){
+        return c.(data){}
     }
     
     type = Route.Get
     var c : null
     Object placement : null
+    Object data: null
     number render = ViewRoute.CSR
 }

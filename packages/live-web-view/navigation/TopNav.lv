@@ -6,6 +6,9 @@ import live-elements-web-server.style
 component TopNav < Nav{
     id: menu
 
+    Object brand: T`Brand`
+    Object links: ['Home', 'About', 'Services', 'Contact']
+
     static Array use = [ 
         ScopedStyle{ src: './style/topnav.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
