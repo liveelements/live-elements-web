@@ -122,6 +122,7 @@ export default class WebServer extends EventEmitter{
     get bundleLookupPath(){ return this._bundleLookupPath }
     get webpack(){ return this._webpack }
     get watcher(){ return this._watcher }
+    get app(){ return this._app }
 
     static currentDir(){ 
         return path.dirname(url.fileURLToPath(import.meta.url)) 
@@ -190,31 +191,44 @@ export default class WebServer extends EventEmitter{
         return bundleServer
     }
 
+    viewLoaderData(view, placement){
+        const placements = placement ? placement.map(p => { 
+            const placementPath = ComponentRegistry.findComponentPath(p, this.bundleLookupPath)
+            return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
+        }) : []
+
+        const viewStyles = this._scopedStyles.componentsForView(view)
+        const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
+        const viewAssignments = {
+            scopedStyles: viewAssignmentStructure,
+            scopedStyleLinks: viewStyles.styleLinks(),
+            scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
+        }
+
+        return {
+            name: view.name,
+            fileName: view.Meta.sourceFileName,
+            path: ComponentRegistry.findComponentPath(view, this.bundleLookupPath),
+            placements: placements,
+            assignments: viewAssignments
+        }
+    }
+
     createViewLoader(view, placement){
         const clientApplicationLoader = 'live-elements-web-server/client/client-application-loader.mjs'
         const clientPageViewLoader = 'live-elements-web-server/client/client-pageview-loader.mjs'
         
         const bundleName = view.name.toLowerCase()
-        const viewPath = ComponentRegistry.findComponentPath(view, this.bundleLookupPath)
-        const placementLocations = placement ? placement.map(p => { 
-            const placementPath = ComponentRegistry.findComponentPath(p, this.bundleLookupPath)
-            return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
-        }) : []
-        const placementSource = '[' + placementLocations.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
-
-        const viewStyles = this._scopedStyles.componentsForView(view)
-        const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
-        const viewAssignmentsSource = JSON.stringify({
-            scopedStyles: viewAssignmentStructure,
-            scopedStyleLinks: viewStyles.styleLinks(),
-            scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
-        })
+        const viewLoaderData = this.viewLoaderData(view, placement)
+        
+        const placementSource = '[' + viewLoaderData.placements.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
+        const viewAssignmentsSource = JSON.stringify(viewLoaderData.assignments)
 
         const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
-        const moduleVirtualLoader = path.join(path.dirname(viewPath), bundleName + '.loader.mjs')
+        const moduleVirtualLoader = path.join(path.dirname(viewLoaderData.path), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
-            `Loader.loadAwaitingModule(import("./${view.Meta.sourceFileName}"), "${view.name}", ${placementSource}, ${viewAssignmentsSource})`
+            `Loader.loadAwaitingModule(import("./${viewLoaderData.fileName}"), "${viewLoaderData.name}", ${placementSource}, ${viewAssignmentsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
@@ -226,33 +240,35 @@ export default class WebServer extends EventEmitter{
         }
     }
 
+    clientBundleSocketLoader(){
+        const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
+        const clientBundleSocketImporter = clientBundleSocket.substring(0, clientBundleSocket.length - 4) + '.loader.mjs'
+        const clientBundleSocketImporterAbsolute = path.join(WebServer.currentDir(), clientBundleSocketImporter)
+        const clientBundleSocketImporterContent = [
+            `import ClientBundleSocket from "${clientBundleSocket}"`,
+            `window.clientBundleSocket = new ClientBundleSocket("${this.config.socketUrl}")`
+        ].join('\n')
+        return new VirtualScript(clientBundleSocketImporterAbsolute, clientBundleSocketImporterContent)
+    }
+
     addWebpack(){
-        const routes = this._routes
-        const views = routes.viewRoutes()
+        const views = this._routes.viewRoutes()
         const entries = {}, virtualModules = {}
 
-        const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
         let extraScripts = []
         if ( this._serverSocket ){
-            const clientBundleSocketImporter = clientBundleSocket.substring(0, clientBundleSocket.length - 4) + '.loader.mjs'
-            const clientBundleSocketImporterAbsolute = path.join(WebServer.currentDir(), clientBundleSocketImporter)
-            const clientBundleSocketImporterContent = [
-                `import ClientBundleSocket from "${clientBundleSocket}"`,
-                `window.clientBundleSocket = new ClientBundleSocket("${this.config.socketUrl}")`
-            ].join('\n')
-            const vscript = new VirtualScript(clientBundleSocketImporterAbsolute, clientBundleSocketImporterContent)
-            extraScripts.push(vscript)
-            virtualModules[clientBundleSocketImporterAbsolute] = clientBundleSocketImporterContent
+            const socketLoader = this.clientBundleSocketLoader()
+            extraScripts.push(socketLoader)
+            virtualModules[socketLoader.location] = socketLoader.content
         }
 
         for ( let i = 0; i < views.length; ++i ){
             const viewRoute = views[i]
+            extraScripts.forEach(script => viewRoute.addScript(script))
 
             const view = viewRoute.c
             const viewToBundle = view.name.toLowerCase()
             const bundleName = entries.hasOwnProperty(viewToBundle) ? viewRoute.urlPathToFileName() : viewToBundle
-
-            extraScripts.forEach(script => viewRoute.addScript(script))
             
             const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : ComponentRegistry.Components.ViewRoute.CSR
             if ( renderMode === ComponentRegistry.Components.ViewRoute.CSR ){

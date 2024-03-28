@@ -31,34 +31,34 @@ component RouteCollector < BundleDataCollector{
         return {...trail, routeMiddleware: routeMiddleware }
     }
 
-    fn visit(route:BaseElement, trail:Object, control:Object){
+    fn toServerRoute(route:BaseElement, trail:Object){
         if ( !(route instanceof Route) )
-            return
+            return null
 
         const middleware = trail.routeMiddleware ? trail.routeMiddleware : []
         const prefix = trail.routePrefix ? trail.routePrefix : ''
 
         const routeUserMiddleware = route.middleware ? middleware.concat(route.middleware) : middleware
         if ( route instanceof GetRoute ){
-            this._routes.add(new ServerApiRoute(
+            return new ServerApiRoute(
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
                 route.f,
                 ServerApiRoute.GET
-            ))
+            )
         } else if ( route instanceof PostRoute ){
-            this._routes.add(new ServerApiRoute(
+            return new ServerApiRoute(
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
                 route.f,
                 ServerApiRoute.POST
-            ))
+            )
         } else if ( route instanceof MiddlewareRoute && route.f && route.url ){
-            this._routes.add(new ServerMiddlewareRoute(
+            return new ServerMiddlewareRoute(
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
                 route.f
-            ))
+            )
         } else if ( route instanceof ViewRoute ){
             let placement = []
             let page = undefined
@@ -90,7 +90,7 @@ component RouteCollector < BundleDataCollector{
                     throw new Error(`Unkown placement type for view route: ${routeUrl}.`)
                 }
             }
-            this._routes.add(new ServerViewRoute(
+            return new ServerViewRoute(
                 routeUrl,
                 routeUserMiddleware,
                 route.f,
@@ -99,11 +99,24 @@ component RouteCollector < BundleDataCollector{
                 route.data,
                 placement,
                 page
-            ))
+            )
         }
+    }
+
+    fn visit(route:BaseElement, trail:Object, control:Object){
+        if ( !(route instanceof Route) )
+            return null
+
+        const middleware = trail.routeMiddleware ? trail.routeMiddleware : []
+        const prefix = trail.routePrefix ? trail.routePrefix : ''
+
+        const routeUserMiddleware = route.middleware ? middleware.concat(route.middleware) : middleware
+
+        const serverRoute = this.toServerRoute(route, trail)
+        this._routes.add(serverRoute)
 
         if ( route.children.length > 0 ){
-            control.iterate(route, {...trail, routePrefix: prefix + route.url})
+            control.iterate(route, {...trail, routeMiddleware: routeUserMiddleware, routePrefix: prefix + route.url})
         }
     }
 

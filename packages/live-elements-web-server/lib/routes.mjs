@@ -16,6 +16,16 @@ export class ServerRoute{
     get userMiddleware(){ return this._userMiddleware }
     get url(){ return this._url }
     get f(){ return this._f }
+
+    appendMiddleware(middlewares){
+        if ( !Array.isArray(this._userMiddleware) ){
+            this._userMiddleware = [this._userMiddleware]
+        }
+        const toAdd = Array.isArray(middlewares) ? middlewares : [middlewares]
+        this._userMiddleware = this._userMiddleware.concat(toAdd)
+    }
+
+    typeString(){ return 'route' }
 }
 
 export class ServerApiRoute extends ServerRoute{
@@ -26,6 +36,8 @@ export class ServerApiRoute extends ServerRoute{
 
     get type(){ return this._type }
     static isType(ob){ return ob instanceof ServerApiRoute }
+
+    typeString(){ return this._type === ServerApiRoute.GET ? 'api/get' : 'api/post' }
 }
 
 ServerApiRoute.GET  = 1
@@ -37,6 +49,8 @@ export class ServerMiddlewareRoute extends ServerRoute{
     }
 
     static isType(ob){ return ob instanceof ServerMiddlewareRoute }
+
+    typeString(){ return 'middleware' }
 }
 
 export class ServerViewRoute extends ServerRoute{
@@ -65,6 +79,7 @@ export class ServerViewRoute extends ServerRoute{
     setBundleScript(script){ this._bundleScript = script }
 
     static isType(ob){ return ob instanceof ServerViewRoute }
+    typeString(){ return 'view' }
 
     urlPathToFileName(){
         let filename = this.url.replace(/_/g, '__')
