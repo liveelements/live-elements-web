@@ -5,3 +5,12 @@
 &ColLayout &Col {
     @apply w-full md:flex-1 p-2 border border-gray-300;
 }
+
+&ColLayout&.col-justify-normal{	@apply justify-normal; }
+&ColLayout&.col-justify-start{	@apply justify-start; }
+&ColLayout&.col-justify-end{    @apply justify-end; }
+&ColLayout&.col-justify-center{	@apply justify-center; }
+&ColLayout&.col-justify-between{@apply justify-between; }
+&ColLayout&.col-justify-around{	@apply justify-around; }
+&ColLayout&.col-justify-evenly{	@apply justify-evenly; }
+&ColLayout&.col-justify-stretch{@apply justify-stretch; }

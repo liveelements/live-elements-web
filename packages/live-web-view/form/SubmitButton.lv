@@ -1,0 +1,9 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component SubmitButton < Button{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(SubmitButton), 'text-color-button'])
+}

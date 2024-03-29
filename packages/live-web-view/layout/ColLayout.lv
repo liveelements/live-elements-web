@@ -8,8 +8,13 @@ component ColLayout < Div{
         ScopedStyle{ src: './style/collayout.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
-
+    
+    String justify: ''
     Array extraClasses: []
-    classes: this.extraClasses.concat([ScopedStyle.className(ColLayout)])
+
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(ColLayout),
+        this.justify ? 'col-justify-' + this.justify : 'col-justify'
+    ])
 
 }
