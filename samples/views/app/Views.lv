@@ -1,0 +1,32 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.form
+import live-web-view.layout
+
+component Views < PageView{
+    static Array use = [
+        FormContainer, ColLayout,
+        ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    Body{
+        classes: [ScopedStyle.className(Views)]
+
+        FormContainer{
+            FormGroup{
+                TextInput{ type='email' placeholder="Email Address" name="email" }
+            }
+            FormGroup{
+                TextInput{ type='password' placeholder="Password" name="password" }
+            }
+            FormGroup{
+                ColLayout{ justify: 'between'
+                    A{ href: '#' T`Forgot Password` }
+                    SubmitButton{ T`Submit` }
+                }
+            }
+        }
+    }
+}

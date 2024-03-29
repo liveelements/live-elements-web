@@ -1,0 +1,23 @@
+&FormContainer{ 
+    @apply px-6 py-4;
+}
+
+&FormContainer &FormGroup{
+    @apply w-full my-2;
+}
+
+&FormContainer &TextInput{
+    @apply block bg-white dark:bg-[#313131] w-full px-4 py-2 mt-2 border rounded border-gray-600 focus:border-[#313131] dark:focus:border-[#999] focus:outline-none;
+}
+
+&FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
+    @apply text-gray-900 dark:text-white;
+}
+
+&FormContainer &SubmitButton{
+    @apply px-4 py-2 text-sm text-white transition-colors duration-300 transform bg-blue-600 rounded hover:bg-blue-500;
+}
+
+&FormContainer .text-color-button{
+    @apply text-white;
+}

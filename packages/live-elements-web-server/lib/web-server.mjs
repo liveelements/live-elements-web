@@ -20,6 +20,7 @@ import { VirtualScript } from './scripts.mjs'
 import ComponentRegistry from './component-registry.mjs'
 import { ScopedViewAssignmentCache } from './scoped-style.mjs'
 import BundleData from './bundle-data.mjs'
+import PageNotFoundError from './page-not-found-error.mjs'
 
 class WebServerInit{
 
@@ -416,7 +417,7 @@ export default class WebServer extends EventEmitter{
         return this._pages.find( page => page.output === output )
     }
 
-    async renderRouteCSR(route, req, res){
+    async renderRouteCSR(route, req, res, next){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
         if ( !route.pageDOM ){
             page.entryScript = '/scripts/' + route.bundleScript
@@ -425,8 +426,17 @@ export default class WebServer extends EventEmitter{
         if ( route.data ){
             let data = null
             if ( typeof route.data === 'function' ){
-                const functionResult = route.data(req)
-                data = functionResult instanceof Promise ? await functionResult : functionResult
+                try{
+                    const functionResult = route.data(req)
+                    data = functionResult instanceof Promise ? await functionResult : functionResult
+                } catch ( e ) {
+                    if ( e instanceof PageNotFoundError ){
+                        next()
+                        return
+                    } else {
+                        log.e(e)
+                    }
+                }
             } else {
                 data = route.data
             }
@@ -464,16 +474,24 @@ export default class WebServer extends EventEmitter{
         return render
     }
 
-    async renderRouteSSR(route, req, res, cacheDir){
+    async renderRouteSSR(route, req, res, next, cacheDir){
         if ( route.data ){
             let data = null
             if ( typeof route.data === 'function' ){
-                const functionResult = route.data(req)
-                data = functionResult instanceof Promise ? await functionResult : functionResult
+                try{
+                    const functionResult = route.data(req)
+                    data = functionResult instanceof Promise ? await functionResult : functionResult
+                } catch ( e ) {
+                    if ( e instanceof PageNotFoundError ){
+                        next()
+                        return
+                    } else {
+                        log.e(e)
+                    }
+                }
             } else {
                 data = route.data
             }
-
             this.renderRouteContent(route, data, req).then(content => {
                 route.renderContent = content
                 res.send(route.renderContent).end()
@@ -501,24 +519,24 @@ export default class WebServer extends EventEmitter{
         }
     }
 
-    getViewRoute(route, req, res){
+    getViewRoute(route, req, res, next){
         const render = this.config.runMode === WebServer.RunMode.Production 
             ? route.render 
             : this.config.renderMode === WebServer.RenderMode.Production ? route.render : ComponentRegistry.Components.ViewRoute.CSR
 
         if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            this.renderRouteCSR(route, req, res)
+            this.renderRouteCSR(route, req, res, next)
         } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
-            this.renderRouteSSR(route, req, res)
+            this.renderRouteSSR(route, req, res, next)
         }
     }
 
-    getViewRouteUseDist(route, cacheDir, req, res){
+    getViewRouteUseDist(route, cacheDir, req, res, next){
         const render = route.render
         if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            this.renderRouteCSR(route, req, res)
+            this.renderRouteCSR(route, req, res, next)
         } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
-            this.renderRouteSSR(route, req, res, cacheDir)
+            this.renderRouteSSR(route, req, res, next, cacheDir)
         }
     }
 

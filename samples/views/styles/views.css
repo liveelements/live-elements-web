@@ -1,0 +1,4 @@
+body{
+    color-scheme: light;
+    @apply bg-white dark:bg-[#212121];
+}

@@ -1,0 +1,5 @@
+import live-web.dom
+
+component NavContent < Div{
+    classes: ['nav-content']
+}

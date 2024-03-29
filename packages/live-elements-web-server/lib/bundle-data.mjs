@@ -121,7 +121,7 @@ export default class BundleData{
             } else {
                 const bundleRelative = packageObject.lvweb.bundle
                 if ( bundleRelative.startsWith('./') ){
-                    const bundleData = await BundleData.load(bundle)
+                    const bundleData = await BundleData.load(bundleRelative)
                     bundleData._supportsExtraViews = allowViewArgument
                     return bundleData
                 } else {

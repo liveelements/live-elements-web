@@ -1,0 +1,19 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component FormContainer < Form{
+    id: formContainer
+
+    static Array use = [ 
+        FormGroup,
+        TextInput,
+        SubmitButton,
+        ScopedStyle{ src: './style/form.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat(ScopedStyle.className(FormContainer))
+}
