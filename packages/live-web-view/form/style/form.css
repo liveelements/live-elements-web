@@ -3,11 +3,11 @@
 }
 
 &FormContainer &FormGroup{
-    @apply w-full my-2;
+    @apply w-full my-3;
 }
 
 &FormContainer &TextInput{
-    @apply block bg-white dark:bg-[#313131] w-full px-4 py-2 mt-2 border rounded border-gray-600 focus:border-[#313131] dark:focus:border-[#999] focus:outline-none;
+    @apply block bg-white dark:bg-[#2a2a2a] w-full px-4 py-2.5 mt-2 border dark:border-[#414141] rounded border-gray-600 focus:border-[#313131] dark:focus:border-[#919191] focus:outline-none;
 }
 
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
@@ -15,7 +15,7 @@
 }
 
 &FormContainer &SubmitButton{
-    @apply px-4 py-2 text-sm text-white transition-colors duration-300 transform bg-blue-600 rounded hover:bg-blue-500;
+    @apply px-4 py-2 text-white transition-colors duration-300 transform bg-[#919191] dark:bg-[#717171] border border-[#919191] rounded hover:bg-[#919191];
 }
 
 &FormContainer .text-color-button{
