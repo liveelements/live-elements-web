@@ -108,6 +108,7 @@ export default class WebServer extends EventEmitter{
         this._app = express()
         this._app.use(express.json())
         this._webpack = null
+        this._serverSocket = null
         if ( this._config.useSocket ){
             this._serverSocket = new ServerBundleSocket(this._app)
             this._serverSocket.onAction('update-use', rootView => this.updateUse(rootView))
@@ -440,9 +441,16 @@ export default class WebServer extends EventEmitter{
             } else {
                 data = route.data
             }
-            const scriptEl = route.pageDOM.window.document.createElement('script')
-            scriptEl.text = `window.__serverData__ = ${JSON.stringify(data)};`
-            route.pageDOM.window.document.head.appendChild(scriptEl)
+            const scriptContent = `window.__serverData__ = ${JSON.stringify(data)};`
+            const existingScript =  route.pageDOM.window.document.head.querySelector('script[data-purpose="page-load"]')
+            if ( existingScript ){
+                existingScript.text = scriptContent
+            } else {
+                const scriptEl = route.pageDOM.window.document.createElement('script')
+                scriptEl.dataset.purpose = 'page-load'
+                scriptEl.text = scriptContent
+                route.pageDOM.window.document.head.appendChild(scriptEl)
+            }
             route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
         } else {
             if ( !route.pageContent )
