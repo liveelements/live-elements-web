@@ -7,17 +7,29 @@
 }
 
 &FormContainer &TextInput{
-    @apply block bg-white dark:bg-[#2a2a2a] w-full px-4 py-2.5 mt-2 border dark:border-[#414141] rounded border-gray-600 focus:border-[#313131] dark:focus:border-[#919191] focus:outline-none;
+    @apply dark:text-[#f1f1f1] dark:placeholder-[#919191] text-lg block bg-white dark:bg-[#2a2a2a] w-full px-4 py-2.5 mt-2 border dark:border-[#414141] rounded border-gray-600 focus:border-[#313131] dark:focus:border-[#919191] focus:outline-none;
 }
 
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
     @apply text-gray-900 dark:text-white;
 }
 
+&FormContainer &FormMessage{
+    @apply border-2 rounded p-2 p-2 dark:border-[#515151] hidden;
+}
+
+&FormContainer &FormMessage&.visible{
+    @apply block;
+}
+
+&FormContainer &FormMessage&.form-message-error{
+    @apply border-l-8 border-[rgb(162,32,40,0.80)];
+}
+
 &FormContainer &SubmitButton{
-    @apply px-4 py-2 text-white transition-colors duration-300 transform bg-[#919191] dark:bg-[#717171] border border-[#919191] rounded hover:bg-[#919191];
+    @apply text-lg px-4 py-2 dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#919191] dark:bg-[#616161] border border-[#818181] rounded hover:bg-[#818181];
 }
 
 &FormContainer .text-color-button{
-    @apply text-white;
+    @apply text-white dark:text-[#f1f1f1];
 }

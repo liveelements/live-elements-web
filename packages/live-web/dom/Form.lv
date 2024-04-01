@@ -5,4 +5,13 @@ component Form < DOMElement{
         super('form')
         Form.prototype.__initialize.call(this)
     }
+
+    fn on(eventName:string, fn:any){
+        if ( eventName === 'submit' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            DOMElement.prototype.on.call(this, eventName, fn)
+        }
+    }
 }

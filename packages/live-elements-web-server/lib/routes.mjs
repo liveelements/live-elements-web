@@ -228,6 +228,8 @@ export class RouteCollection{
         }
     }
 
+    allRoutes(){ return this._routes }
+    
     viewRoutes(){
         return this._routes.filter(ServerViewRoute.isType)
     }

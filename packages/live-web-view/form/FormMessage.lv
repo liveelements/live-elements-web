@@ -1,0 +1,21 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component FormMessage < Div{
+    id: formMessage
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(FormMessage), 
+        `form-message-${formMessage.type}`,
+        formMessage.visible ? 'visible' : ''
+    ])
+
+    string type: 'info'
+    string message: ''
+    boolean visible: this.message.length > 0
+
+    T{ text: formMessage.message }
+}
