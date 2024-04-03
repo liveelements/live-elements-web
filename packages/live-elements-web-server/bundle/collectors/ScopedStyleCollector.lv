@@ -18,8 +18,7 @@ component ScopedStyleCollector < BundleDataCollector{
 
     fn visit(node:BaseElement, _trail:Object, _control:Object){
         if ( node instanceof ViewRoute ){
-            const routeStyles = ScopedStyleCollector.scanComponentStyles(node.c, node.c)
-            this._collection = this._collection.merge(routeStyles)
+            this.scanComponentStyles(node.c, node.c)
         }
     }
 
@@ -43,28 +42,26 @@ component ScopedStyleCollector < BundleDataCollector{
         return null
     }
 
-    static fn scanComponentStyles(c:component, rootc:component){
-        let collection = new ScopedStyleCollection()
-        if ( c.use && c.use.length ){
+    fn scanComponentStyles(c:component, rootc:component){
+        if ( c.hasOwnProperty('use') && c.use.length ){
             for ( let i = 0; i < c.use.length; ++i ){
                 const use = c.use[i]
                 if ( use instanceof ScopedStyle ){
-                    collection.addStyle(c, use.src, use.process, rootc)
+                    this._collection.addStyle(c, use.src, use.process, rootc)
                 } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
-                    collection.addComponent(c.use[i], rootc)
-                    const nestedCollection = ScopedStyleCollector.scanComponentStyles(use, rootc)
-                    collection = collection.merge(nestedCollection)
+                    this._collection.addComponent(c.use[i], rootc)
+                    this.scanComponentStyles(use, rootc)
                 }
             }
         }
 
         const inherited = ScopedStyleCollector.findInheritedViewComponent(c)
         if ( inherited ){
-            const scopedInherited = collection.addComponent(inherited, rootc)
-            const scopedCurrent = collection.findScopedComponent(c)
+            const scopedInherited = this._collection.addComponent(inherited, rootc)
+            const scopedCurrent = this._collection.findScopedComponent(c)
             scopedCurrent.setInheritance(scopedInherited)
         }
 
-        return collection
+        return this._collection
     }
 }
