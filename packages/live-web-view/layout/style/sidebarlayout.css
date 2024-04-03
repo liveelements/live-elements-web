@@ -1,0 +1,17 @@
+&SidebarLayout{}
+
+&SidebarLayout &Sidebar{
+    @apply p-2 fixed w-full md:w-64 hidden md:block border-r border-[#919191] dark:border-[#515151] h-full;
+}
+
+&SidebarLayout &Sidebar&.show{
+    @apply block bg-[#212121];
+}
+
+&SidebarLayout .sidebar-content{
+    @apply p-4 md:ml-64;
+}
+
+&SidebarLayout .sidebar-alternate{
+    @apply block md:hidden;
+}

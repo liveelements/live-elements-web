@@ -1,0 +1,21 @@
+&TableView{
+    @apply min-w-full divide-y divide-[#d1d1d1] dark:divide-[#515151];
+}
+&TableView&.border-around{
+    @apply border border-[#515151];
+}
+
+&TableView thead{
+    @apply bg-[#d1d1d1] dark:bg-[#313131];
+}
+
+&TableView thead th{
+    @apply text-sm px-4 py-4 text-left font-bold;
+}
+
+&TableView tbody{
+    @apply text-lg divide-y divide-[#d1d1d1] dark:divide-[#515151];
+}
+&TableView tbody td{
+    @apply text-sm px-4 py-4;
+}
