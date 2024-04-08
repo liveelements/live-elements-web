@@ -1,0 +1,7 @@
+
+component Line < DOMElement{
+    constructor(){
+        super('line')
+        Line.prototype.__initialize.call(this)
+    }
+}
