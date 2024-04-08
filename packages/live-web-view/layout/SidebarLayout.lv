@@ -5,7 +5,6 @@ import live-elements-web-server.style
 component SidebarLayout < Div{
     static Array use = [ 
         Sidebar, 
-        SidebarToggleButton,
         ScopedStyle{ src: './style/sidebarlayout.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]

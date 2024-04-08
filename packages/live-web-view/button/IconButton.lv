@@ -2,16 +2,16 @@ import live-web.dom
 import live-web
 import live-elements-web-server.style
 
-component PrimaryButton < Button{
+component IconButton < Button{
     static Array use = [ 
-        ScopedStyle{ src: './style/primarybutton.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: './style/iconbutton.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
     
     Array extraClasses: []
 
     classes: this.extraClasses.concat([
-        ScopedStyle.className(PrimaryButton),
+        ScopedStyle.className(IconButton),
         'text-color-button'
     ])
 

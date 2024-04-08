@@ -1,17 +1,24 @@
-&SidebarLayout{}
+&SidebarLayout{
+    @apply h-full w-full;
+}
 
 &SidebarLayout &Sidebar{
-    @apply p-2 fixed w-full md:w-64 hidden md:block border-r border-[#919191] dark:border-[#515151] h-full;
+    @apply p-2 z-[1000] fixed w-full md:w-64 hidden md:block border-r border-[#919191] dark:border-[#515151] h-full;
 }
 
 &SidebarLayout &Sidebar&.show{
     @apply block bg-[#212121];
 }
 
-&SidebarLayout .sidebar-content{
-    @apply p-4 md:ml-64;
+&SidebarLayout .main-content{
+    @apply md:ml-64 min-h-full;
+    width: calc(100%);
 }
 
 &SidebarLayout .sidebar-alternate{
-    @apply block md:hidden;
+    @apply py-2 px-4 block md:hidden;
+}
+
+&SidebarLayout &Sidebar .sidebar-alternate{
+    @apply py-0 px-2 flex justify-end;
 }

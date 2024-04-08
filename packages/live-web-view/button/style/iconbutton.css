@@ -1,0 +1,4 @@
+
+&IconButton{
+    @apply text-lg px-2 py-2 dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#515151] rounded hover:bg-[#515151];
+}
