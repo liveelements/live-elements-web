@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media (prefers-color-scheme: dark) {    
+    @initialize body{
+        background-color: #212121;
+        color: #e1e1e1;
+    }
+}
+@media (prefers-color-scheme: light) {    
+    @initialize body{
+        background-color: white;
+        color: black;
+    }
+}
