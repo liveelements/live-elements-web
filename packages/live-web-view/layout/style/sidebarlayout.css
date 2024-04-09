@@ -7,16 +7,19 @@
 }
 
 &SidebarLayout &Sidebar&.show{
-    @apply block bg-[#212121];
+    @apply block bg-white dark:bg-[#212121];
 }
 
-&SidebarLayout .main-content{
-    @apply md:ml-64 min-h-full;
+&SidebarLayout .main-content, &SidebarLayout &Aside{
+    @apply md:ml-64 min-h-full px-4 py-2;
     width: calc(100%);
 }
 
 &SidebarLayout &SidebarCompact{
-    @apply py-2 px-4 block md:hidden;
+    @apply py-2 px-4 flex justify-end md:hidden;
+}
+&SidebarLayout &Aside &SidebarCompact{
+    @apply py-0 px-0;
 }
 
 &SidebarLayout &Sidebar &SidebarCompact{

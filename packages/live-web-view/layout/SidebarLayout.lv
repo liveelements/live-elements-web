@@ -6,6 +6,7 @@ component SidebarLayout < Div{
     static Array use = [ 
         Sidebar, 
         SidebarCompact,
+        Aside,
         ScopedStyle{ src: './style/sidebarlayout.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
