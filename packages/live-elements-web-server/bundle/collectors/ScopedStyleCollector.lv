@@ -59,6 +59,7 @@ component ScopedStyleCollector < BundleDataCollector{
         if ( inherited ){
             const scopedInherited = this._collection.addComponent(inherited, rootc)
             const scopedCurrent = this._collection.findScopedComponent(c)
+            this.scanComponentStyles(inherited, rootc)
             scopedCurrent.setInheritance(scopedInherited)
         }
 
