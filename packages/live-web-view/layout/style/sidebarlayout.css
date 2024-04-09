@@ -1,5 +1,5 @@
 &SidebarLayout{
-    @apply h-full w-full;
+    @apply h-full w-full md:w-[calc(100%-16rem)];
 }
 
 &SidebarLayout &Sidebar{
@@ -15,10 +15,10 @@
     width: calc(100%);
 }
 
-&SidebarLayout .sidebar-alternate{
+&SidebarLayout &SidebarCompact{
     @apply py-2 px-4 block md:hidden;
 }
 
-&SidebarLayout &Sidebar .sidebar-alternate{
-    @apply py-0 px-2 flex justify-end;
+&SidebarLayout &Sidebar &SidebarCompact{
+    @apply py-0 px-2 flex md:hidden justify-end;
 }
