@@ -8,6 +8,7 @@ import convert from './commands/convert.mjs'
 import serve from './commands/serve.mjs'
 import compile from './commands/compile.mjs'
 import run from './commands/run.mjs'
+import addView from './commands/add/view.mjs'
 import argumentPairsToObject from './lib/argument-pairs-to-object.mjs'
 import readline from 'readline'
 import path from 'path'
@@ -85,5 +86,10 @@ program.command('convert')
     .option('--file <file>', 'Input file.', '')
     .option('--indent <value>', 'Indent Value.', parseInt)
     .action(convert)
+
+const add = program.command('add')
+add.command('view url [name] [bundle]')
+    .description('Adds a view route to the current bundle.')
+    .action(addView)
 
 program.parse(process.argv)
