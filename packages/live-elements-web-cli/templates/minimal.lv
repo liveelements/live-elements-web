@@ -1,0 +1,85 @@
+import .lib
+
+instance minimal GeneratorPack{
+    name: 'minimal'
+
+FileGenerator{
+    output: 'package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+  \"version\": \"0.1.0\",
+  \"description\": \"\",
+  \"main\": \"index.js\",
+  \"scripts\": {
+    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"
+  },
+  \"lvweb\" : { \"bundle\": \"./bundle/bundle.lv\" },
+  \"author\": \"\",
+  \"license\": \"UNLICENSED\",
+  \"dependencies\": {
+    \"live-elements-web-server\": \"^0.1.10\",
+    \"live-elements-loader\": \"^0.1.10\",
+    \"live-elements-core\": \"^0.1.10\",
+    \"live-elements-web-cli\": \"^0.1.10\",
+    \"live-elements-web\": \"^0.1.10\",
+    \"live-web\": \"^0.1.10\"
+  }
+}
+```
+}
+
+FileGenerator{
+    output: 'live.package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+    \"version\" : \"0.1.0\"
+}
+```
+}
+
+
+FileGenerator{
+    output: 'app/Home.lv'
+
+FileGeneratorContent```
+import live-elements-web-server.view
+import live-web.dom
+
+component Home < PageView{
+    Body{}
+}
+```
+}
+
+FileGenerator{
+    output: 'bundle/bundle.lv'
+
+FileGeneratorContent```
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import .app
+
+instance bundle Bundle{
+    ViewRoute{ url: \'/\' c: Home }
+}
+```
+}
+
+} // webpackBundle Generator
