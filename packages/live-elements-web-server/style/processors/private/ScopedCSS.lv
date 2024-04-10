@@ -34,7 +34,6 @@ component ScopedCSS{
                         if ( rule.name === 'initialize' ){
                             if ( rule.params === 'body' ){
                                 const ruleNodes = rule.nodes.map(node => node.toString()).join(';\n')
-                                console.log(ruleNodes)
                                 rule.replaceWith(`${rule.params}{\n${ruleNodes};\n}${rule.raws.after}`)
                             } else {
                                 throw new Error(`Unknown initialize rule parameters: ${rule.params}`)
