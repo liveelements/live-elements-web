@@ -132,22 +132,6 @@ component DOMElement{
         DOMElement.patch(item, this)
     }
 
-    static fn __unwrapAttributes(prefix:string, object:Object){
-        var result = []
-        var key = undefined
-        for ( key in object ){
-            if ( object.hasOwnProperty(key) ){
-                var val = object[key]
-                if ( typeof val === 'object' ){
-                    result = result.concat(DOMElement.__unwrapAttributes(prefix + '-' + key, val))
-                } else {
-                    result.push(prefix + '-' + key, val)
-                }
-            }
-        }
-        return result
-    }
-
     static fn patchOuter(htmlElement:Object, element:Object){
         patchOuter(htmlElement, function() {
             DOMElement.render(element);
@@ -218,6 +202,24 @@ component DOMElement{
                 }
             }
         }
+    }
+
+    static fn __unwrapAttributes(prefix:string, object:Object){
+        var result = []
+        var key = undefined
+        for ( key in object ){
+            if ( object.hasOwnProperty(key) ){
+                var val = object[key]
+                if ( typeof val === 'object' ){
+                    result = result.concat(DOMElement.__unwrapAttributes(prefix + '-' + key, val))
+                } else if ( key.length === 0 ){
+                    result.push(prefix, val)
+                } else {
+                    result.push(prefix + '-' + key, val)
+                }
+            }
+        }
+        return result
     }
 
 }
