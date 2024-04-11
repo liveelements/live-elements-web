@@ -9,12 +9,14 @@ component Script < DOMElement{
     string src: ''
     string output
 
-    string crossorigin: ''
+    boolean preload
+
+    string crossorigin
     on crossoriginChanged: () => {
         this.props['crossorigin'] = this.crossorigin
         this.propsChanged.emit()
     }
-    string integrity: ''
+    string integrity
     on integrityChanged: () => {
         this.props['integrity'] = this.integrity
         this.propsChanged.emit()
