@@ -25,11 +25,11 @@
 }
 
 &SidebarLayout &Sidebar &SidebarCompact{
-    @apply pt-0 pb-2 px-0 flex md:hidden justify-end;
+    @apply pt-0 pb-0 px-0 flex md:hidden justify-end;
 }
 
 &SidebarLayout &Sidebar header{
-    @apply px-0 py-4 text-2xl font-bold;
+    @apply px-0 pb-4 md:py-4 text-2xl font-bold;
 }
 
 &SidebarLayout &Sidebar hr{

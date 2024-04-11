@@ -3,7 +3,7 @@
 }
 
 h1 {
-  @apply text-3xl font-bold my-4 pt-2 pb-4 border-b border-[#c1c1c1] dark:border-[#515151];
+  @apply text-3xl font-bold my-4 pt-2 pb-4 ;
 }
 
 h2 {
