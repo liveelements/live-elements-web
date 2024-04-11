@@ -2,15 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (prefers-color-scheme: dark) {    
-    @initialize body{
-        background-color: #212121;
-        color: #e1e1e1;
-    }
+@initialize html body{
+    background-color: white;
+    color: black;
 }
-@media (prefers-color-scheme: light) {    
-    @initialize body{
-        background-color: white;
-        color: black;
-    }
+
+@initialize html.dark body{
+    background-color: #212121;
+    color: #e1e1e1;
+    border-color: red;
 }

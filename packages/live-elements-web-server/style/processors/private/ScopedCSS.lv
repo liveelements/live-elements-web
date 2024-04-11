@@ -32,7 +32,10 @@ component ScopedCSS{
 
                     root.walkAtRules(rule => {
                         if ( rule.name === 'initialize' ){
-                            if ( rule.params === 'body' ){
+                            const paramSegments = rule.params.split(' ')
+                            const paramTags = paramSegments.map(p => p.indexOf('.') === -1 ? p : p.substring(0, p.indexOf('.')))
+                            const paramNotAllowedNames = paramTags.filter(p => p !== 'body' && p !== 'html' )
+                            if ( !paramNotAllowedNames.length ){
                                 const ruleNodes = rule.nodes.map(node => node.toString()).join(';\n')
                                 rule.replaceWith(`${rule.params}{\n${ruleNodes};\n}${rule.raws.after}`)
                             } else {

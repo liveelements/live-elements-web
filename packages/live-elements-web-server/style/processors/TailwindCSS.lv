@@ -8,6 +8,7 @@ component TailwindCSS{
     static fn createForPostCSS(config:Object){
         const tailwindConfig = config ? config : {
             media: false, // or 'media' or 'class'
+            darkMode: 'class',
             theme: {
                 extend: {},
             },
