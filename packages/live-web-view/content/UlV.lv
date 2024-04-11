@@ -1,0 +1,16 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component UlV < Ul{
+    static Array use = [ 
+        ScopedStyle{ src: './style/ulv.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    boolean border: false
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(UlV), this.border ? 'round-border' : ''])
+}

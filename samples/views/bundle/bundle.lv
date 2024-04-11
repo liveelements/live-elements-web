@@ -6,4 +6,5 @@ import .samples.views.app
 
 instance bundle Bundle{
     ViewRoute{ url: '/' c: Views render: ViewRoute.SSR }
+    ViewRoute{ url: '/blog' c: Blog render: ViewRoute.SSR }
 }

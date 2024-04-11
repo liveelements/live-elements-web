@@ -1,0 +1,14 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component BlogPost < Form{
+    static Array use = [ 
+        ScopedStyle{ src: './style/blogpost.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat(ScopedStyle.className(BlogPost))
+}

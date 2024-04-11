@@ -1,0 +1,27 @@
+&Float{
+    @apply absolute;
+}
+&Float&.position-tl{
+    @apply m-2 top-0 left-0;
+}
+&Float&.position-tr{
+    @apply m-2 top-0 right-0;
+}
+&Float&.position-bl{
+    @apply m-2 bottom-0 left-0;
+}
+&Float&.position-br{
+    @apply m-2 bottom-0 right-0;
+}
+&Float&.position-t{
+    @apply m-2 top-0;
+}
+&Float&.position-l{
+    @apply m-2 left-0;
+}
+&Float&.position-r{
+    @apply m-2 right-0;
+}
+&Float&.position-b{
+    @apply m-2 bottom-0;
+}

@@ -1,0 +1,71 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.color
+
+component Blog < PageView{
+    static Array use = [
+        BlogPost,
+        UlV,
+        Float,
+        IconButton,
+        SidebarLayout,
+        SidebarCloseButton,
+        SidebarToggleButton,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    head: PageProperties{
+        ColorSchemeLoader{}
+    }
+
+    Body{
+
+        classes: [ScopedStyle.className(Blog)]
+
+        Float.('BR'){
+            ColorSchemeToggleButton{}
+        }
+
+        SidebarLayout{
+            Sidebar{
+                SidebarCompact{
+                    SidebarCloseButton{}
+                }
+
+                Header{
+                    H1`Sidebar`
+                }
+
+                UlV{
+                    Li`Item #1`
+                    Li`Item #2`
+                    Li`Item #3`
+                    Li`Item #4`
+                }
+            }
+
+            Aside{
+                SidebarCompact{
+                    SidebarToggleButton{}
+                }
+                
+                BlogPost{
+                    H1`Heading 1`
+                    H2`Heading 2`
+                    P`Paragraph of text`
+                    H3`Heading 3`
+                    P`Second paragraph of text`
+                }
+
+            }
+        }
+
+
+    }
+}

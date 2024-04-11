@@ -3,11 +3,13 @@
 }
 
 &SidebarLayout &Sidebar{
-    @apply p-2 z-[1000] fixed w-full md:w-64 hidden md:block border-r border-[#919191] dark:border-[#515151] h-full;
+    @apply w-full py-2 px-4 left-[-100%] z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#212121] block;
+    @apply md:w-64 md:px-2 md:left-[auto] md:border-r md:border-[#c1c1c1] md:dark:border-[#515151];
+    transition: left 0.5s;
 }
 
 &SidebarLayout &Sidebar&.show{
-    @apply block bg-white dark:bg-[#212121];
+    @apply block left-[0];
 }
 
 &SidebarLayout .main-content, &SidebarLayout &Aside{
@@ -16,12 +18,20 @@
 }
 
 &SidebarLayout &SidebarCompact{
-    @apply py-2 px-4 flex justify-end md:hidden;
+    @apply py-2 px-0 flex justify-end md:hidden;
 }
 &SidebarLayout &Aside &SidebarCompact{
     @apply py-0 px-0;
 }
 
 &SidebarLayout &Sidebar &SidebarCompact{
-    @apply py-0 px-2 flex md:hidden justify-end;
+    @apply pt-0 pb-2 px-0 flex md:hidden justify-end;
+}
+
+&SidebarLayout &Sidebar header{
+    @apply px-0 py-4 text-2xl font-bold;
+}
+
+&SidebarLayout &Sidebar hr{
+    @apply border-[#a1a1a1] dark:border-[#515151] py-2;
 }

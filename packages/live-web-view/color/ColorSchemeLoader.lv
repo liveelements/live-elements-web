@@ -1,0 +1,15 @@
+import live-web.dom
+
+component ColorSchemeLoader < Script{
+    preload: true
+
+    T```
+        if (localStorage.getItem('color-scheme') === 'dark' || (!('color-scheme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.querySelector('html').classList.add('dark');
+        } else {
+            document.querySelector('html').classList.remove('dark');
+        }
+    ```
+}
+
+

@@ -1,0 +1,13 @@
+&ColorSchemeToggleButton&[data-scheme="light"] .light-icon{
+    @apply hidden;
+}
+&ColorSchemeToggleButton&[data-scheme="dark"] .light-icon{
+    @apply block;
+}
+&ColorSchemeToggleButton&[data-scheme="light"] .dark-icon{
+    @apply block;
+    transform: rotate(30deg)
+}
+&ColorSchemeToggleButton&[data-scheme="dark"] .dark-icon{
+    @apply hidden;
+}

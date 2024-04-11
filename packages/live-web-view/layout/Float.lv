@@ -1,0 +1,22 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Float < Div{
+    static Array use = [ 
+        ScopedStyle{ src: './style/float.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    constructor(position:string){
+        super()
+        Float.prototype.__initialize.call(this)
+        this.position = position
+    }
+
+    string position: ''
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Float), this.position ? 'position-' + this.position.toLowerCase() : ''])
+}
