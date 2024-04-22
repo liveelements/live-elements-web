@@ -1,0 +1,47 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import .button
+
+component RefreshButton < IconButton{
+    id: refreshButton
+    static Array use = []
+
+    props = {
+        data: { ref: Math.floor(Math.random() * Date.now()).toString(16) }
+    }
+
+    Object target: null
+    on targetChanged: () => {
+        if ( this.target ){
+            const refId = this.props.data.ref
+            if ( this.target.props.data ){
+                this.target.props.data.refrefresh = 'refresh-' + refId
+            } else {
+                this.target.props = { data: { refrefresh: 'refresh-' + refId }}
+            }
+        }
+    }
+    Svg{ 
+        props: ({width: '15', height: '15', viewBox: '0 0 19 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Path{ 
+            props: ({d: 'M9.88634 4.77271C2.72726 4.77271 1.61361 10.5 1.77271 13.3636C1.7727 15.9091 3.77268 21 9.88634 21C16 21 18 15.9091 18 13.3636', stroke: {'': 'currentColor',width: '2'}})
+        }
+        Path{ 
+            props: ({d: 'M10.0642 10.0642L10.0642 9.56223e-06L15.0963 5.03211L10.0642 10.0642Z', fill: 'currentColor'})
+        }
+    }
+
+    DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                e.preventDefault()
+                const ref = e.currentTarget.dataset.ref
+                const elem = document.querySelector(`[data-refrefresh='refresh-${ref}']`)
+                if ( elem ){
+                    elem.src = elem.src
+                }
+            }
+        }
+    }
+}

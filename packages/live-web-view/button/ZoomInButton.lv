@@ -1,0 +1,63 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component ZoomInButton < IconButton{
+    id: zoomInButton
+    static Array use = []
+
+    Svg{ 
+        props: ({xmlns: 'http://www.w3.org/2000/svg', width: '15', height: '15', viewBox: '0 0 20 20'})
+        Circle{ 
+            props: ({cx: '8', cy: '8', r: '6', fill: 'none', stroke: { '' : 'currentColor', width: '2' } })
+        }
+        Line{ 
+            props: ({x1: '12', y1: '12', x2: '18', y2: '18', stroke: { '' : 'currentColor', width: '2', linecap: 'round' } })
+        }
+        Line{ 
+            props: ({x1: '5', y1: '8', x2: '11', y2: '8', stroke: { '' : 'currentColor', width: '2', linecap: 'round' } })
+        }
+        Line{ 
+            props: ({x1: '8', y1: '5', x2: '8', y2: '11', stroke: { '' : 'currentColor', width: '2', linecap: 'round' } })
+        }
+    }
+
+    Object target: null
+    int scale: 1.0
+
+    DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                if ( zoomInButton.target ){
+                    const target = zoomInButton.target
+                    let targetScale = 1
+                    if ( target.props.data ){
+                        if ( target.props.data.zoomScale ){
+                            targetScale = parseFloat(target.props.data.zoomScale)
+                        }
+                    }
+                    if ( targetScale > 2.0 ){
+                        return
+                    }
+                    const newScaleAdd = targetScale + 0.1
+                    const newScale = Math.round(newScaleAdd * 100) / 100
+                    const newSize = 100 / newScale
+
+                    if ( target.props.data )
+                        target.props.data.zoomScale = '' + newScale
+                    else
+                        target.props.data = { zoomScale: '' + newScale }
+
+                    target.propsChanged.emit()
+
+                    target.style = {
+                        width : `${newSize}%`,
+                        height: `${newSize}%`,
+                        transform: `scale(${newScale})`,
+                        transformOrigin: 'top left'
+                    }
+                }
+            }
+        }
+    }
+}

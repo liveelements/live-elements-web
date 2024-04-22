@@ -17,10 +17,11 @@ function objectToCode(obj){
     for (const [key, value] of Object.entries(obj)) {
         if ( result.length > 0 )
             result += ','
+        const keyString = key ? key : "''"
         if ( typeof value === 'object' && value !== null ){
-            result += key + '; ' + objectToCode(value)
+            result += keyString + '; ' + objectToCode(value)
         } else {
-            result += key + ': \'' + value + '\''
+            result += keyString + ': \'' + value + '\''
         }
     }
     return '{' + result + '}'
@@ -74,10 +75,18 @@ function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
                 var nextKey = dashToCamelCase(attr.name.substr(dashIndex + 1))
                 if ( !props.hasOwnProperty(key) ){
                     props[key] = {}
+                } else {
+                    if ( props[key].constructor !== Object ){
+                        props[key] = { '' : props[key] }
+                    }
                 }
                 props[key][nextKey] = attr.value
             } else {
-                props[attr.name] = attr.value
+                if ( props.hasOwnProperty(attr.name) && props[attr.name].constructor === Object ){
+                    props[attr.name][''] = attr.value
+                } else {
+                    props[attr.name] = attr.value
+                }
             }
         }
     }
@@ -85,10 +94,11 @@ function htmlToLv(window, dom, indent = -1, indentMultiplier = 1){
     for (const [key, value] of Object.entries(props)) {
         if ( propsStr.length > 0 )
             propsStr += ', '
+        const keyString = key ? key : "''"
         if ( typeof value === 'object' && value !== null ){
-            propsStr += key + ': ' + objectToCode(value)
+            propsStr += keyString + ': ' + objectToCode(value)
         } else {
-            propsStr += key + ': \'' + value + '\''
+            propsStr += keyString + ': \'' + value + '\''
         }
     }
     if ( propsStr.length > 0 ){
