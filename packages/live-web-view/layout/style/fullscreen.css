@@ -1,6 +1,10 @@
 
 &Fullscreen {
-    @apply  overflow-hidden relative w-full h-screen flex items-center justify-center;
+    @apply overflow-hidden relative w-full h-screen flex items-center justify-center;
+}
+
+&Fullscreen&.pad-topnav{
+    @apply pt-[3rem];
 }
 
 &Fullscreen .responsive {

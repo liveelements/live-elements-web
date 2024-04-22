@@ -1,0 +1,89 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import .button
+
+component ResizableFillButton < IconButton{
+    id: resizableFillButton
+
+    static Array use = [
+        ScopedStyle{ src: './style/resizablefillbutton.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    classes: this.extraClasses.concat([ScopedStyle.className(ResizableFillButton), this.isFilled ? 'resize-fill' : ''])
+
+    props = {
+        data: { ref: Math.floor(Math.random() * Date.now()).toString(16) }
+    }
+
+    boolean isFilled: false
+    Object target: null
+    on targetChanged: () => {
+        if ( this.target ){
+            const refId = this.props.data.ref
+            if ( this.target.props.data ){
+                this.target.props.data.reffill = 'fill-' + refId
+            } else {
+                this.target.props = { data: { reffill: 'fill-' + refId }}
+            }
+        }
+    }
+
+    Svg{ classes: ['resizable-fill-icon']
+        props: ({width: '15', height: '15', viewBox: '0 0 16 17', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Path{ 
+            props: ({d: 'M9 7L15 1M15 1L15 7M15 1L9 1', stroke: {'': 'currentColor',width: '2'}})
+        }
+        Path{ 
+            props: ({d: 'M7 10L1 16M1 16L1 10M1 16L7 16', stroke: {'': 'currentColor',width: '2'}})
+        }
+    }
+
+    Svg{ classes: ['resizable-fit-icon']
+        props: ({width: '15', height: '15', viewBox: '0 0 18 19', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Path{ 
+            props: ({d: 'M1 18L7 12M7 12L7 18M7 12L1 12', stroke: {'': 'currentColor',width: '2'}})
+        }
+        Path{ 
+            props: ({d: 'M17 1L11 7M11 7L11 1M11 7L17 7', stroke: {'': 'currentColor',width: '2'}})
+        }
+    }
+
+    DOMBehavior{
+        domReady: (e) => {
+            const ref = e.dataset.ref
+            const elem = document.querySelector(`[data-reffill='fill-${ref}']`)
+            if ( elem ){
+                if ( elem.classList.contains('resize-fill') ){
+                    e.classList.add('resize-fill')
+                }
+            }
+        }
+        domEvents: {
+            click: (e) => {
+                e.preventDefault()
+                const ref = e.currentTarget.dataset.ref
+                const current = e.currentTarget
+                const elem = document.querySelector(`[data-reffill='fill-${ref}']`)
+                if ( elem ){
+                    if ( elem.classList.contains('resize-fill') ){
+                        elem.classList.remove('resize-fill')
+                        current.classList.remove('resize-fill')
+                        elem.style.width = (elem.dataset.resizeW ? elem.dataset.resizeW + 'px' : '50%')
+                        elem.style.height = (elem.dataset.resizeH ? elem.dataset.resizeH + 'px' : '50%')
+                        delete elem.dataset.resizeW
+                        delete elem.dataset.resizeH
+                    } else {
+                        elem.dataset.resizeW = elem.offsetWidth
+                        elem.dataset.resizeH = elem.offsetHeight
+                        elem.style.width = '100%'
+                        elem.style.height = '100%'
+                        elem.classList.add('resize-fill')
+                        current.classList.add('resize-fill')
+                    }
+                }
+            }
+        }
+    }
+}

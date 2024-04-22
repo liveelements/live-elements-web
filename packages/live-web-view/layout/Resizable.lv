@@ -1,0 +1,21 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Resizable < Div{
+    static Array use = [ 
+        ResizableHandlePoint,
+        ResizableFillButton,
+        ScopedStyle{ src: './style/resizable.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    boolean border: false
+    boolean fill: false
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Resizable), this.border ? 'surround-border' : '', this.fill ? 'resize-fill' : ''])
+
+    
+}

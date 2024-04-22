@@ -1,0 +1,30 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component ResizableHandlePoint < Div{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(ResizableHandlePoint)])
+
+    DOMBehavior{
+        domReady: (d) => {
+            const resizableDiv = d.parentNode
+
+            function resize(e) {
+                resizableDiv.style.width = e.clientX - resizableDiv.offsetLeft + 'px';
+                resizableDiv.style.height = e.clientY - resizableDiv.offsetTop + 'px';
+            }
+
+            function stopResize() {
+                window.removeEventListener('mousemove', resize)
+                window.removeEventListener('mouseup', stopResize)
+            }
+
+            d.addEventListener('mousedown', function (e){
+                e.preventDefault()
+                window.addEventListener('mousemove', resize)
+                window.addEventListener('mouseup', stopResize)
+            })
+        }
+    }
+}

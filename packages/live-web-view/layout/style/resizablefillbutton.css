@@ -1,0 +1,13 @@
+&ResizableFillButton .resizable-fill-icon{
+    @apply block;
+}
+&ResizableFillButton .resizable-fit-icon{
+    @apply hidden;
+}
+
+&ResizableFillButton&.resize-fill .resizable-fill-icon{
+    @apply hidden;
+}
+&ResizableFillButton&.resize-fill .resizable-fit-icon{
+    @apply block;
+}
