@@ -1,0 +1,83 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component SplitLayout < Div{
+    static Array use = [ 
+        SplitPane,
+        ScopedStyle{ src: './style/splitlayout.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
+    ]
+
+    Array panes: []
+    DOMElement handle: Div{ classes: ['handle'] 
+        Div{ classes: ['handle-pointer']
+            DOMBehavior{
+                domReady: (handle) => {
+                    const container = handle.parentNode.parentNode
+                    let isDragging = false
+
+                    const disableTextSelection = () => { document.body.style.userSelect = 'none' }
+                    const enableTextSelection = () => { document.body.style.userSelect = '' }
+
+                    const onMouseDown = (e) => {
+                        if ( container.childNodes.length > 2 ){
+                            isDragging = true
+                            disableTextSelection()
+                            document.addEventListener('mousemove', onMouseMove)
+                            document.addEventListener('mouseup', onMouseUp)
+                        }
+                    };
+
+                    const onMouseMove = (e) => {
+                        e.preventDefault()
+                        if (!isDragging) 
+                            return
+
+                        const leftPane = container.childNodes[0]
+                        const rightPane = container.childNodes[2]
+                        let delta = e.clientX - container.getBoundingClientRect().left;
+                        if (window.innerWidth >= 768) { // 'md' breakpoint
+                            if (delta < 100) delta = 100; // Minimum width constraint
+                            if (delta > container.clientWidth - 100) delta = container.clientWidth - 100; // Maximum width constraint
+                            leftPane.style.width = `${delta}px`;
+                            rightPane.style.width = `${container.clientWidth - delta}px`;
+                            leftPane.style.height = '100%'
+                            rightPane.style.height = '100%'
+                        } else {
+                            delta = e.clientY - container.getBoundingClientRect().top;
+                            if (delta < 100) delta = 100;
+                            if (delta > container.clientHeight - 100) delta = container.clientHeight - 100;
+                            leftPane.style.height = `${delta}px`;
+                            rightPane.style.height = `${container.clientHeight - delta}px`;
+                            leftPane.style.width = '100%'
+                            rightPane.style.width = '100%'
+                        }
+                    }
+
+                    const onMouseUp = () => {
+                        isDragging = false
+                        enableTextSelection()
+                        document.removeEventListener('mousemove', onMouseMove)
+                        document.removeEventListener('mouseup', onMouseUp)
+                    }
+
+                    handle.addEventListener('mousedown', onMouseDown)
+                }
+            }
+        }
+    }
+    
+    Array extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(SplitLayout)
+    ])
+
+    children: this.panes.reduce((acc, item, index) => {
+        acc.push(item)
+        if (index !== this.panes.length - 1){
+            acc.push(this.handle)
+        }
+        return acc;
+    }, [])
+}

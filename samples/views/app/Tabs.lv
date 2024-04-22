@@ -1,0 +1,50 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.color
+
+component Tabs < PageView{
+    static Array use = [
+        TabLayout,
+        BlogPost,
+        Float,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    head: PageProperties{
+        ColorSchemeLoader{}
+    }
+
+    Body{ style: { padding: '1rem' }
+        Float.('BR'){
+            ColorSchemeToggleButton{}
+        }
+
+        classes: [ScopedStyle.className(Tabs)]
+        
+        TabLayout{
+            TabHeader{
+                children: [1, 2, 3].map(d => {
+                    return TabButton{
+                        T.(`Tab ${d}`){}
+                    }
+                })
+            }
+            TabContent{
+                children: [1, 2, 3].map(d => {
+                    return TabPane{ 
+                        BlogPost{
+                            H1.(`Heading ${d}`){}
+                            P`Paragraph of text`
+                        }
+                    }
+                })
+            }
+        }
+    }
+}

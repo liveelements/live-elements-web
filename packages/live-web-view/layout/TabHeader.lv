@@ -1,0 +1,13 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component TabHeader < Div{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(TabHeader)])
+
+    on childrenChanged: () => {
+        for ( let i = 0; i < this.children.length; ++i ){
+            this.children[i].setParent(this)
+        }
+    }
+}
