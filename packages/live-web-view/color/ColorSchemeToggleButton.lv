@@ -28,10 +28,12 @@ component ColorSchemeToggleButton < IconButton{
                     document.querySelector('html').classList.remove('dark')
                     window.localStorage.setItem('color-scheme', 'light');
                     e.dataset.scheme = 'light'
+                    window.dispatchEvent(new window.CustomEvent("colorscheme", { detail: 'light' }))
                 } else {
                     document.querySelector('html').classList.add('dark')
                     window.localStorage.setItem('color-scheme', 'dark');
                     e.dataset.scheme = 'dark'
+                    window.dispatchEvent(new window.CustomEvent("colorscheme", { detail: 'dark' }))
                 }
             }
         }

@@ -12,7 +12,7 @@
 }
 
 &TabButton{
-    @apply py-2 px-4 border-0 rounded-none rounded-t border-[#515151] dark:border-[#b1b1b1];
+    @apply text-base py-2 px-4 border-0 rounded-none rounded-t border-[#515151] dark:border-[#b1b1b1];
 }
 
 &TabButton&.active{
@@ -29,6 +29,9 @@
 
 &TabLayout&.no-b &TabContent{
     @apply border-0;
+}
+&TabLayout&.no-b &TabContent&.bt{
+    @apply border-t dark:border-[#313131];
 }
 
 &TabPane{
