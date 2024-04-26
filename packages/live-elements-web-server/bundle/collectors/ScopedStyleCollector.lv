@@ -1,15 +1,15 @@
 import .bundle
 import .router
 import .style
+import .shared
 
 import ClassInfo from '../../lib/class-info.mjs'
-import { ScopedStyleCollection } from '../../lib/scoped-style.mjs'
+import ScopedComponentPaths from '../../lib/scoped-component-paths.mjs'
 
 component ScopedStyleCollector < BundleDataCollector{
-
     constructor(){
         super()
-        this._collection = new ScopedStyleCollection()
+        this._scanner = ScopedComponentScanner.create()
         ScopedStyleCollector.prototype.__initialize.call(this)
     }
 
@@ -18,51 +18,14 @@ component ScopedStyleCollector < BundleDataCollector{
 
     fn visit(node:BaseElement, _trail:Object, _control:Object){
         if ( node instanceof ViewRoute ){
-            this.scanComponentStyles(node.c, node.c)
+            this._scanner.scanView(node.c)
         }
     }
 
     fn end(trail:Object):Object{
-        const collection = this._collection
-        this._collection = new ScopedStyleCollection()
-        collection.resolveRelativePaths(trail.bundlePackagePath)
+        const collection = this._scanner.collection
+        ScopedComponentPaths.resolveRelativePaths(collection, trail.bundlePackagePath)
+        this._scanner = ScopedComponentScanner.create()
         return collection
-    }
-    
-    static fn findInheritedViewComponent(c:component){
-        let prototype = Object.getPrototypeOf(c)
-        while ( prototype ){
-            if ( prototype instanceof BaseElement )
-                return null
-            if ( prototype.use && Array.isArray(prototype.use) ){
-                return prototype
-            }
-            prototype = Object.getPrototypeOf(prototype)
-        }
-        return null
-    }
-
-    fn scanComponentStyles(c:component, rootc:component){
-        if ( c.hasOwnProperty('use') && c.use.length ){
-            for ( let i = 0; i < c.use.length; ++i ){
-                const use = c.use[i]
-                if ( use instanceof ScopedStyle ){
-                    this._collection.addStyle(c, use.src, use.process, rootc)
-                } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
-                    this._collection.addComponent(c.use[i], rootc)
-                    this.scanComponentStyles(use, rootc)
-                }
-            }
-        }
-
-        const inherited = ScopedStyleCollector.findInheritedViewComponent(c)
-        if ( inherited ){
-            const scopedInherited = this._collection.addComponent(inherited, rootc)
-            const scopedCurrent = this._collection.findScopedComponent(c)
-            this.scanComponentStyles(inherited, rootc)
-            scopedCurrent.setInheritance(scopedInherited)
-        }
-
-        return this._collection
     }
 }

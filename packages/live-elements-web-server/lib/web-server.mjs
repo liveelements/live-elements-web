@@ -13,12 +13,14 @@ import { Watcher, WatcherGroup } from './watcher.mjs'
 import BundleWebpack from './bundle-webpack.mjs'
 import  { ServerBundleSocket} from './server-bundle-socket.mjs'
 import log from './server-log.mjs'
-import { BaseElement } from 'live-elements-core/baseelement.js'
 import chalk from 'chalk'
 import { ServerApiRoute, ServerMiddlewareRoute, ServerViewRoute } from './routes.mjs'
 import { VirtualScript } from './scripts.mjs'
 import ComponentRegistry from './component-registry.mjs'
-import { ScopedViewAssignmentCache } from './scoped-style.mjs'
+import ScopedAssignmentControl from './scoped-assignment-control.mjs'
+import ScopedAssignment from '../shared/scoped-assignment.mjs'
+import ScopedComponentPaths from './scoped-component-paths.mjs'
+import ScopedComponentCollection from '../shared/scoped-component-collection.mjs'
 import BundleData from './bundle-data.mjs'
 import PageNotFoundError from './page-not-found-error.mjs'
 
@@ -103,7 +105,7 @@ export default class WebServer extends EventEmitter{
         
         this._domEmulator = new LvDOMEmulator({beautify: true})
 
-        this._scopedViewAssignmentCache = new ScopedViewAssignmentCache()
+        this._scopedAssignmentControl = new ScopedAssignmentControl()
 
         this._app = express()
         this._app.use(express.json())
@@ -199,11 +201,12 @@ export default class WebServer extends EventEmitter{
             return { location: placementPath, name: p.name, url: url.pathToFileURL(placementPath) }
         }) : []
 
-        const viewStyles = this._scopedStyles.componentsForView(view)
-        const viewAssignmentStructure = this._scopedViewAssignmentCache.assignmentStructure(viewStyles, view)
+        const viewsc = this._scopedStyles.findScopedComponent(view)
+        const viewStyles = this._scopedStyles.componentsForView(viewsc)
+        const viewAssignmentStructure = this._scopedAssignmentControl.updateAssignmentStructure(viewStyles, viewsc)
         const viewAssignments = {
             scopedStyles: viewAssignmentStructure,
-            scopedStyleLinks: viewStyles.styleLinks(),
+            scopedStyleLinks: this._scopedAssignmentControl.styleLinks(viewStyles),
             scopedStyleAssertionSupport: this._serverSocket && this.config.runMode === WebServer.RunMode.Development
         }
 
@@ -299,25 +302,23 @@ export default class WebServer extends EventEmitter{
     }
 
     async updateUse(rootView){
-        await this._scopedStyles.updateStylesFromClient(rootView, this.bundleLookupPath)
-        this._scopedStyles.resolveRelativePaths(this.bundleLookupPath)
-
-        const view = this._scopedStyles.findViewByName(rootView.path)
-        const viewStyles = this._scopedStyles.componentsForView(view)
-        const viewAssignmentStructure = this._scopedViewAssignmentCache.updateAssignmentStructure(viewStyles, rootView)
+        const rootViewScopedComponents = ScopedComponentCollection.fromJSON(rootView)
+        this._scopedStyles = this._scopedStyles.updateWithRaw(rootViewScopedComponents)
+        ScopedComponentPaths.resolveRelativePaths(this._scopedStyles, this.bundleLookupPath)
+        const viewsc = this._scopedStyles.findScopedComponentByUri(rootView.uri)
+        const viewStyles = this._scopedStyles.componentsForView(viewsc)
+        const viewAssignmentStructure = this._scopedAssignmentControl.updateAssignmentStructure(viewStyles, viewsc)
         const viewAssignemntsToSend = {
             scopedStyles: viewAssignmentStructure,
-            scopedStyleLinks: viewStyles.styleLinks()
+            scopedStyleLinks: this._scopedAssignmentControl.styleLinks(this._scopedStyles)
         }
 
         try{ await this._styles.addScopedStyles(this._scopedStyles) } catch ( e ) { throw new Error(e.message) }
-        
         this._serverSocket.sendActionToClients('reload-use', [viewAssignemntsToSend])
-        
         const viewRoutes = this._routes.viewRoutes()
-        const viewRoute = viewRoutes.find(vr => vr.c === view)
+        const viewRoute = viewRoutes.find(vr => vr.c === viewsc.component)
         if ( viewRoute ){
-            const viewLoader = this.createViewLoader(view, viewRoute.placement)
+            const viewLoader = this.createViewLoader(viewsc.component, viewRoute.placement)
             const virtualModules = this._webpack.virtualModulesPlugin
             virtualModules.writeModule(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
         }
@@ -465,7 +466,7 @@ export default class WebServer extends EventEmitter{
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
 
         const viewStyles = this._scopedStyles.componentsForView(route.c)
-        viewStyles.populateViewComponent(route.c)
+        ScopedAssignment.populateViewComponent(viewStyles, route.c)
 
         const renderResult = await ServerViewRoute.createRender(
             route, 

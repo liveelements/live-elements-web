@@ -63,11 +63,17 @@ export default class ComponentRegistry{
         return path.join(moduleDirectoryPath, c.Meta.sourceFileName)
     }
 
-    static findComponentByUriId(uriId, searchLocation){
+    static findComponentModulePathByUriId(uriId, searchLocation){
         const uriSegments = ComponentRegistry.componentUriIdSegments(uriId)
         const packagePath = PackagePath.find(uriSegments.package, searchLocation)
         const modulePath = path.join(packagePath, uriSegments.modules.join('/'))
         return modulePath
+    }
+
+    static findComponentByUriId(uriId, file, searchLocation){
+        const componentModulePath = ComponentRegistry.findComponentModulePathByUriId(uriId, searchLocation)
+        const componentPath = path.join(componentModulePath, file)
+        return componentPath
     }
 
     static componentUriIdSegments(uriId){
@@ -82,7 +88,7 @@ export default class ComponentRegistry{
     }
 
     static async importComponentFromUriId(uriId, file, searchLocation){
-        const componentModulePath = ComponentRegistry.findComponentByUriId(uriId, searchLocation)
+        const componentModulePath = ComponentRegistry.findComponentModulePathByUriId(uriId, searchLocation)
         const componentPath = path.join(componentModulePath, file)
         const componentName = ComponentRegistry.componentUriIdSegments(uriId).name
         const componentModule = await lvimport(componentPath)

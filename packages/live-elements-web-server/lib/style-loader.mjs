@@ -2,9 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import { EventEmitter } from 'node:events'
-import { ScopedStyleCollection } from './scoped-style.mjs'
-import ClassInfo from './class-info.mjs'
+import ScopedComponentSelectors from './scoped-component-selectors.mjs'
 import BundleData from './bundle-data.mjs'
+import ScopedStyleProcess from './scoped-style-process.mjs'
 
 class StyleInput{
     constructor(file, processor){
@@ -167,21 +167,21 @@ export default class StyleContainer extends EventEmitter {
         return styles
     }
 
-    async addScopedStyles(scopedStyleCollection){
-        if ( scopedStyleCollection.size() ){
-            const ScopedProcessor = await ScopedStyleCollection.loadScopedProcessor()
+    async addScopedStyles(scopedComponentCollection){
+        if ( scopedComponentCollection.size() ){
+            const ScopedProcessor = await ScopedStyleProcess.loadScopedProcessor()
             const scopedStylesOutput = this.configureOutput('scoped.css')
 
-            const rootViews = scopedStyleCollection.rootViews()
-            for ( let i = 0; i < scopedStyleCollection.size(); ++i ){
-                const ct = scopedStyleCollection._components[i]
-                const componentSelectorTransformations = scopedStyleCollection.componentSelectorTransformationsFrom(ct)
-                const isRoot = rootViews.includes(ct.component)
+            const rootViews = scopedComponentCollection.rootViews()
+            for ( let i = scopedComponentCollection.size() - 1; i >= 0; --i ){
+                const ct = scopedComponentCollection._components[i]
+                const selectors = ScopedComponentSelectors.from(scopedComponentCollection, ct)
+                const isRoot = rootViews.includes(ct)
                 const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
                 for ( let j = 0; j < ct._styles.length; ++j ){
                     // add each component input style with it's own component selector transformations
                     const sst = ct._styles[j]
-                    scopedStylesOutput.addInputUnique(sst.absoluteSrc, ScopedProcessor.create(componentSelectorTransformations, `${classNameWithPrefix}`, await sst.processFunction()))
+                    scopedStylesOutput.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
                 }
             }
             await scopedStylesOutput.reload()
