@@ -111,6 +111,75 @@ export default class BundleWebpack extends EventEmitter {
         })
     }
 
+    static compileBundle(name, files, publicPath, distPath, devTool, mode){
+        const virtualModules = {}
+        files.filter(file => file.content).forEach(file => {
+            virtualModules[file.location] = file.content
+        })
+        const entries = files.map(file => file.location)
+        const entriesConfig = {}
+        entriesConfig[name] = entries
+
+        const entryName = `${name}.bundle.js`
+
+        const configuration = {
+            entry: entriesConfig,
+            output: {
+                filename: '[name].bundle.js',
+                path: `${distPath}/scripts`,
+                publicPath : publicPath
+            },
+            devtool: devTool,
+            mode: mode,
+            plugins: [
+                new VirtualModulesPlugin(virtualModules)
+            ],
+            module: {
+                rules: [
+                    {
+                        test: /\.lv$/,
+                        use: [{ loader: 'live-elements-loader' }],
+                    },
+                ]
+            }
+        }
+
+        const memfsWithVolumne = memfs.createFsFromVolume(new memfs.Volume())
+        const compiler = webpack(configuration)
+        compiler.outputFileSystem = memfsWithVolumne
+
+        return new Promise((resolve, reject) => {
+
+            compiler.run((err, stats) => {
+                if (err) 
+                    reject(err)
+                const info = stats.toJson()
+                if (stats.hasErrors()) {
+                    reject(info.errors)
+                }
+
+                if (stats.hasWarnings()) {
+                    console.warn(info.warnings)
+                }
+
+                const outputPath = configuration.output.path
+                const assets = info.assets.map(asset => {
+                    const assetPath = path.join(outputPath, asset.name)
+                    return {
+                        name: asset.name,
+                        path: assetPath,
+                        isMainEntry: asset.name === entryName ? true : false,
+                        content: memfsWithVolumne.readFileSync(assetPath).toString()
+                    }
+                })
+                resolve({
+                    warnings: stats.hasWarnings() ? info.warnings: null,
+                    assets: assets
+                })
+            });
+        })
+    }
+
     compileExternalBundle(name, files, publicPath){
         const virtualModules = {}
         files.filter(file => file.content).forEach(file => {

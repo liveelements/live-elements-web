@@ -1,4 +1,5 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
+import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
 
 export default class ClientPageViewLoader{
 
@@ -33,18 +34,7 @@ export default class ClientPageViewLoader{
         awaitingModule.then(module => {
             let c = null
             if ( componentName === "*" ){    
-                for (let [_key, value] of Object.entries(module)) {
-                    let prototype = Object.getPrototypeOf(value)
-                    while (prototype != null) {
-                        if ( prototype.name === 'PageView' )
-                            break
-                        prototype = Object.getPrototypeOf(prototype)
-                    }
-                    if ( prototype ){
-                        c = value
-                        break
-                    }
-                }
+                c = ClientPageViewLoader.findPageViewInModule(module)
             } else {
                 c = module[componentName]
             }
@@ -55,7 +45,9 @@ export default class ClientPageViewLoader{
             const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
             if ( !result.value ){
                 if ( serverData.scopedStyleAssertionSupport && window.clientBundleSocket ){
-                    const usages = ClientPageViewLoader.__usagesToObject(c)
+                    const collection = ScopedComponentScanner.scanAndCollect(c)
+                    const sc = collection.findScopedComponent(c)
+                    const usages = sc.toJSON()
                     window.clientBundleSocket.sendActionToServer('update-use', usages)
                     window.clientBundleSocket.onAction('reload-use', (serverData) => {
                         const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, true)
@@ -95,6 +87,21 @@ export default class ClientPageViewLoader{
         }).catch((e) => {
             console.error("Failed to load module:", e)
         })
+    }
+
+    static findPageViewInModule(module){
+        for (let [_key, value] of Object.entries(module)) {
+            let prototype = Object.getPrototypeOf(value)
+            while (prototype != null) {
+                if ( prototype.name === 'PageView' )
+                    break
+                prototype = Object.getPrototypeOf(prototype)
+            }
+            if ( prototype ){
+                return value
+            }
+        }
+        return null
     }
 
     static __usagesToObject(c){

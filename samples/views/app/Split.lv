@@ -1,0 +1,51 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.color
+
+component Split < PageView{
+    static Array use = [
+        SplitLayout,
+        BlogPost,
+        Float,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    head: PageProperties{
+        ColorSchemeLoader{}
+    }
+
+    Body{
+        Float.('BR'){
+            ColorSchemeToggleButton{}
+        }
+
+        classes: [ScopedStyle.className(Split)]
+        
+        SplitLayout{
+            panes: [
+                SplitPane{
+                    BlogPost{
+                        H1`Heading 1`
+                        P`Paragraph of text`
+                        H3`Heading 2`
+                        P`Second paragraph of text`
+                    }
+                },
+                SplitPane{
+                    BlogPost{
+                        H1`Right 1`
+                        P`Right Paragraph of text`
+                        H3`Right 2`
+                        P`Right Second paragraph of text`
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,73 @@
+
+import .style
+
+import ScopedComponentCollection from "./scoped-component-collection.mjs"
+import ScopedComponent from "./scoped-component.mjs"
+import ClassInfo from '../lib/class-info.mjs'
+
+component ScopedComponentScanner{
+
+    constructor(){
+        super()
+        this._collection = new ScopedComponentCollection()
+        ScopedComponentScanner.prototype.__initialize.call(this)
+    }
+
+    get collection(){ return this._collection }
+
+    static fn create(){
+        return ScopedComponentScanner{}
+    }
+
+    static fn scanAndCollect(c:component):ScopedComponentCollection{
+        const r = ScopedComponentScanner{}
+        r.scanView(c)
+        return r.collection
+    }
+
+    fn scanView(c:component){
+        const sc = this._collection.addComponent(c)
+        this.scanRecurse(sc, sc)
+    }
+
+    
+    static fn findInheritedViewComponent(c:component){
+        let prototype = Object.getPrototypeOf(c)
+        while ( prototype ){
+            if ( prototype instanceof BaseElement )
+                return null
+            if ( prototype.use && Array.isArray(prototype.use) ){
+                return prototype
+            }
+            prototype = Object.getPrototypeOf(prototype)
+        }
+        return null
+    }
+
+    fn scanRecurse(sc:ScopedComponent, rootsc:ScopedComponent){
+        const c = sc.component
+        if ( c.hasOwnProperty('use') && c.use.length ){
+            for ( let i = 0; i < c.use.length; ++i ){
+                const use = c.use[i]
+                if ( use instanceof ScopedStyle ){
+                    sc.createStyle(use.src, use.process)
+                } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
+                    const useSc = this._collection.addComponent(c.use[i])
+                    useSc.addViewUsage(rootsc)
+                    sc.addUse(useSc)
+                    this.scanRecurse(useSc, rootsc)
+                } else {
+                    sc.addUse(null)
+                }
+            }
+        }
+
+        const inherited = ScopedComponentScanner.findInheritedViewComponent(c)
+        if ( inherited ){
+            const inheritedSc = this._collection.addComponent(inherited)
+            inheritedSc.addViewUsage(rootsc)
+            this.scanRecurse(inheritedSc, rootsc)
+            sc.setInheritance(inheritedSc)
+        }
+    }
+}

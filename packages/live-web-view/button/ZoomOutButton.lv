@@ -2,7 +2,7 @@ import live-web.dom
 import live-web.behavior
 import live-elements-web-server.style
 
-component ZoomOutButton < IconButton{ //HERE
+component ZoomOutButton < IconButton{
     id: zoomOutButton
     static Array use = []
 

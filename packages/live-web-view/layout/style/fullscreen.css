@@ -1,12 +1,12 @@
 
-&Fullscreen {
+&FullScreen {
     @apply overflow-hidden relative w-full h-screen flex items-center justify-center;
 }
 
-&Fullscreen&.pad-topnav{
+&FullScreen&.pad-topnav{
     @apply pt-[3rem];
 }
 
-&Fullscreen .responsive {
+&FullScreen .responsive {
     @apply absolute min-w-full min-h-full object-cover;
 }

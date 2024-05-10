@@ -13,8 +13,7 @@
 }
 
 &SidebarLayout .main-content, &SidebarLayout &Aside{
-    @apply md:ml-64 min-h-full px-4 py-2;
-    width: calc(100%);
+    @apply md:ml-64 min-h-full w-[100%] md:w-[calc(100%-16rem)] px-4 py-2;
 }
 
 &SidebarLayout &SidebarCompact{

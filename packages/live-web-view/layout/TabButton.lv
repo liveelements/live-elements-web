@@ -1,0 +1,40 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import .button
+
+component TabButton < PrimaryButton{
+    id: tabButton
+    classes: this.extraClasses.concat([ScopedStyle.className(TabButton)])
+
+    DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                if (typeof tabButton !== 'undefined') { // CSR
+                    const directParent = tabButton.parent
+                    let parent = directParent
+                    while ( parent ){
+                        if ( '__updateSelection' in parent ){
+                            break
+                        }
+                        parent = parent.parent
+                    }
+                    if ( parent ){
+                        let index = -1
+                        for ( let i = 0; i < directParent.children.length; ++i ){
+                            if ( directParent.children[i] === tabButton ){
+                                index = i
+                                break
+                            }
+                        }
+                        if ( index >= 0 ){
+                            parent.selected = index
+                        }
+                    }
+                } else { //SSR
+                    //TODO
+                }
+            }
+        }
+    }
+}

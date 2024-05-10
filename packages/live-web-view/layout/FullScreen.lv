@@ -3,8 +3,8 @@ import live-web
 import live-elements-web-server.view
 import live-elements-web-server.style
 
-component Fullscreen < Div{
-    id: fullscreen
+component FullScreen < Div{
+    id: fullScreen
 
     static Array use = [ 
         ScopedStyle{ src: './style/fullscreen.css' process: '../style/CSSProcessor.lv' }, 
@@ -12,7 +12,11 @@ component Fullscreen < Div{
     ]
 
     Array extraClasses: []
-    classes: this.extraClasses.concat([ScopedStyle.className(Fullscreen)])
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(FullScreen), this.center ? 'vh-center' : ''
+    ])
+
+    boolean center: true
 
     Svg{ 
         classes: ['responsive']

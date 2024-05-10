@@ -1,13 +1,13 @@
-&ColorSchemeToggleButton&[data-scheme="light"] .light-icon{
+&ColorSchemeToggleButton&[data-scheme="dark"] .light-icon{
     @apply hidden;
 }
-&ColorSchemeToggleButton&[data-scheme="dark"] .light-icon{
+&ColorSchemeToggleButton&[data-scheme="light"] .light-icon{
     @apply block;
 }
-&ColorSchemeToggleButton&[data-scheme="light"] .dark-icon{
+&ColorSchemeToggleButton&[data-scheme="dark"] .dark-icon{
     @apply block;
     transform: rotate(30deg)
 }
-&ColorSchemeToggleButton&[data-scheme="dark"] .dark-icon{
+&ColorSchemeToggleButton&[data-scheme="light"] .dark-icon{
     @apply hidden;
 }

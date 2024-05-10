@@ -1,0 +1,43 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.style
+
+component TabLayout < Div{
+    static Array use = [ 
+        TabHeader, 
+        TabButton,
+        TabContent,
+        TabPane,
+        ScopedStyle{ src: './style/tablayout.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
+    ]
+    
+    int selected: 0
+    on selectedChanged: () => {
+        this.__updateSelection(this.selected)
+    }
+    
+    on childrenChanged: () => {
+        this.__updateSelection(this.selected)
+    }
+
+    fn __updateSelection(selected:int){
+        for ( let i = 0; i < this.children.length; ++i ){
+            const c = this.children[i]
+            if ( c instanceof TabHeader || c instanceof TabContent ){
+                c.children.forEach(tabHead => {
+                    tabHead.classes = tabHead.classes.filter(c => c !== 'active')
+                })
+                if ( c.children.length > selected ){
+                    c.children[selected].classes = c.children[selected].classes.concat(['active'])
+                }
+            }
+        }
+    }
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(TabLayout)
+    ])
+
+}
