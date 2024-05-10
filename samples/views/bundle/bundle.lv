@@ -8,4 +8,5 @@ instance bundle Bundle{
     ViewRoute{ url: '/' c: Views render: ViewRoute.SSR }
     ViewRoute{ url: '/blog' c: Blog render: ViewRoute.SSR }
     ViewRoute{ url: '/frame' c: Frame render: ViewRoute.CSR }
+    ViewRoute{ url: '/tree' c: Tree render: ViewRoute.SR }
 }
