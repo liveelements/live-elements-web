@@ -167,6 +167,20 @@ export default class StyleContainer extends EventEmitter {
         return styles
     }
 
+    async __addComponentScopedStyles(ct, ScopedProcessor, scopedComponentCollection, rootViews, output){
+        const selectors = ScopedComponentSelectors.from(scopedComponentCollection, ct)
+        const isRoot = rootViews.includes(ct)
+        const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
+        if ( ct.inherits ){
+            await this.__addComponentScopedStyles(ct.inherits, ScopedProcessor, scopedComponentCollection, rootViews, output)
+        }
+        for ( let j = 0; j < ct._styles.length; ++j ){
+            // add each component input style with it's own component selector transformations
+            const sst = ct._styles[j]
+            output.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
+        }
+    }
+
     async addScopedStyles(scopedComponentCollection){
         if ( scopedComponentCollection.size() ){
             const ScopedProcessor = await ScopedStyleProcess.loadScopedProcessor()
@@ -175,14 +189,7 @@ export default class StyleContainer extends EventEmitter {
             const rootViews = scopedComponentCollection.rootViews()
             for ( let i = scopedComponentCollection.size() - 1; i >= 0; --i ){
                 const ct = scopedComponentCollection._components[i]
-                const selectors = ScopedComponentSelectors.from(scopedComponentCollection, ct)
-                const isRoot = rootViews.includes(ct)
-                const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
-                for ( let j = 0; j < ct._styles.length; ++j ){
-                    // add each component input style with it's own component selector transformations
-                    const sst = ct._styles[j]
-                    scopedStylesOutput.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
-                }
+                await this.__addComponentScopedStyles(ct, ScopedProcessor, scopedComponentCollection, rootViews, scopedStylesOutput)
             }
             await scopedStylesOutput.reload()
         }

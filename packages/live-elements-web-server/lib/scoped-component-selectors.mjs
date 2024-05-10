@@ -21,6 +21,15 @@ export default class ScopedComponentSelectors{
             }
         }
 
+        if ( sc.inherits ){
+            const useTransformations = ScopedComponentSelectors.fromComponent(collection, sc.inherits)
+            for (let [key, value] of Object.entries(useTransformations)) {
+                if ( !result.hasOwnProperty(key) ){
+                    result[key] = value
+                }
+            }
+        }
+
         return result
     }
 

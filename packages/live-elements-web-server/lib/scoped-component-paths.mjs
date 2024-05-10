@@ -11,7 +11,13 @@ export default class ScopedComponentPaths{
                 const s = c._styles[j]
 
                 const modulePath = ComponentRegistry.findComponentModulePathByUriId(c.uri, bundleRootPath)
-                s.resolved.src = path.resolve(path.join(modulePath, s.src))
+
+                if ( s.src.startsWith('.') ){
+                    s.resolved.src = path.resolve(path.join(modulePath, s.src))
+                } else {
+                    s.resolved.src = ScopedComponentPaths.resolveSrc(s.src, bundleRootPath)
+                }
+                
 
                 if ( s.process ) {
                     if ( s.process.startsWith('.') ){
