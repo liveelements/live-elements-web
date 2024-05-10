@@ -3,7 +3,7 @@
 }
 
 &ColLayout &Col {
-    @apply w-full md:flex-1 p-2 border border-gray-300;
+    @apply w-full md:flex-1 py-2 md:p-2;
 }
 
 &ColLayout&.col-justify-normal{	@apply justify-normal; }

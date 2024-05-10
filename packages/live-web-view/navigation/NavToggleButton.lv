@@ -21,7 +21,7 @@ component NavToggleButton < A{
                 const topNavClass = a.dataset.toggle
                 let topNav = a.parentNode
                 while ( topNav ){
-                    if ( topNav.classList.contains(topNavClass) ){
+                    if ( topNav.classList && topNav.classList.contains(topNavClass) ){
                         topNav.classList.toggle('active')
                         break
                     }
