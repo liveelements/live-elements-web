@@ -1,0 +1,25 @@
+&TreeView{
+    @apply p-2;
+}
+
+.nested{
+    @apply pl-4;
+}
+.expandable.nested{
+    @apply hidden;
+}
+.expandable.nested.expand{
+    @apply block;
+}
+.expander{
+    cursor: pointer;
+}
+.expander .expand-icon{
+    @apply h-full mr-1;
+    display: inline-flex;
+    transition: transform 0.35s ease;
+    transform-origin: .5em 50%;
+}
+.expander.expand .expand-icon{
+    transform: rotate(90deg);
+}
