@@ -13,8 +13,8 @@ component ViewRoute < Route{
         return ''
     }
 
-    static fn createView(c:component, data:Object){
-        return c.(data){}
+    static fn createView(c:component, data:Object, info:Object){
+        return c.(data, info){}
     }
     
     type = Route.Get

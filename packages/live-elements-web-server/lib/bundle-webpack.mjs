@@ -151,11 +151,16 @@ export default class BundleWebpack extends EventEmitter {
         return new Promise((resolve, reject) => {
 
             compiler.run((err, stats) => {
-                if (err) 
+                if (err) {
                     reject(err)
+                    return
+                }
                 const info = stats.toJson()
                 if (stats.hasErrors()) {
-                    reject(info.errors)
+                    const e = new Error(JSON.stringify(info.errors.map(e => e.message).join(',')))
+                    e.errors = info.errors
+                    reject(e)
+                    return
                 }
 
                 if (stats.hasWarnings()) {
@@ -185,6 +190,7 @@ export default class BundleWebpack extends EventEmitter {
         files.filter(file => file.content).forEach(file => {
             virtualModules[file.path] = file.content
         })
+
         const entries = files.map(file => file.path)
         const entriesConfig = {}
         entriesConfig[name] = entries
@@ -220,17 +226,22 @@ export default class BundleWebpack extends EventEmitter {
         return new Promise((resolve, reject) => {
 
             compiler.run((err, stats) => {
-                if (err) 
+                if (err) {
                     reject(err)
+                    return
+                }
                 const info = stats.toJson()
                 if (stats.hasErrors()) {
-                    reject(info.errors)
+                    const e = new Error(JSON.stringify(info.errors.map(e => e.message)))
+                    e.errors = info.errors
+                    reject(e)
+                    return
                 }
 
                 if (stats.hasWarnings()) {
                     console.warn(info.warnings)
                 }
-
+                
                 const outputPath = configuration.output.path
                 const assets = info.assets.map(asset => {
                     const assetPath = path.join(outputPath, asset.name)

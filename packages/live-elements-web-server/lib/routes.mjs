@@ -3,6 +3,8 @@ import ResultWithReport from "./result-with.report.mjs"
 import ServerRenderer from "./server-renderer.mjs"
 import { BaseElement } from 'live-elements-core/baseelement.js'
 
+import log from './server-log.mjs'
+
 import path from 'path'
 import url from 'url'
 
@@ -128,7 +130,11 @@ export class ServerViewRoute extends ServerRoute{
             pagePlacements[0].children[0].expandTo(insertionDOM)
         }
 
-        const v = ComponentRegistry.Components.ViewRoute.createView(route.c, data)
+        const info = req 
+            ? { url: req.url, render: 'S' }
+            : { url: route.url, render: 'S-C' }
+
+        const v = ComponentRegistry.Components.ViewRoute.createView(route.c, data, info)
         if ( v instanceof ComponentRegistry.Components.PageView ){
             if ( v.head )
                 v.head.expand(pageDOM.window.document)
@@ -155,14 +161,22 @@ export class ServerViewRoute extends ServerRoute{
             const viewPath = ComponentRegistry.findComponentPath(route.c, bundleLookupPath)
             const viewPathName = path.parse(viewPath).name.toLowerCase() + '.behaviors'
             const viewBehaviorBundlePath = path.join(path.dirname(viewPath), viewPathName + '.mjs')
-            compiledBundles = await webpack.compileExternalBundle(
-                viewPathName, 
-                [
-                    { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
-                    { path: clientBehaviorEvents }
-                ],
-                behaviorScriptsUrl
-            )
+
+            try{
+                compiledBundles = await webpack.compileExternalBundle(
+                    viewPathName, 
+                    [
+                        { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
+                        { path: clientBehaviorEvents }
+                    ],
+                    behaviorScriptsUrl
+                )
+            } catch ( e ){
+                log.e(e.message)
+                if ( e.errors ){
+                    log.e(e.errors)
+                }
+            }
         }
         
         if ( compiledBundles.warnings ){
