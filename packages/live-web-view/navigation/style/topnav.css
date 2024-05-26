@@ -1,9 +1,9 @@
 &TopNav{
-    @apply fixed flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-[#212121] text-[#555] dark:text-[#e1e1e1] z-50;
+    @apply fixed flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-[#212121] text-[#555] dark:text-[#e1e1e1] z-[1001];
     @apply border-b border-[#c1c1c1] dark:border-[#515151];
 }
 &TopNav .nav-content{
-    @apply flex items-center h-full px-4 min-h-[3rem] space-x-1;
+    @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
 }
 &TopNav .nav-brand {
     @apply text-lg font-semibold;

@@ -465,8 +465,11 @@ export default class WebServer extends EventEmitter{
     async renderRouteContent(route, data, req){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
 
-        const viewStyles = this._scopedStyles.componentsForView(route.c)
-        ScopedAssignment.populateViewComponent(viewStyles, route.c)
+        const viewsc = this._scopedStyles.findScopedComponent(route.c)
+        const viewStyles = this._scopedStyles.componentsForView(viewsc)
+        ScopedAssignment.populateViewComponent(ScopedAssignmentControl.extractAssignmentMap(viewStyles), route.c)
+
+        const scopedStyleLinks = this._scopedAssignmentControl.styleLinks(viewStyles)
 
         const renderResult = await ServerViewRoute.createRender(
             route, 
@@ -477,7 +480,7 @@ export default class WebServer extends EventEmitter{
             this.config.baseUrl, 
             this.bundleLookupPath, 
             this.webpack,
-            viewStyles
+            scopedStyleLinks
         )
         const render = renderResult.unwrapAnd(report => report.forEach(WebServer.logWarning))
         return render

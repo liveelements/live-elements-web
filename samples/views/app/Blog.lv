@@ -9,7 +9,7 @@ import live-web-view.color
 
 component Blog < PageView{
     static Array use = [
-        BlogPost,
+        Content,
         UlV,
         Float,
         IconButton,
@@ -55,7 +55,7 @@ component Blog < PageView{
                     SidebarToggleButton{}
                 }
                 
-                BlogPost{
+                Content{
                     H1`Heading 1`
                     H2`Heading 2`
                     P`Paragraph of text`

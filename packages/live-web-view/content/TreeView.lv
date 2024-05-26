@@ -1,0 +1,95 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component TreeViewDefaultView < Div{
+    constructor(data:Object){
+        super()
+        TreeViewDefaultView.prototype.__initialize.call(this)
+        if ( data.children && data.children.length ){
+            this.children = [
+                Svg{ classes: ['expand-icon'] props: ({xmlns: 'http://www.w3.org/2000/svg', width: '14', height: '14', viewBox: '0 0 16 16'})
+                    Path{ props: ({fill: 'none', stroke: {'': 'currentColor',linecap: 'round',linejoin: 'round',width: '2'}, d: 'M5 14l6-6-6-6'}) }
+                },
+                T.(data.label){}
+            ]
+            this.classes = ['expander']
+        } else {
+            this.children = [T.(data.label){}]
+        }
+    }
+}
+
+component TreeView < Ul{
+
+    static Array use = [ 
+        ScopedStyle{ src: './style/treeview.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(TreeView)])
+
+    Object data
+    on dataChanged: () => { this.__create() }
+
+    component c: TreeViewDefaultView
+    on cChanged: () => { this.__create()}
+
+    fn __createRecurse(data:Object){
+        const c = this.c
+        const label = data.label ? c.(data){} : null
+
+        if ( data.children ){
+            const nested = Ul{ classes: label ? ['expandable', 'nested'] : ['nested'] }
+            const nestedChildren = []
+            for ( let i = 0; i < data.children.length; ++i ){
+                const li = Li{ classes: ['tree-node'] }
+                li.children = this.__createRecurse(data.children[i])
+                nestedChildren.push(li)
+            }
+            nested.children = nestedChildren
+            return label ? [label, nested] : nestedChildren
+        } else {
+            return label ? [label] : []
+        }
+    }
+
+    fn __create(){
+        if ( !this.data || !this.c ){
+            return
+        }
+
+        const that = this
+
+        this.children = this.__createRecurse(this.data).concat([
+            DOMBehavior{
+                target: that
+                domReady: (d) => {
+                    const expanders = d.querySelectorAll('.expander')
+                    for ( let i = 0; i < expanders.length; ++i ){
+                        const expander = expanders[i]
+                        expander.onclick = (e) => {
+                            let p = expander
+                            while( p ){
+                                if ( p.classList && p.classList.contains('tree-node') )
+                                    break
+                                if ( p === d )
+                                    break
+                                p = p.parentNode
+                            }
+                            if ( p ){
+                                for ( let j = 0; j < p.childNodes.length; ++j ){
+                                    if ( p.childNodes[j].classList.contains('expandable') ){
+                                        p.childNodes[j].classList.toggle('expand')
+                                        expander.classList.toggle('expand')
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ])
+    }
+}

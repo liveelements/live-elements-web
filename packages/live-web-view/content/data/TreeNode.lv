@@ -1,0 +1,10 @@
+component TreeNode{
+    default children
+    string label: ''
+
+    constructor(label:string){
+        super()
+        TreeNode.prototype.__initialize.call(this)
+        this.label = label
+    }
+}

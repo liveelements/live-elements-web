@@ -95,7 +95,7 @@ export class ServerViewRoute extends ServerRoute{
         return filename
     }
 
-    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, viewScopedStyles){
+    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, scopedStyleLinks){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -182,7 +182,6 @@ export class ServerViewRoute extends ServerRoute{
    
         scripts.forEach(script => document.body.appendChild(script))
         
-        const scopedStyleLinks = viewScopedStyles.styleLinks(route.c)
         if ( scopedStyleLinks ){
             scopedStyleLinks.forEach(sl => {
                 var link = document.createElement('link');
