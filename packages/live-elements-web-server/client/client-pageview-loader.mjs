@@ -31,62 +31,67 @@ export default class ClientPageViewLoader{
         }
 
 
-        awaitingModule.then(module => {
-            let c = null
-            if ( componentName === "*" ){    
-                c = ClientPageViewLoader.findPageViewInModule(module)
-            } else {
-                c = module[componentName]
-            }
-            if ( !c ){
-                throw new Error(`Failed to find PageView component.`)
-            }
-
-            const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
-            if ( !result.value ){
-                if ( serverData.scopedStyleAssertionSupport && window.clientBundleSocket ){
-                    const collection = ScopedComponentScanner.scanAndCollect(c)
-                    const sc = collection.findScopedComponent(c)
-                    const usages = sc.toJSON()
-                    window.clientBundleSocket.sendActionToServer('update-use', usages)
-                    window.clientBundleSocket.onAction('reload-use', (serverData) => {
-                        const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, true)
-                        if ( !result.value ){
-                            throw new Error(result.error)
-                        }
-                        console.info("Scoped styles reloaded.", serverData)
-                    })
-                    console.warn(`Error while loading scoped styles '${result.error}, attempting to reload styles...`)
+        return awaitingModule.then(module => {
+            try{
+                let c = null
+                if ( componentName === "*" ){    
+                    c = ClientPageViewLoader.findPageViewInModule(module)
                 } else {
-                    throw new Error(result.error)
+                    c = module[componentName]
                 }
+                if ( !c ){
+                    throw new Error(`Failed to find PageView component.`)
+                }
+
+                const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
+                if ( !result.value ){
+                    if ( serverData.scopedStyleAssertionSupport && window.clientBundleSocket ){
+                        const collection = ScopedComponentScanner.scanAndCollect(c)
+                        const sc = collection.findScopedComponent(c)
+                        const usages = sc.toJSON()
+                        window.clientBundleSocket.sendActionToServer('update-use', usages)
+                        window.clientBundleSocket.onAction('reload-use', (serverData) => {
+                            const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, true)
+                            if ( !result.value ){
+                                throw new Error(result.error)
+                            }
+                            console.info("Scoped styles reloaded.", serverData)
+                        })
+                        console.warn(`Error while loading scoped styles '${result.error}, attempting to reload styles...`)
+                    } else {
+                        throw new Error(result.error)
+                    }
+                }
+    
+                window.pageView = window.__serverData__ ? new c(window.__serverData__) : new c()
+                BaseElement.complete(window.pageView)
+    
+                if ( window.pageView.head )
+                    window.pageView.head.expand()
+    
+                if ( expandLocation ){
+                    expandLocation.children = [window.pageView]
+                } else {
+                    window.pageView.expandTo(renderLocaiton)
+                }
+    
+                if ( serverData.scopedStyleLinks  ){
+                    serverData.scopedStyleLinks.forEach(sl => {
+                        var link = document.createElement('link');
+                        link.rel = 'stylesheet'
+                        link.type = 'text/css'
+                        link.href = sl
+                        document.head.appendChild(link)
+                    })
+                }
+            } catch ( e ){
+                return Promise.reject(e)
             }
-
-            window.pageView = window.__serverData__ ? new c(window.__serverData__) : new c()
-            BaseElement.complete(window.pageView)
-
-            if ( window.pageView.head )
-                window.pageView.head.expand()
-
-            if ( expandLocation ){
-                expandLocation.children = [window.pageView]
-            } else {
-                window.pageView.expandTo(renderLocaiton)
-            }
-
-            if ( serverData.scopedStyleLinks  ){
-                serverData.scopedStyleLinks.forEach(sl => {
-                    var link = document.createElement('link');
-                    link.rel = 'stylesheet'
-                    link.type = 'text/css'
-                    link.href = sl
-                    document.head.appendChild(link)
-                })
-            }
-
-        }).catch((e) => {
-            console.error("Failed to load module:", e)
         })
+    }
+
+    static async loadAwaitingModuleAndReport(awaitingModule, componentName, placements, serverData){
+        return ClientPageViewLoader.loadAwaitingModule(awaitingModule, componentName, placements, serverData).catch(e => console.error("Failed to load module:", e))
     }
 
     static findPageViewInModule(module){
