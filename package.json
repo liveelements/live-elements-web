@@ -18,7 +18,6 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
-        "ky": "^1.1.3",
         "lerna": "^8.0.0",
         "tape": "^5.5.3"
     },
@@ -29,6 +28,8 @@
         "live-elements-web-cli": "file:packages/live-elements-web-cli",
         "live-elements-web-server": "file:packages/live-elements-web-server",
         "live-testspec": "file:packages/live-testspec",
-        "live-web": "file:packages/live-web"
+        "live-web": "file:packages/live-web",
+        "live-web-view": "file:packages/live-web-view",
+        "live-web-edit": "file:packages/live-web-edit"
     }
 }
