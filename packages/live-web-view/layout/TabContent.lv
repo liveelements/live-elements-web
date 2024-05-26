@@ -4,4 +4,13 @@ import live-elements-web-server.style
 component TabContent < Div{
     Array extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(TabContent)])
+    
+    on childrenChanged: () => {
+        for ( let i = 0; i < this.children.length; ++i ){
+            this.children[i].setParent(this)
+        }
+        if ( this.parent ){
+            this.parent.__updateSelection(this.parent.selected)
+        }
+    }
 }
