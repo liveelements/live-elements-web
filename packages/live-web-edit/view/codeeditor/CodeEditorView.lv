@@ -1,0 +1,140 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.style
+
+import {EditorView, basicSetup} from 'codemirror'
+import {keymap} from '@codemirror/view'
+import {EditorState, Compartment} from "@codemirror/state"
+import {javascript} from "@codemirror/lang-javascript"
+import {oneDark} from "@codemirror/theme-one-dark"
+
+component CodeEditorView < Div{
+    static Array use = [ 
+        ScopedStyle{ src: './codeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
+        // ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+    
+    static Object lightTheme = EditorView.theme({
+        "&": {
+            color: "#000000",
+            backgroundColor: "#ffffff"
+        },
+        ".cm-content": {
+            color: "#000000"
+        },
+        ".cm-gutters": {
+            backgroundColor: "#fff",
+            color: "#555555",
+            border: 'none'
+        },
+        "&.cm-focused .cm-cursor": {
+            borderLeftColor: "#000000"
+        },
+        "&.cm-focused .cm-selectionBackground, ::selection": {
+            backgroundColor: "#b0b0b0"
+        },
+        ".cm-panels": {
+            backgroundColor: "#ffffe0",
+            color: "#000000"
+        },
+        ".cm-panels.cm-panels-top": {
+            borderBottom: "2px solid black"
+        },
+        ".cm-panels.cm-panels-bottom": {
+            borderTop: "2px solid black"
+        }
+        }, {dark: false})
+
+    static Object darkTheme = [
+        EditorView.theme({
+            "&": {
+                backgroundColor: "#212121",
+            },
+            ".cm-gutters": {
+                backgroundColor: "#212121",
+                border: "none",
+            }
+        }, { dark: true }),
+        oneDark
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(CodeEditorView)
+    ])
+
+    Object doc: null
+    on docChanged: () => { this.initEditor() }
+
+    Object readContent: null
+
+    Object config = {}
+    on configChanged: () => { this.initEditor() }
+
+    constructor(){
+        super()
+        this._editor = null
+        this._theme = new Compartment()
+        this._colorSchemeListener = null
+        CodeEditorView.prototype.__initialize.call(this)
+    }
+
+    get editor(){ return this._editor }
+
+
+    fn initEditor(){
+        if ( !this.dom )
+            return
+
+        const colorScheme = window.localStorage.getItem('color-scheme') === 'dark' || (!('color-scheme' in window.localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ? 'dark'
+            : 'light'
+
+        const theme = colorScheme === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme
+
+        const extensions = [basicSetup, javascript(), this._theme.of(theme)]
+
+        const that = this
+        let args = undefined
+
+        if ( this.config && this.config.keymap ){
+            extensions.push(keymap.of(this.config.keymap))
+        }
+
+        if ( this.config && this.config.updateListener ){
+            const updateListener = EditorView.updateListener.of(this.config.updateListener)
+            extensions.push(updateListener)
+        }
+        if ( this.config && this.config.readOnly ){
+            extensions.push(EditorState.readOnly.of(true))
+        }
+
+        const editorState = EditorState.create({
+            doc: this.readContent ? this.readContent() : this.doc,
+            extensions: extensions
+        })
+
+        this.dom.innerHTML = ''
+        
+        this._editor = new EditorView({
+            state: editorState,
+            lineNumbers: true,
+            readOnly: this.readOnly,
+            parent: this.dom
+        })
+    }
+
+    on domChanged: () => {
+        this.initEditor()
+        if ( !this._colorSchemeListener ){
+            this._colorSchemeListener = window.addEventListener("colorscheme", event => {
+                if ( this._editor ){
+                    const theme = event.detail === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme
+                    this._editor.dispatch({
+                        effects: [this._theme.reconfigure(theme)]
+                    })
+                }
+            })
+        }
+    }
+}

@@ -1,0 +1,276 @@
+import path from 'path'
+import fs from 'fs'
+
+import .lib.middle
+
+component Workspace{
+
+    static string dataFile = 'workspace.json'
+
+    static Object WriteBehavior = {
+        ReadOnly: 0,
+        Write: 1,
+        Fork: 2
+    }
+
+    constructor(){
+        super()
+        Workspace.prototype.__initialize.call(this)
+        this._path = ''
+        this._name = ''
+        this._createdOn = null
+        this._mainEntry = ''
+        this._from = ''
+        this._writeBehavior = Workspace.WriteBehavior.Write
+        this._canFork = true
+        this._compilation = null
+        this._author = null
+        this._documents = []
+    }
+
+    get path(){ return this._path }
+    get name(){ return this._name }
+    get createdOn(){ return this._createdOn }
+    get mainEntry(){ return this._mainEntry }
+    get mainEntryPath(){ return path.join(this._path,this._mainEntry ) }
+    get documents(){ return this._documents }
+    get compilation(){ return this._compilation }
+    get canFork(){ return this._canFork }
+    get author(){ return this._author }
+    get writeBehavior(){ return this._writeBehavior }
+    set writeBehavior(value:number){ 
+        if ( value >= 3 )
+            throw new Error(`Value ${value} does not represent a write behavior`)
+        this._writeBehavior = value 
+    }
+
+    fn canWrite(){ return this._writeBehavior === Workspace.WriteBehavior.Write }
+
+    static fn generateName(){
+        const timestamp = Date.now().toString(36)
+        const randomStringPre = Math.random().toString(36).substring(2, 15)
+        const randomStringPost = Math.random().toString(36).substring(2, 15)
+        return `${randomStringPre}-${timestamp}-${randomStringPost}`
+    }
+
+    static fn create(location:string, name:string, files:Array<string>, mainEntry:string, author:string){
+        if ( !fs.existsSync(location) ){
+            throw new Error(`Failed to create workspace. Location doesn't exist: ${location}`)
+        }
+        
+        const wspath = path.join(location, name)
+        if ( fs.existsSync(wspath) ){
+            throw new Error(`Failed to create workspace. Path already exists: ${wspath}`)
+        }
+
+        files.forEach(file => {
+            if ( file.path === '' ){
+                throw new Error(`File argument with empty path given when creating workspace: ${name}`)
+            }
+        })
+
+        fs.mkdirSync(wspath, { recursive: true })
+        files.forEach(file => {
+            const fullfilepath = path.join(wspath, file.path)
+            const filedirpath = path.dirname(fullfilepath)
+            if ( filedirpath !== wspath ){
+                fs.mkdirSync(filedirpath, { recursive: true })
+            }
+            fs.writeFileSync(fullfilepath, file.content)
+        })
+
+        if ( mainEntry ){    
+            const entryfullpath = path.join(wspath, mainEntry)
+            if ( !fs.existsSync(entryfullpath) ){
+                throw new Error(`Failed to create workspace ${name}. Main entry '${mainEntry}' not found.`)
+            }
+        }
+
+        const ws = Workspace{}
+        ws._name = name
+        ws._path = wspath
+        ws._createdOn = new Date()
+        ws._mainEntry = mainEntry
+        ws._authro = author ? author : null
+        ws._loadedOn = ws._createdOn
+
+        ws.save()
+
+        return ws
+    }
+
+    static async fn createFrom(templatePath:string, location:string, name:string, author:string){
+        if ( !fs.existsSync(templatePath) ){
+            throw new Error(`Template path doesn\'t exist: '${templatePath}'`)
+        }
+        const templateInfo = Workspace.loadInfo(templatePath)
+        const newWs = Workspace.create(location, name, [], '', author)
+
+        await WorkspaceFs.copyContents(templatePath, newWs.path)
+        
+        newWs._from = templateInfo.name
+        newWs._mainEntry = templateInfo.entry
+
+        templateInfo.documents.map(d => newWs.openDocument(d.path, d.type))
+        newWs.save()
+
+        return newWs
+    }
+
+    static fn load(location:string, name:string){
+        const wspath = path.join(location, name)
+        if ( !fs.existsSync(wspath) ){
+            throw new Error(`Workspace '${name}' doesn't exist.`)
+        }
+        const info = Workspace.loadInfo(wspath)
+
+        const ws = Workspace{}
+        ws._name = name
+        ws._path = wspath
+        ws._createdOn = info.createdOn
+        ws._mainEntry = info.entry
+        ws._writeBehavior = info.writeBehavior
+        ws._canFork = info.canFork
+        ws._author = info.author
+        ws._loadedOn = new Date()
+
+        ws._documents = info.documents.map(d => {
+            const content = ws.readFile(d.path)
+            return Document{
+                path = d.path
+                type = d.type
+                content = content
+            }
+        })
+
+        if ( info.compilation ){
+            const compilationPath = path.join(ws._path, 'compiled')
+            ws._compilation = WorkspaceCompilation.fromJSON(info.compilation, compilationPath)
+        }
+
+        return ws
+    }
+
+    static fn loadInfo(workspacePath:string){
+        const infofilePath = path.join(workspacePath, Workspace.dataFile)
+        if ( !fs.existsSync(infofilePath) ){
+            throw new Error(`Failed to load workspace info file at '${workspacePath}`)
+        }
+        const infoContent = fs.readFileSync(infofilePath)
+        const info = JSON.parse(infoContent)
+
+        return {
+            name: info.name,
+            entry: info.entry,
+            from: info.from,
+            writeBehavior: info.writeBehavior,
+            canFork: info.canFork,
+            compilation: info.compilation,
+            documents: info.documents,
+            createdOn: new Date(info.createdOn)
+        }
+    }
+
+    fn readFile(filePath:string){
+        const fullpath = path.join(this._path, filePath)
+        if ( !fs.existsSync(fullpath) ){
+            throw new Error(`Can't read file, path doesn't exist: ${fullpath}`)
+        }
+        return fs.readFileSync(fullpath, 'utf8')
+    }
+
+    fn saveFile(filePath:string, content:string){
+        if ( !this.canWrite() ){
+            throw new Error(`Workspace ${this.name} is read-only.`)
+        }
+        const fullpath = path.join(this._path, filePath)
+        if ( !fs.existsSync(fullpath) ){
+            throw new Error(`Can't save file, path doesn't exists: ${filePath}`)
+        }
+        fs.writeFileSync(fullpath, content)
+    }
+
+    fn writeFile(filePath:string, content:string){
+        if ( !this.canWrite() ){
+            throw new Error(`Workspace ${this.name} is read-only.`)
+        }
+        const fullpath = path.join(this._path, filePath)
+        const fileDir = path.dirname(fullpath)
+        if ( !fs.existsSync(fileDir) ){
+            fs.mkdirSync(fileDir, { recursive: true })
+        }
+        fs.writeFileSync(fullpath, content)
+    }
+
+    fn createFile(filePath:string){
+        this.writeFile(filePath)
+    }
+
+    fn isDocumentOpened(filePath:string){
+        return this._documents.find(d => d.path === filePath)
+    }
+
+    async fn compile(baseUrl:string){
+        if ( !this.canWrite() ){
+            throw new Error(`Workspace ${this.name} is read only. Can't compile.`)
+        }
+        this._compilation = await WorkspaceCompilation.run(this, baseUrl)
+        return this._compilation
+    }
+
+    fn openDocument(filePath:string, userType:string){
+        const fullpath = path.join(this._path, filePath)
+        if ( !fs.existsSync(fullpath) ){
+            throw new Error(`Failed to open document. Path doesn't exist: ${filePath}`)
+        }
+
+        const doc = this.isDocumentOpened(filePath)
+        if ( doc )
+            return doc
+
+        const ext = path.parse(fullpath).ext
+        const type = userType ? userType : ext.substring(ext.indexOf('.'))
+        const content = this.readFile(filePath)
+
+        const document = Document{
+            path: filePath
+            type: type
+            content: content
+        }
+        this._documents.push(document)
+        return document
+    }
+
+    fn saveCompilation(){
+        if ( !this.compilation )
+            return null
+
+        this.compilation.saveToDisk(path.join(this.path, this.compilation.identifier))
+        return this.compilation.toJSON()
+    }
+
+    fn save(){
+        const infofilePath = path.join(this._path, Workspace.dataFile)
+        let compilation = null
+        if ( this.compilation ){
+            const compilationPath = path.join(this._path, 'compiled')
+            this.compilation.saveToDisk(compilationPath)
+            compilation = this.compilation.toJSON()
+        }
+        const saveData = {
+            name: this._name,
+            entry: this._mainEntry,
+            from: this._from,
+            writeBehavior: this._writeBehavior,
+            canFork: this._canFork,
+            author: this._author,
+            compilation: compilation,
+            documents: this._documents.map(doc => ({path: doc.path, type: doc.type})),
+            createdOn: this._createdOn.toISOString()
+        }
+        const saveContent = JSON.stringify(saveData)
+        fs.writeFileSync(infofilePath, saveContent)
+
+        return true
+    }
+}

@@ -1,0 +1,182 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.form
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.color
+import live-web-view.navigation
+import live-web-view.iframe
+
+import .view.button
+import .view.codeeditor
+import .view.workspace.data
+import .lib.middle
+
+import ky from 'ky'
+
+component WorkspaceView < Div{
+    id: workspaceView
+
+     static Array use = [
+        IconButton,
+        WriteLockButton,
+        CompileButton,
+        ForkButton,
+        TopNav,
+        Resizable,
+        FullScreen,
+        SplitLayout,
+        TabLayout,
+        CodeEditorView,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+    
+    Array extraClasses = []
+    classes: this.extraClasses.concat([ScopedStyle.className(WorkspaceView)])
+    Object data = WorkspaceViewData.fromJSON({ name: '-' })
+    WorkspaceViewKeymap keymap = WorkspaceViewKeymap.(this._workspaceViewActions.actionMap()){}
+    DOMElement tabLayout: tabLayout
+    DOMElement frame: frame
+
+    constructor(data:Object){
+        super()
+
+        const workspaceViewActions = WorkspaceViewActions.(this){}
+        const baseUrl = data.baseUrl ? data.baseUrl : ''
+        this._dataActions = WorkspaceViewDataActions{
+            serverRoutes = {
+                save: `${baseUrl}/w-document/save/:workspace`,
+                compile: `${baseUrl}/w-compile/:workspace`,
+                lockWrite: `${baseUrl}/w-lockwrite/:workspace`,
+                fork: `${baseUrl}/w-fork/:workspace`
+            }
+            hooks = {
+                saveReady: async (data, _workspaceViewor) => { workspaceViewActions.compile() }
+            }
+        }
+
+        this._workspaceViewActions = workspaceViewActions
+
+        if ( !data ){
+            throw new Error('WorkspaceView constructor requires data argument.')
+        }
+        
+        WorkspaceView.prototype.__initialize.call(this)
+
+        this.data = WorkspaceViewData.fromJSON(data)
+        this.load(data)
+    }
+
+    async fn load(data:Object){
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'error') {
+                this.data.errors = [`Client error: ${event.data.message}`]
+            }
+        }, false)
+
+        try{
+            if ( data.name === '-'){
+                const ws = await ky.get('/w-load/-').json()
+                this.data = WorkspaceViewData.fromJSON(ws)
+
+                if ( this.data.workspaceName === '' || this.data.workspaceName === '-' ){
+                    return
+                }
+
+                window.history.pushState(null, null, this.data.route(`/w/${this.data.workspaceName}`))    
+            }
+
+            if ( this.data.lastCompilation ){
+                if ( this.data.workspaceViewUrl !== this.data.workspaceName ){
+                    this.data.workspaceViewUrl = this.data.workspaceName
+                }
+            } else if ( this.data.canWrite ){
+                this._workspaceViewActions.compile()
+            }
+        } catch ( e ){
+            console.error(e)
+        }
+
+    }
+
+    TopNav{ position: 'static'
+        NavContent{
+            CompileButton{ extraClasses: [workspaceView.data.canWrite ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.compile() }}
+            ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
+            WriteLockButton{ isLocked: !workspaceView.data.canWrite on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+        }
+        NavContent{
+            RefreshButton{ target: frame }
+            ZoomInButton{ target: frame }
+            ZoomOutButton{ target: frame }
+            ResizableFillButton{ target: resizable isFilled: true }
+            ColorSchemeToggleButton{}
+        }
+    }
+
+    FullScreen{ extraClasses: ['pad-topnav']
+
+        SplitLayout{
+            id: workspaceSplitLayout
+
+            panes: [
+                SplitPane{ extraClasses: ['flex-content']
+                    TabLayout{ extraClasses: ['no-b']
+                        id: tabLayout
+
+                        on activated: (index) => {
+                            for ( let i = 0; i < tabLayout.children.length; ++i ){
+                                if ( tabLayout.children[i] instanceof TabContent ){
+                                    const tabcontent = tabLayout.children[i]
+                                    const tabpane = tabcontent.children[index]
+                                    const editor = tabpane.children[0]
+                                    editor.editor.focus()
+                                }
+                            }
+                        }
+
+                        TabHeader{
+                            children: workspaceView.data.documents.map(d => {
+                                return TabButton{ T{ text: d.isDirty ? '*' + d.path : d.path } }
+                            })
+                        }
+                        TabContent{ extraClasses: ['no-p', 'bt']
+                            children: workspaceView.data.documents.map(d => {
+                                return TabPane{ 
+                                    CodeEditorView{ 
+                                        Document document = d
+                                        readContent: () => { return this.document.content }
+                                        config : {
+                                            updateListener: (v) => { 
+                                                if ( v.docChanged )
+                                                    d.isDirty = true 
+                                            },
+                                            readOnly: !workspaceView.data.canWrite,
+                                            keymap: workspaceView.keymap.keymap
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    }
+                    Div{ classes: ['error-box', workspaceView.data.errors.length ? 'show' : '']
+                        children: workspaceView.data.errors.map(e => { 
+                            return Div{ classes: ['error'] T{ text: e } }
+                        })
+                    }
+                },
+                SplitPane{
+                    Resizable{ id: resizable fill: true border: true
+                        IFrame{
+                            id: frame
+                            src: workspaceView.data.workspaceViewUrl ? workspaceView.data.route('/v/' + workspaceView.data.workspaceViewUrl) : ''
+                        }
+                        ResizableHandlePoint{}
+                    }
+                }
+            ]
+        }
+    }
+}

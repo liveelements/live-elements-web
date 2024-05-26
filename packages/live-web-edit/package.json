@@ -1,0 +1,29 @@
+{
+    "name": "live-web-edit",
+    "version": "0.1.10",
+    "description": "Live Elements Web Edit Package.",
+    "keywords": [
+        "live",
+        "elements",
+        "live-elements",
+        "edit",
+        "live-web-edit",
+        "html",
+        "dom",
+        "live-web",
+        "liveweb",
+        "web"
+    ],
+    "scripts": {
+        "build": "node ./scripts/build.js",
+        "prepare": "npm run build"
+    },
+    "dependencies": {
+        "@codemirror/lang-javascript": "^6.2.2",
+        "@codemirror/theme-one-dark": "^6.1.2",
+        "codemirror": "^6.0.1",
+        "ky": "^1.1.3"
+    },
+    "author": "Dinu SV",
+    "license": "MIT"
+}

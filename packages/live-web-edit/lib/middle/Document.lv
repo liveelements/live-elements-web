@@ -1,0 +1,22 @@
+component Document{
+    string path: ''
+    string type: ''
+    string content: ''
+    bool isDirty: false
+
+    fn toJSON():Object{
+        return {
+            path: this.path,
+            type: this.type,
+            content: this.content
+        }
+    }
+
+    static fn fromJSON(obj:Object):Document{
+        return Document{
+            path: obj.path
+            type: obj.type
+            content: obj.content
+        }
+    }
+}

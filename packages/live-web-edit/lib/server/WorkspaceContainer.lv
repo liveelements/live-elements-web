@@ -1,0 +1,47 @@
+import fs from 'fs'
+import path from 'path'
+
+component WorkspaceContainer{
+    string path: ''
+    string templatesPath: ''
+    Array workspaces: []
+
+    static fn create(location:string, templatePath:string){
+        if ( !fs.existsSync(location) ){
+            fs.mkdirSync(location, { recursive: true })
+        }
+        if ( templatePath && !fs.existsSync(templatePath) ){
+            throw new Error(`Failed to find templates path: ${templatePath}`)
+        }
+        return WorkspaceContainer{ path: location templatesPath : templatePath ? templatePath : null }
+    }
+
+    fn createWorkspace(files:Array, mainEntry:string){
+        return Workspace.create(this.path, Workspace.generateName(), files, mainEntry)
+    }
+
+    fn createWorkspaceFrom(template:string){
+        if ( this.templatesPath ){
+            const templatePath = path.join(this.templatesPath, template)
+            if ( fs.existsSync(templatePath) ){
+                return Workspace.createFrom(templatePath, this.path, Workspace.generateName())
+            }
+        }
+
+        const templatePath = path.join(this.path, template)
+        if ( fs.existsSync(templatePath) ){
+            return Workspace.createFrom(templatePath, this.path, Workspace.generateName())
+        }
+        throw new Error(`Failed to find template: ${template}`)
+    }
+
+    fn loadWorkspace(name:string){
+        const openedWs = this.workspaces.find(ws => ws.name === name )
+        if ( openedWs )
+            return openedWs
+
+        const ws = Workspace.load(this.path, name)
+        this.workspaces = this.workspaces.concat([ws])
+        return ws
+    }
+}
