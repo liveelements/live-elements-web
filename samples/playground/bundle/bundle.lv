@@ -1,0 +1,17 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-web-edit.lib.server
+
+import .samples.playground.app
+import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
+import path from 'path'
+
+instance bundle Bundle{
+
+    string currentPackage = path.dirname(PackagePath.findPackageJson(path.resolve('.')))
+
+    WorkspaceRoute.(path.join(this.currentPackage, 'workspaces')){
+        view: Main
+    }
+}
