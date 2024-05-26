@@ -1,0 +1,19 @@
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web.dom
+import live-web-view.layout
+import live-web-edit.view.codeeditor
+
+component Main < PageView{
+    static Array use = [
+        FullScreen,
+        CodeEditorView
+    ]
+
+    FullScreen{
+        CodeEditorView{
+            
+        }
+    }
+
+}
