@@ -1,0 +1,7 @@
+
+component Polygon < DOMElement{
+    constructor(){
+        super('polygon')
+        Polygon.prototype.__initialize.call(this)
+    }
+}

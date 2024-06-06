@@ -1,0 +1,18 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.color
+import live-web-edit.view.workspace
+
+component Main < PageView{
+    static Array use = [WorkspaceView]
+    head: PageProperties{ ColorSchemeLoader{} }
+
+    constructor(data:Object){
+        super()
+        this.data = data
+        Main.prototype.__initialize.call(this)
+    }
+
+    WorkspaceView.(this.data){}
+}

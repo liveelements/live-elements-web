@@ -1,0 +1,11 @@
+&StaticCodeEditorView{
+    @apply w-full h-full;
+}
+
+.cm-editor{
+    @apply w-full h-full relative;
+}
+
+.cm-scroller{
+    @apply w-full h-full absolute;
+}

@@ -1,0 +1,19 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import live-web-view.button
+
+component CompileButton < IconButton{
+    id: compileButton
+    static Array use = []
+    classes: [ScopedStyle.className(CompileButton)]
+
+    Svg{ 
+        props: ({xmlns: 'http://www.w3.org/2000/svg', width: '15', height: '15', viewBox: '0 0 60 60', fill: 'currentColor'})
+
+        Polygon{
+            props: { points: "10,0 50,30 10,60" }
+            style: { fill: 'currentColor' }
+        }
+    }
+}

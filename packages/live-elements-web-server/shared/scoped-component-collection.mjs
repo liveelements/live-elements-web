@@ -23,8 +23,23 @@ export default class ScopedComponentCollection{
         const rv = []
         for ( let i = 0; i < this._components.length; ++i ){
             const c = this._components[i]
-            for ( let j = 0; j < c._viewUsages.length; ++j ){
-                rv.push(c._viewUsages[j])
+            let cInUse = false
+            for ( let j = 0; j < this._components.length; ++j ){
+                const lookup = this._components[j]
+                if ( lookup !== c ){
+                    const found = lookup.use.find(s => s === c)
+                    if ( found )
+                        cInUse = true
+                    let inherits = lookup.inherits
+                    while ( inherits ){
+                        if ( inherits === c )
+                            cInUse = true
+                        inherits = inherits.inherits
+                    }
+                }
+            }
+            if ( !cInUse ){
+                rv.push(c)
             }
         }
         return rv

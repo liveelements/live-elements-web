@@ -1,0 +1,26 @@
+import Loader from "live-elements-web-server/client/client-pageview-loader.mjs"
+import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
+import ky from 'ky'
+
+const importer = import('<<<mainEntry>>>')
+importer.then(imp => {
+    const page = Loader.findPageViewInModule(imp)
+    const collection = ScopedComponentScanner.scanAndCollect(page)
+    const pagesc = collection.findScopedComponent(page)
+    const pageUsages = pagesc.toJSON()
+
+    ky.post('<<<usagesRoute>>>', {json: { page: pageUsages } }).json()
+            .then(serverData => {  
+                return Loader.loadAwaitingModule(importer, "*", [], {
+                    scopedStyles: serverData.scopedStyles,
+                    scopedStyleLinks: serverData.scopedStyleLinks,
+                    scopedStyleAssertionSupport: true
+                })
+            })
+            .catch(error => {
+                window.parent.postMessage({
+                    type: 'error',
+                    message: error.message
+                }, '*')
+            })
+})

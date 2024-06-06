@@ -233,7 +233,7 @@ export default class WebServer extends EventEmitter{
         const moduleVirtualLoader = path.join(path.dirname(viewLoaderData.path), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
             `import Loader from "${clientLoader}"`,
-            `Loader.loadAwaitingModule(import("./${viewLoaderData.fileName}"), "${viewLoaderData.name}", ${placementSource}, ${viewAssignmentsSource})`
+            `Loader.loadAwaitingModuleAndReport(import("./${viewLoaderData.fileName}"), "${viewLoaderData.name}", ${placementSource}, ${viewAssignmentsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
