@@ -19,7 +19,7 @@ component TabButton < PrimaryButton{
                         }
                         parent = parent.parent
                     }
-                    if ( parent ){
+                    if ( parent ){   
                         let index = -1
                         for ( let i = 0; i < directParent.children.length; ++i ){
                             if ( directParent.children[i] === tabButton ){

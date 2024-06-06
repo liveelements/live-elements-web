@@ -1,0 +1,72 @@
+import ky from 'ky'
+
+component WorkspaceViewDataActions{
+
+    Object serverRoutes = {
+        save: '',
+        compile: '',
+        lockWrite: '',
+        fork: ''
+    }
+    Object hooks = {}
+
+    fn toError(data:Object){
+        if ( data.error.messages && data.error.messages.length ){
+            const err = new Error(data.error.messages[0])
+            err.messages = data.error.messages
+            return err
+        } else if ( data.error.message ){
+            return new Error(data.error.message)
+        }
+        return new Error("Unknown error")
+    }
+    
+    async fn compile(data:WorkViewData){
+        const route = this.serverRoutes.compile.replace(':workspace', data.workspaceName)
+        const res = await ky.post(route, {json: { workspace: data.workspaceName } }).json()
+        if ( res.error ){
+            throw (this.toError(res))
+        }
+        return res
+    }
+
+    
+    async fn save(data:WorkViewData, activeEditor:DOMElement, document:Document){
+        if ( !document.isDirty ){
+            return true
+        }
+        document.content = activeEditor.editor.state.doc.toString()
+        const route = this.serverRoutes.save.replace(':workspace', data.workspaceName)
+        const res = await ky.post(route, {json: { document: document.toJSON() } }).json()
+        if ( res.success ){
+            activeEditor.document.isDirty = false
+            if ( this.hooks && this.hooks.saveReady )
+                this.hooks.saveReady(data, activeEditor.document)
+        } else if ( res.error ){
+            this.errors = this.errors.concat([{ type: 'save', message: res.error.message }])
+        }
+        return true
+    }
+
+    async fn lockWrite(data:WorkViewData){
+        const route = this.serverRoutes.lockWrite.replace(':workspace', data.workspaceName)
+        const res = await ky.post(route, {json: {} }).json()
+        if ( res.error ){
+            this.errors = this.errors.concat([{ type: 'lockwrite', message: res.error.message }])
+        } else {
+            if ( this.hooks && this.hooks.locked ){
+                this.hooks.locked()
+            }
+        }
+        return true
+    }
+
+    async fn fork(data:WorkViewData){        
+        const route = this.serverRoutes.fork.replace(':workspace', data.workspaceName)
+        const res = await ky.post(route, {json: {} }).json()
+        if ( res.error ){
+            throw (this.toError(res))
+        }
+        return res
+    }
+}

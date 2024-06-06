@@ -15,11 +15,14 @@ component TabLayout < Div{
     int selected: 0
     on selectedChanged: () => {
         this.__updateSelection(this.selected)
+        this.activated.emit(this.selected)
     }
     
     on childrenChanged: () => {
         this.__updateSelection(this.selected)
     }
+
+    event activated(index:int)
 
     fn __updateSelection(selected:int){
         for ( let i = 0; i < this.children.length; ++i ){

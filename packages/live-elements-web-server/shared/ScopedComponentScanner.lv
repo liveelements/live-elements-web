@@ -1,4 +1,3 @@
-
 import .style
 
 import ScopedComponentCollection from "./scoped-component-collection.mjs"
@@ -26,8 +25,13 @@ component ScopedComponentScanner{
     }
 
     fn scanView(c:component){
-        const sc = this._collection.addComponent(c)
-        this.scanRecurse(sc, sc)
+        const viewScExists = this._collection.findScopedComponent(c)
+        if ( viewScExists ){
+            ScopedComponentScanner.updateViewUsageRecurse(viewScExists, viewScExists)
+        } else {   
+            const sc = this._collection.addComponent(c)
+            this.scanRecurse(sc, sc)
+        }
     }
 
     
@@ -44,6 +48,19 @@ component ScopedComponentScanner{
         return null
     }
 
+    static fn updateViewUsageRecurse(sc:ScopedComponent, rootsc:ScopedComponent){
+        for ( let i = 0; i < sc.use.length; ++i ){
+            const use = sc.use[i]
+            if ( use instanceof ScopedComponent ){
+                use.addViewUsage(rootsc)
+                ScopedComponentScanner.updateViewUsageRecurse(use, rootsc)
+            }
+        }
+        if ( sc.inherits ){
+            ScopedComponentScanner.updateViewUsageRecurse(sc.inherits, rootsc)
+        }
+    }
+
     fn scanRecurse(sc:ScopedComponent, rootsc:ScopedComponent){
         const c = sc.component
         if ( c.hasOwnProperty('use') && c.use.length ){
@@ -52,10 +69,17 @@ component ScopedComponentScanner{
                 if ( use instanceof ScopedStyle ){
                     sc.createStyle(use.src, use.process)
                 } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
-                    const useSc = this._collection.addComponent(c.use[i])
-                    useSc.addViewUsage(rootsc)
-                    sc.addUse(useSc)
-                    this.scanRecurse(useSc, rootsc)
+                    const useScExists = this._collection.findScopedComponent(use)
+                    if ( useScExists ){
+                        useScExists.addViewUsage(rootsc)
+                        sc.addUse(useScExists)
+                        ScopedComponentScanner.updateViewUsageRecurse(useScExists, rootsc)
+                    } else {    
+                        const useSc = this._collection.addComponent(c.use[i])
+                        useSc.addViewUsage(rootsc)
+                        sc.addUse(useSc)
+                        this.scanRecurse(useSc, rootsc)
+                    }
                 } else {
                     sc.addUse(null)
                 }
@@ -64,10 +88,17 @@ component ScopedComponentScanner{
 
         const inherited = ScopedComponentScanner.findInheritedViewComponent(c)
         if ( inherited ){
-            const inheritedSc = this._collection.addComponent(inherited)
-            inheritedSc.addViewUsage(rootsc)
-            this.scanRecurse(inheritedSc, rootsc)
-            sc.setInheritance(inheritedSc)
+            const inheritedScExists = this._collection.findScopedComponent(inherited)
+            if ( inheritedScExists ){
+                inheritedScExists.addViewUsage(rootsc)
+                sc.setInheritance(inheritedScExists)
+                ScopedComponentScanner.updateViewUsageRecurse(inheritedScExists, rootsc)
+            } else {
+                const inheritedSc = this._collection.addComponent(inherited)
+                inheritedSc.addViewUsage(rootsc)
+                this.scanRecurse(inheritedSc, rootsc)
+                sc.setInheritance(inheritedSc)
+            }
         }
     }
 }

@@ -1,0 +1,33 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import live-web-view.button
+
+component WriteLockButton < IconButton{
+    id: writeLockButton
+    boolean isLocked: false
+    
+    static Array use = []
+    classes: this.extraClasses.concat([ScopedStyle.className(WriteLockButton), this.isLocked ? 'locked' : ''])
+
+    children: this.isLocked 
+        ? [
+            Svg{ 
+                props: ({width: '15', height: '15', viewBox: '0 0 9 14', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+                Path{
+                    props: ({d: 'M2.25 6C2.24984 4.33333 2.24999 1 4.50003 1C6.75007 1 6.74999 4.33333 6.75 6', stroke: {'': 'white',width: '1.2'}})
+                }
+                Rect{ props: ({y: '6', width: '9', height: '8', rx: '1.5', fill: 'white'})
+                }
+            }
+        ]
+        : [
+            Svg{ 
+                props: ({width: '12', height: '14', viewBox: '0 0 12 14', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+                Path{
+                    props: ({d: 'M6 6C5.99984 4.33333 5.99999 1 8.25003 1C10.5001 1 10.5 4.33333 10.5 6', stroke: {'': 'white',width: '1.2'}})  }
+                Rect{ props: ({y: '6', width: '9', height: '8', rx: '1.5', fill: 'white'})
+                }
+            }
+        ]
+}

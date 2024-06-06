@@ -1,0 +1,102 @@
+
+import live-web-view.layout
+import ky from 'ky'
+
+component WorkspaceViewActions{
+    constructor(workView:Object){
+        super()
+        this.workView = workView
+        this.catchError = this._catchError.bind(this)
+        WorkspaceViewActions.prototype.__initialize.call(this)
+    }
+
+    fn refreshFrame(){
+        this.workView.frame.refresh()
+    }
+
+    fn save(){
+        if ( !this.workView.data.canWrite )
+            return
+        const activeEditor = this._findActiveEditor()
+        this.workView._dataActions.save(this.workView.data, activeEditor, activeEditor.document)        
+    }
+
+    fn actionMap(){
+        return {
+            'save' : this.save.bind(this),
+            'compile' : this.compile.bind(this)
+        }
+    }
+
+    fn lockWrite(){
+        if ( !this.workView.data.canWrite )
+            return
+        this.workView._dataActions.lockWrite(this.workView.data).then(res => {
+            if ( res ){
+                this.workView.data.canWrite = false
+            }
+        }).catch(this.catchError)
+    }
+
+    fn fork(){
+        const dataActions = this.workView._dataActions
+        return dataActions.fork(this.workView.data)
+            .then( data => {
+                this.workView.data = WorkspaceViewData.fromJSON(data)
+                if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
+                    return
+                }
+                window.history.pushState(null, null, `/w/${this.workView.data.workspaceName}`)    
+
+                if ( !this.workView.data.lastCompilation && this.workView.data.canWrite ){
+                    this.compile()
+                }
+            })
+            .catch(this.catchError) 
+    }
+
+    fn compile(){
+        this.compileResolveError()
+            .then( res => {
+                if ( res ){
+                    if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
+                        this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
+                    }
+                    this.refreshFrame()
+                }
+            })
+            .catch(this.catchError) 
+    }
+
+    fn _catchError(e:Object){
+        this.workView.data.errors = e.messages ? e.messages : [e.message]
+    }
+
+    fn compileResolveError(){
+        const dataActions = this.workView._dataActions
+        if ( !this.workView.data.canWrite )
+            return Promise.resolve(null)
+        return dataActions.compile(this.workView.data)
+            .then(res => {
+                this.workView.data.errors = []
+                return res
+            })
+    }
+
+    fn _findActiveEditor(){
+        const tabLayout = this.workView.tabLayout
+        for ( let i = 0; i < tabLayout.children.length; ++i ){
+            if ( tabLayout.children[i] instanceof TabContent ){
+                const tabcontent = tabLayout.children[i]
+                for ( let j = 0; j < tabcontent.children.length; ++j ){
+                    const tabpane = tabcontent.children[j]
+                    if ( tabpane.classes.includes('active') ){
+                        const editor = tabpane.children[0]
+                        return editor
+                    }
+                }
+            }
+        }
+        return null
+    }
+}

@@ -1,0 +1,25 @@
+import {indentWithTab} from "@codemirror/commands"
+
+component WorkspaceViewKeymap{
+    Object actions = {}
+    
+    constructor(actions:Object){
+        super()
+        WorkspaceViewKeymap.prototype.__initialize.call(this)
+        if ( actions )
+            this.actions = actions
+    }
+
+    fn run(actionName:string){
+        if ( this.actions.hasOwnProperty(actionName) ){
+            this.actions[actionName]()
+        }
+    }
+    
+    Array keymap = [
+        indentWithTab,
+        { key: "Mod-s", run: async (view) => { this.run('save'); return true; } },
+        { key: "Ctrl-Alt-r", run: (view) => { this.run('compile'); return true; } },
+        { key: "Cmd-Alt-r",  run: (view) => { this.run('compile'); return true; } } 
+    ]
+}

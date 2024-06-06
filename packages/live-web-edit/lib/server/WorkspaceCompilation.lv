@@ -1,0 +1,252 @@
+import live-elements-web-server.page.index
+
+import LvDOMEmulator from 'live-elements-web-server/lib/lvdomemulator.mjs'
+import BundleWebpack from 'live-elements-web-server/lib/bundle-webpack.mjs'
+import {VirtualScript} from 'live-elements-web-server/lib/scripts.mjs'
+import ScopedAssignmentControl from 'live-elements-web-server/lib/scoped-assignment-control.mjs'
+import ScopedComponentPaths from 'live-elements-web-server/lib/scoped-component-paths.mjs'
+import StyleContainer from 'live-elements-web-server/lib/style-loader.mjs'
+import ScopedComponentCollection from 'live-elements-web-server/shared/scoped-component-collection.mjs'
+
+import generateLoader from '../../resources/loader/generate-loader.mjs'
+
+import path from 'path'
+import fs from 'fs'
+
+component WorkspaceCompilation{
+
+    Page page: null
+    string pageContent: ''
+    string identifier: ''
+    Date stamp: null
+    Array<WorkspaceAsset> assets: []
+    Array<string> errors: []
+    Array<string> styles: []
+    WorkspaceAsset mainAsset: null
+    Object usageAssignments: null
+
+    static fn generateid(){
+        const timestamp = Date.now().toString(36)
+        const randomString = Math.random().toString(36).substring(2, 15)
+        return `${randomString}${timestamp}`
+    }
+
+    static fn __replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
+        const paths = []
+        let p = workspace.path
+        while ( p ){
+            paths.push(p)
+            const parentPath = path.dirname(p)
+            if ( parentPath === p )
+                break
+            p = parentPath
+        }
+
+        let result = message
+        for ( let i = 0; i < paths.length; ++i ){
+            result = result.replaceAll(paths[i], '')
+        }
+        return result
+    }
+
+    static fn __createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspace:Workspace){
+        
+        const errs = errors.map(error => {
+            return {
+                message: WorkspaceCompilation.__replaceMessageWorkspacePaths(error.message, workspace)
+            }
+        })
+        return WorkspaceCompilation{ errors = errs identifier = identifier stamp = stamp }
+    }
+
+    static async fn run(workspace:Object,baseUrlParam:string):WorkspaceCompilation{
+        const baseUrl = baseUrlParam ? baseUrlParam : ''
+
+        const page = IndexPage{}
+        page.entryScript = `${baseUrl}/v-scripts/${workspace.name}/ws.bundle.js`
+        const domEmulator = new LvDOMEmulator({beautify: true})
+        const pageDOM = page.captureDOM(domEmulator)
+        const pageContent = domEmulator.serializeDOM(pageDOM)
+
+        const id = WorkspaceCompilation.generateid()
+        const time = new Date()
+        
+        const loaderScriptContent = generateLoader({
+            mainEntry: './Index.lv',
+            usagesRoute: `${baseUrl}/v-use/${workspace.name}`
+        })
+        const loaderScript = new VirtualScript( path.join(workspace.path, 'ws.bundle.js'), loaderScriptContent)
+
+        try{
+            const r = await BundleWebpack.compileBundle(
+                'ws', 
+                [loaderScript], 
+                `${baseUrl}/v-scripts/${workspace.name}/`, 
+                path.join(workspace.path, 'dist'), 
+                'inline-source-map', 
+                'development'
+            )
+        
+            let main = null
+
+            const wsAssets = r.assets.map(asset => WorkspaceAsset{
+                name: asset.name
+                content: asset.content
+            })
+
+            for ( let i = 0; i < r.assets.length; ++i ){
+                const asset = r.assets[i]
+                if ( asset.isMainEntry ){
+                    main = wsAssets[i]
+                    break
+                }
+            }
+
+            const compilation = WorkspaceCompilation{
+                page = page
+                pageContent = pageContent
+                identifier = id
+                stamp = time
+                assets = r.assets
+                mainAsset = main
+                styles = []
+            }
+            return compilation
+        
+        } catch ( e ){
+            return WorkspaceCompilation.__createFromErrors(
+                e instanceof Array ? e : [e], id, time, workspace
+            )
+        }
+    }
+
+    fn hasResult(){
+        return this.page ? true : false
+    }
+
+    fn hasErrors(){
+        return this.errors.length ? true : false
+    }
+
+    fn updateStyles(styles:Array<Object>){
+        this.styles = styles
+    }
+
+    fn findAsset(name:string){
+        return this.assets.find(asset => asset.name === name)
+    }
+
+    fn findStyle(file:string){
+        return this.styles.find(style => style.file === file)
+    }
+
+    fn saveToDisk(wscp:string){
+        if ( !fs.existsSync(wscp) ){
+            fs.mkdirSync(wscp, { recursive: true })
+        }
+
+        const assetDirectory = path.join(wscp, 'assets')
+        if ( !fs.existsSync(assetDirectory) ){
+            fs.mkdirSync(assetDirectory)
+        }
+        const stylesDirectory = path.join(wscp, 'styles')
+        if ( !fs.existsSync(stylesDirectory) ){
+            fs.mkdirSync(stylesDirectory)
+        }
+
+        for ( let i = 0; i < this.styles.length; ++i ){
+            const style = this.styles[i]
+            const stylePath = path.join(stylesDirectory, style.file)
+            fs.writeFileSync(stylePath, style.content)
+        }
+        for ( let i = 0; i < this.assets.length; ++i ){
+            const asset = this.assets[i]
+            const assetPath = path.join(assetDirectory, asset.name)
+            fs.writeFileSync(assetPath, asset.content)
+        }
+
+        const pagePath = path.join(wscp, 'wsindex.html')
+        fs.writeFileSync(pagePath, this.pageContent)
+    }
+
+    fn toJSON():Object{
+        return {
+            id: this.identifier,
+            page: 'wsindex.html',
+            styles: this.styles.map(s => s.file),
+            assets: this.assets.map(a => a.name),
+            main: this.mainAsset.name,
+            usages: this.usageAssignments,
+            stamp: this.stamp.toISOString()
+        }
+    }
+
+    static fn fromJSON(data:Object, wscp:string){
+        const identifier = data.id
+        const assetsDirectory = path.join(wscp, 'assets')
+        const stylesDirectory = path.join(wscp, 'styles')
+        const pagePath = path.join(wscp, data.page)
+
+        const styles = []
+        const assets = []
+        const pageContent = fs.readFileSync(pagePath, 'utf8')
+        let mainAsset = null
+
+        for ( let i = 0; i < data.styles.length; ++i ){
+            const style = data.styles[i]
+            const stylePath = path.join(stylesDirectory, style)
+            styles.push({file: style, content: fs.readFileSync(stylePath, 'utf8')})
+        }
+
+        for ( let i = 0; i < data.assets.length; ++i ){
+            const asset = data.assets[i]
+            const assetPath = path.join(assetsDirectory, asset)
+            const wsAsset = WorkspaceAsset{
+                name: asset
+                content: fs.readFileSync(assetPath, 'utf8')
+            }
+            assets.push(wsAsset)
+            if (asset === data.main){
+                mainAsset = wsAsset
+            }
+        }
+        
+        const compilation = WorkspaceCompilation{
+            page = null
+            pageContent = pageContent
+            identifier = identifier
+            stamp = new Date(data.stamp)
+            assets = assets
+            mainAsset = mainAsset
+            usageAssignments = data.usages
+            styles = styles
+        }
+        return compilation
+    }
+
+
+    async fn updateUsages(usageStructure:Object, wsname:string, baseUrlParam:string){
+        const baseUrl = baseUrlParam ? baseUrlParam : ''
+
+        const scopedCollection = ScopedComponentCollection.fromJSON(usageStructure)
+        ScopedComponentPaths.resolveRelativePaths(scopedCollection, path.resolve('.'))
+        const viewsc = scopedCollection.findScopedComponentByUri(usageStructure.uri)
+
+        const styleContainer = new StyleContainer('/styles')
+        await styleContainer.addScopedStyles(scopedCollection)
+
+        this.updateStyles(
+            styleContainer.outputs.map(o => ({ file: o.output, content: o.content }))
+        )
+
+        const scopedViewAssignment = new ScopedAssignmentControl()
+        const assignmentStructure = scopedViewAssignment.updateAssignmentStructure(scopedCollection, viewsc)
+
+        this.usageAssignments = {
+            scopedStyles: assignmentStructure,
+            scopedStyleLinks: scopedViewAssignment.styleLinks(scopedCollection).map(link => `${baseUrl}/v/${wsname}${link}`)
+        }
+
+        return this.usageAssignments
+    }
+}

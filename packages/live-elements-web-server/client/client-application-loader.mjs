@@ -1,7 +1,7 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
 
 export default class ClientApplicationLoader{
-    static loadAwaitingModule(awaitingModule, componentName){
+    static loadAwaitingModuleAndReport(awaitingModule, componentName){
         awaitingModule.then(module => {
             const c = module[componentName]
             window.pageApplication = new c()

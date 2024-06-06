@@ -1,0 +1,57 @@
+&WorkspaceView{
+    @apply w-full h-full;
+}
+
+&TopNav{
+    @apply flex flex-row;
+}
+
+&SplitLayout{
+    @apply h-[calc(100vh-3rem)];
+}
+
+&SplitLayout &SplitPane&.flex-content{
+    @apply flex flex-col;
+}
+
+&SplitLayout &SplitPane .error-box.show{
+    @apply bg-[rgb(105,28,35)] p-1 border border-[#717171];
+}
+&SplitLayout &SplitPane .error-box .error{
+    @apply p-2;
+}
+
+&TabLayout{
+    flex: 1;
+}
+
+&TabLayout &TabContent { 
+    flex: 1;
+}
+
+&TabLayout &TabContent &TabPane{
+    @apply h-full;
+}
+
+&TabLayout &TabContent &TabPane &CodeEditorView{
+    @apply h-full;
+}
+
+&TabLayout&.no-b &TabContent { 
+    @apply border-t;
+}
+
+.header{
+    @apply w-full h-[2.5rem] border-b border-[#a1a1a1] dark:border-[#515151];
+}
+
+iframe{
+    @apply w-full h-full bg-white;
+}
+
+&WriteLockButton&.locked{
+    @apply bg-transparent border-0 hover:bg-transparent hover:border-0 cursor-default;
+}
+&IconButton&.hide{
+    @apply hidden;
+}
