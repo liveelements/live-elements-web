@@ -1,0 +1,69 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+import {EditorView, basicSetup} from 'codemirror'
+import {keymap} from '@codemirror/view'
+import {EditorState, Compartment} from "@codemirror/state"
+import {javascript} from "@codemirror/lang-javascript"
+import {oneDark} from "@codemirror/theme-one-dark"
+
+component StaticCodeEditorView < Div{
+    id: staticCodeEditorView
+
+    static Array use = [ 
+        ScopedStyle{ src: './staticcodeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
+        ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    boolean readOnly: false
+    string content: ''
+    boolean lineNumbers: true
+
+    props : ({ data: {
+        readonly : this.readOnly,
+        content: this.content,
+        linenumbers: this.lineNumbers
+    }})
+    
+    Object loader: async (d) => {
+        const codemirror = await import('codemirror')
+        const jsmodule = await import("@codemirror/lang-javascript")
+        const EditorView = codemirror.EditorView
+        const basicSetup = codemirror.basicSetup
+        const javascript = jsmodule.javascript
+        
+        const state = await import("@codemirror/state")
+        const EditorState = state.EditorState
+
+        const extensions = [basicSetup, javascript()]
+        if ( d.dataset.readonly === 'true' ){
+            extensions.push(EditorState.readOnly.of(true))
+        }
+
+        const content = d.dataset.content
+
+        const newEditorState = EditorState.create({
+            doc: content,
+            extensions: extensions
+        })
+
+        const editor = new EditorView({
+            state: newEditorState,
+            lineNumbers: d.dataset.linenumbers === 'true'  ? true : false,
+            parent: d
+        })
+    }
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(StaticCodeEditorView)])
+
+    constructor(){
+        super()
+        StaticCodeEditorView.prototype.__initialize.call(this)
+    }
+
+    DOMBehavior{
+        domReady: staticCodeEditorView.loader
+    }
+}

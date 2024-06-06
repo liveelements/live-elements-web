@@ -1,5 +1,5 @@
 import live-web.dom
-import live-web
+import live-web.behavior
 import live-elements-web-server.style
 
 import {EditorView, basicSetup} from 'codemirror'
@@ -11,7 +11,7 @@ import {oneDark} from "@codemirror/theme-one-dark"
 component CodeEditorView < Div{
     static Array use = [ 
         ScopedStyle{ src: './codeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
-        // ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
+        ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
     
     static Object lightTheme = EditorView.theme({
@@ -83,7 +83,9 @@ component CodeEditorView < Div{
 
 
     fn initEditor(){
-        if ( !this.dom )
+        if ( typeof window === 'undefined' )
+            throw new Error('CodeEditorView cannot be rendered on the server. Use StaticCodeEditorView instead.')
+        if ( !this.dom)
             return
 
         const colorScheme = window.localStorage.getItem('color-scheme') === 'dark' || (!('color-scheme' in window.localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -126,7 +128,7 @@ component CodeEditorView < Div{
 
     on domChanged: () => {
         this.initEditor()
-        if ( !this._colorSchemeListener ){
+        if ( !this._colorSchemeListener && typeof window !== 'undefined' ){
             this._colorSchemeListener = window.addEventListener("colorscheme", event => {
                 if ( this._editor ){
                     const theme = event.detail === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme

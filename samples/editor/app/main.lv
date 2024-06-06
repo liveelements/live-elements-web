@@ -7,12 +7,12 @@ import live-web-edit.view.codeeditor
 component Main < PageView{
     static Array use = [
         FullScreen,
-        CodeEditorView
+        StaticCodeEditorView
     ]
 
     FullScreen{
-        CodeEditorView{
-            
+        StaticCodeEditorView{
+            content: 'console.log("hello")'
         }
     }
 
