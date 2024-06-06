@@ -69,7 +69,7 @@ export default class ClientPageViewLoader{
                     }
                 }
     
-                window.pageView = window.__serverData__ ? new c(window.__serverData__) : new c()
+                window.pageView = window.__serverData__ ? new c(window.__serverData__, loadInfo) : new c()
                 BaseElement.complete(window.pageView)
     
                 if ( window.pageView.head )
