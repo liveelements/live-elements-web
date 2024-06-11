@@ -611,7 +611,7 @@ export default class WebServer extends EventEmitter{
                         for ( let j = 0; j < viewRoutes[i].behaviors.bundles.length; ++j ){
                             const bundle = viewRoutes[i].behaviors.bundles[j]
                             if ( `/scripts/behavior/${bundle.name}` === req.url){
-                                res.setHeader('Content-Type', 'text/js')
+                                res.setHeader('Content-Type', 'text/javascript')
                                 res.send(bundle.content)
                                 return
                             }
