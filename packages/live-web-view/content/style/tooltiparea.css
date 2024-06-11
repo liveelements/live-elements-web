@@ -1,0 +1,25 @@
+
+&TooltipArea {
+    position: relative;
+    display: inline-block;
+  }
+  
+&TooltipArea &Tooltip {
+    @apply p-2 px-4 rounded text-xs text-[#212121] dark:text-white bg-white dark:bg-[#212121] border border-[#c1c1c1] dark:border-[#515151];
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 100%;
+    margin-top: 5px;
+    z-index: 1000;
+    transition: opacity 0.3s;
+}
+
+&TooltipArea &Tooltip&.position-left{
+    right: 0%;
+}
+  
+&TooltipArea&.active &Tooltip {
+    visibility: visible;
+    opacity: 0.9;
+}

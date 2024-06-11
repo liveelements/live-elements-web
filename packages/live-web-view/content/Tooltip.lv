@@ -1,0 +1,46 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component Tooltip < Div{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Tooltip)])
+
+    constructor(text:string){
+        super()
+        Tooltip.prototype.__initialize.call(this)
+        if ( text )
+            this.children = [new T(text)]
+    }
+
+    DOMBehavior{
+        domReady: (d) => {
+            let current = d.parentNode
+            while ( current ){
+                if ( 'c' in current.dataset ){
+                    if ( current.dataset.c === 'tooltiparea' ){
+                        break
+                    }
+                }
+                current = current.parentNode
+            }
+            if ( current ){
+                let timeout = null
+
+                current.addEventListener('mouseenter', function () {
+                    timeout = window.setTimeout(function () {
+                        current.classList.add('active')
+                        setTimeout(() => {
+                            current.classList.remove('active')
+                        }, 2000)
+                    }, 500)
+                })
+
+                current.addEventListener('mouseleave', function () {
+                    window.clearTimeout(timeout)
+                    current.classList.remove('active')
+                })
+            }
+        }
+    }
+}
