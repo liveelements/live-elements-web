@@ -16,12 +16,20 @@ component SplitLayout < Div{
                 domReady: (handle) => {
                     const container = handle.parentNode.parentNode
                     let isDragging = false
+                    let overlay = null
 
                     const disableTextSelection = () => { document.body.style.userSelect = 'none' }
                     const enableTextSelection = () => { document.body.style.userSelect = '' }
 
                     const onMouseDown = (e) => {
                         if ( container.childNodes.length > 2 ){
+                            if ( !overlay )
+                                overlay = container.querySelector('.overlay')
+
+                            if ( overlay ){
+                                overlay.classList.add('show')
+                            }
+
                             isDragging = true
                             disableTextSelection()
                             document.addEventListener('mousemove', onMouseMove)
@@ -56,6 +64,8 @@ component SplitLayout < Div{
                     }
 
                     const onMouseUp = () => {
+                        if ( overlay )
+                            overlay.classList.remove('show')
                         isDragging = false
                         enableTextSelection()
                         document.removeEventListener('mousemove', onMouseMove)
@@ -77,6 +87,8 @@ component SplitLayout < Div{
         acc.push(item)
         if (index !== this.panes.length - 1){
             acc.push(this.handle)
+        } else {
+            acc.push(Div{ classes: ['overlay'] } )
         }
         return acc;
     }, [])
