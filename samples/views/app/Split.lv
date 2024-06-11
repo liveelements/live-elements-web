@@ -10,7 +10,7 @@ import live-web-view.color
 component Split < PageView{
     static Array use = [
         SplitLayout,
-        BlogPost,
+        Content,
         Float,
         ColorSchemeToggleButton,
         ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
@@ -30,7 +30,7 @@ component Split < PageView{
         SplitLayout{
             panes: [
                 SplitPane{
-                    BlogPost{
+                    Content{
                         H1`Heading 1`
                         P`Paragraph of text`
                         H3`Heading 2`
@@ -38,7 +38,7 @@ component Split < PageView{
                     }
                 },
                 SplitPane{
-                    BlogPost{
+                    Content{
                         H1`Right 1`
                         P`Right Paragraph of text`
                         H3`Right 2`

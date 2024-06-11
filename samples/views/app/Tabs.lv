@@ -10,7 +10,7 @@ import live-web-view.color
 component Tabs < PageView{
     static Array use = [
         TabLayout,
-        BlogPost,
+        Content,
         Float,
         ColorSchemeToggleButton,
         ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
@@ -31,14 +31,14 @@ component Tabs < PageView{
             TabHeader{
                 children: [1, 2, 3].map(d => {
                     return TabButton{
-                        T.(`Tab ${d}`){}
+                        content: [T.(`Tab ${d}`){}]
                     }
                 })
             }
             TabContent{
                 children: [1, 2, 3].map(d => {
                     return TabPane{ 
-                        BlogPost{
+                        Content{
                             H1.(`Heading ${d}`){}
                             P`Paragraph of text`
                         }

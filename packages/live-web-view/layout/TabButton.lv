@@ -7,7 +7,10 @@ component TabButton < PrimaryButton{
     id: tabButton
     classes: this.extraClasses.concat([ScopedStyle.className(TabButton)])
 
-    DOMBehavior{
+    Array<DOMElement> content: []
+
+    Object __behavior = DOMBehavior{
+        target: tabButton
         domEvents: {
             click: (e) => {
                 if (typeof tabButton !== 'undefined') { // CSR
@@ -32,9 +35,44 @@ component TabButton < PrimaryButton{
                         }
                     }
                 } else { //SSR
-                    //TODO
+                    const target = e.target
+                    const siblings = target.parentNode.childNodes
+                    let index = null
+                    for ( let i = 0; i < siblings.length; ++i ){
+                        if ( siblings[i] === target ){
+                            target.classList.add('active')
+                            index = i
+                        } else {
+                            siblings[i].classList.remove('active')
+                        }
+                    }
+
+                    if ( index !== null ){
+                        const tabLayout = target.parentNode.parentNode
+                        let tabContent = target.parentNode.nextSibling
+                        while ( tabContent && tabContent.nodeType === window.Node.TEXT_NODE ){
+                            tabContent = tabContent.nextSibling
+                        }
+                        if ( tabContent ){
+                            let current = 0
+                            for ( let i = 0; i < tabContent.childNodes.length; ++i ){
+                                const pane = tabContent.childNodes[i]
+                                if ( pane.nodeType !== window.Node.TEXT_NODE ){
+                                    pane.classList.remove('active')
+                                    if ( current === index ){
+                                        pane.classList.add('active')
+                                    }
+                                    current++
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
+
+    children: this.content.concat([this.__behavior])
+
+    
 }
