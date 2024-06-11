@@ -35,6 +35,16 @@ component Input < DOMElement{
     }
     any currentValue: 0
 
+    fn resetValue(){
+        if ( this.value !== '' ){
+            this.value = ''
+        } else {
+            if ( this.dom ){
+                this.dom.value = ''
+            }
+        }
+    }
+
     on input: () => {
         if ( this.type === 'checkbox' ){
             this.currentValue = this.dom.checked

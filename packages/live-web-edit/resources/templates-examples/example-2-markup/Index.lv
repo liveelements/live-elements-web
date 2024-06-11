@@ -1,0 +1,39 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+
+// create a column component
+component Col < Div{ 
+    classes: ['col'] 
+}
+
+// component Markup extends PageView
+component Markup < PageView{
+
+    // link to index.css
+    static Array use = [ScopedStyle{ src: './index.css'}]
+
+    Article{
+        // similar as calling "new H1('This is a heading')" in js
+        H1`This is a heading`
+
+        // the same as calling "new P('This is a heading')" in js
+        P`This is a paragraph`
+
+        P{  // call new T(...), new B(...), ...
+            T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
+              This paragraph is written on multiple lines.`
+        }
+
+        Ul{
+            Li`First list item`
+            Li`Second list item`
+        }
+
+        Section{
+            Col{ P`Paragraph in column one` }
+            Col{ P`Paragraph in column two` }
+        }
+    }
+}

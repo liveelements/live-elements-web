@@ -7,6 +7,8 @@ component WorkspaceViewData{
     boolean canWrite: true
     string lastCompilation: null
     string workspaceViewUrl: null
+    bool workspaceSelector: false
+    Array<Object> templates: []
     Array<Object> errors: []
 
     fn route(url:string):string{ return this.baseUrl + url }
@@ -18,6 +20,7 @@ component WorkspaceViewData{
             documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
             canWrite = data.canWrite ? data.canWrite : false
             lastCompilation = data.compilation ? data.compilation : null
+            templates = data.templates ? data.templates : []
             errors = data.errors ? data.errors : data.error ? [data.error] : []
         }
     }

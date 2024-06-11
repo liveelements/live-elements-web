@@ -1,5 +1,6 @@
 {
-    "name":"base",
+    "name":"example-simple-state",
+    "label" : "Example: Simple State",
     "entry":"Index.lv",
     "documents":[
         {"path": "Index.lv", "type": "lv"},

@@ -38,11 +38,43 @@ component WorkspaceViewActions{
         }).catch(this.catchError)
     }
 
+    fn toggleWorkspaceOpenSelector(){
+        const data = this.workView.data
+        if ( !data.workspaceSelector ){
+            setTimeout(() => { data.workspaceSelector = true })
+        }
+    }
+
+    fn closeOpenWorkspaceSelector(){
+        this.workView.data.workspaceSelector = false
+    }
+
+    fn forkTemplate(name:string){
+        const dataActions = this.workView._dataActions
+        return dataActions.forkTemplate(name)
+            .then( data => {
+                const newData = WorkspaceViewData.fromJSON(data)
+                newData.templates = this.workView.data.templates
+                this.workView.data = newData
+                if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
+                    return
+                }
+                window.history.pushState(null, null, `/w/${this.workView.data.workspaceName}`)    
+
+                if ( !this.workView.data.lastCompilation && this.workView.data.canWrite ){
+                    this.compile()
+                }
+            })
+            .catch(this.catchError) 
+    }
+
     fn fork(){
         const dataActions = this.workView._dataActions
         return dataActions.fork(this.workView.data)
             .then( data => {
-                this.workView.data = WorkspaceViewData.fromJSON(data)
+                const newData = WorkspaceViewData.fromJSON(data)
+                newData.templates = this.workView.data.templates
+                this.workView.data = newData
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }

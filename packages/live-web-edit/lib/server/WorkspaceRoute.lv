@@ -13,14 +13,46 @@ component WorkspaceRoute < Route{
     string templatesPath = ''
     WorkspaceContainer workspaces = null
     Object view = null
+    Array<Object> templates = []
 
-    constructor(workspacesPath:string, viewComponent:component){
+    constructor(workspacesPath:string, templates:Array<Object>){
         super()
         WorkspaceRoute.prototype.__initialize.call(this)
         
         this.workspacesPath = workspacesPath
         this.templatesPath = path.join(PackagePath.find('live-web-edit', path.resolve('.')), 'resources', 'templates')
+        this.templates = templates
         this.workspaces = WorkspaceContainer.create(this.workspacesPath, this.templatesPath)
+    }
+
+    static fn findWorkspacesIn(lookupDir:string){
+        if ( !fs.existsSync(lookupDir) ){
+            return []
+        }
+        const examples = fs.readdirSync(lookupDir).filter(file => {
+            const fullpath = path.join(lookupDir, file)
+            const isdir = fs.lstatSync(fullpath).isDirectory()
+            if ( !isdir )
+                return false
+            const wsjson = path.join(fullpath, 'workspace.json')
+            if ( !fs.existsSync(wsjson) ){
+                return false
+            }
+            return true
+        })
+
+        return examples.map(example => {
+            const fullpath = path.join(lookupDir, example)
+            const wsjson = path.join(fullpath, 'workspace.json')
+
+            const data = fs.readFileSync(wsjson, 'utf8')
+            const json = JSON.parse(data)
+            return { 
+                path: fullpath,
+                name: json.name,
+                label: json.label ? json.label : json.name
+            }
+        })
     }
 
     fn workspaceData(ws:Workspace){
@@ -41,6 +73,7 @@ component WorkspaceRoute < Route{
         data: (req, res) => {
             return { 
                 baseUrl: workspaceRoute.url,
+                templates: workspaceRoute.templates.map(t => { return { name: t.name, label: t.label } }),
                 name: '-'
             }
         }
@@ -53,11 +86,11 @@ component WorkspaceRoute < Route{
                 const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
                 const data = workspaceRoute.workspaceData(ws)
                 data['baseUrl'] = workspaceRoute.url
+                data['templates'] = workspaceRoute.templates.map(t => { return { name: t.name, label: t.label }})
                 return data
             } catch ( e ){
                 return { error: e.message }
             }
-                
         }
     }
 
@@ -65,7 +98,7 @@ component WorkspaceRoute < Route{
             const wsname = req.params.wsname
             let ws = null
             if ( wsname === '-' ){
-                ws = await workspaceRoute.workspaces.createWorkspaceFrom('base')
+                ws = await workspaceRoute.workspaces.createWorkspaceFrom('default')
                 ws.save()
             } else {
                 ws = await workspaceRoute.workspaces.loadWorkspace(wsname)
@@ -82,7 +115,27 @@ component WorkspaceRoute < Route{
     }
 
     PostRoute{ url: '/w-fork/:wsname' f: async (req, res) => {
-        const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
+        const name = req.params.wsname
+        let wsFrom = name
+        if ( wsFrom === 'default' ){
+            const ws = await workspaceRoute.workspaces.createWorkspaceFrom('default')
+            ws.save()
+            res.json(workspaceRoute.workspaceData(ws))
+            res.end()
+            return
+        }
+
+        for ( let i = 0; i < workspaceRoute.templates.length; ++i ){
+            if ( workspaceRoute.templates[i].name === name ){
+                wsFrom = workspaceRoute.templates[i].path
+                const ws = await workspaceRoute.workspaces.createWorkspaceFrom(wsFrom)
+                res.json(workspaceRoute.workspaceData(ws))
+                res.end()
+                return
+            }
+        }
+
+        const ws = workspaceRoute.workspaces.loadWorkspace(wsFrom)
         const wsfork = await workspaceRoute.workspaces.createWorkspaceFrom(req.params.wsname)
         res.json(workspaceRoute.workspaceData(wsfork))
     }}

@@ -7,3 +7,5 @@
  * live-elements-web
  * live-elements-web-server
  * live-web
+ * live-web-view
+ * live-web-edit
