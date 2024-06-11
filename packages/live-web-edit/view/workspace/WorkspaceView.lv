@@ -6,6 +6,7 @@ import live-web-view.form
 import live-web-view.layout
 import live-web-view.button
 import live-web-view.color
+import live-web-view.content
 import live-web-view.navigation
 import live-web-view.iframe
 
@@ -29,6 +30,7 @@ component WorkspaceView < Div{
         FullScreen,
         SplitLayout,
         TabLayout,
+        TooltipArea,
         CodeEditorView,
         ColorSchemeToggleButton,
         WorkspaceOpenSelector,
@@ -103,22 +105,56 @@ component WorkspaceView < Div{
         } catch ( e ){
             console.error(e)
         }
-
     }
 
     TopNav{ position: 'static'
         NavContent{
-            OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.toggleWorkspaceOpenSelector(); } }
-            ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
-            CompileButton{ extraClasses: [workspaceView.data.canWrite ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.compile() }}
-            WriteLockButton{ isLocked: !workspaceView.data.canWrite on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+            TooltipArea{
+                OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.toggleWorkspaceOpenSelector(); } }
+                Tooltip`Open Workspace`
+            }
+            
+            TooltipArea{
+                ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
+                Tooltip`Fork`
+            }
+            
+            TooltipArea{
+                CompileButton{ extraClasses: [workspaceView.data.canWrite ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.compile() }}
+                Tooltip`Compile`
+            }
+            
+            TooltipArea{
+                WriteLockButton{ isLocked: !workspaceView.data.canWrite on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+                Tooltip`Lock Write`
+            }
         }
         NavContent{
-            RefreshButton{ target: frame }
-            ZoomInButton{ target: frame }
-            ZoomOutButton{ target: frame }
-            ResizableFillButton{ target: resizable isFilled: true }
-            ColorSchemeToggleButton{}
+            
+            TooltipArea{
+                RefreshButton{ target: frame }
+                Tooltip`Refresh`
+            }
+            
+            TooltipArea{
+                ZoomInButton{ target: frame }
+                Tooltip`Zoom Out`
+            }
+            
+            TooltipArea{
+                ZoomOutButton{ target: frame }
+                Tooltip`Zoom In`
+            }
+            
+            TooltipArea{
+                ResizableFillButton{ target: resizable isFilled: true }
+                Tooltip`Resize`
+            }
+            
+            TooltipArea{
+                ColorSchemeToggleButton{}
+                Tooltip.("Color Scheme"){ extraClasses: ['position-left'] }
+            }
         }
     }
 
