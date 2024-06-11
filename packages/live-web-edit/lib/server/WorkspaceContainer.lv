@@ -16,11 +16,19 @@ component WorkspaceContainer{
         return WorkspaceContainer{ path: location templatesPath : templatePath ? templatePath : null }
     }
 
+
     fn createWorkspace(files:Array, mainEntry:string){
         return Workspace.create(this.path, Workspace.generateName(), files, mainEntry)
     }
 
     fn createWorkspaceFrom(template:string){
+        if ( path.isAbsolute(template) ){
+            if ( !fs.existsSync(template) ){
+                throw new Error(`Failed to find template" ${template}`)
+            }
+            return Workspace.createFrom(template, this.path, Workspace.generateName())
+        }
+        
         if ( this.templatesPath ){
             const templatePath = path.join(this.templatesPath, template)
             if ( fs.existsSync(templatePath) ){

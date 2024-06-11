@@ -9,19 +9,20 @@ component ForkButton < IconButton{
     classes: [ScopedStyle.className(ForkButton)]
 
     Svg{ 
-        props: ({width: '15', height: '15', viewBox: '0 0 12 10', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
-        Circle{
-            props: ({cx: '9.57164', cy: '1.57143', r: '1.07143', transform: 'rotate(90 9.57164 1.57143)', stroke: 'white'})
+        props: ({width: '15', height: '15', viewBox: '0 0 10 12', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Circle{ props: ({cx: '1.57143', cy: '2.57143', r: '1.07143', stroke: 'white'})
         }
-        Circle{
-            props: ({cx: '9.57164', cy: '7.57143', r: '1.07143', transform: 'rotate(90 9.57164 7.57143)', stroke: 'white'})
+        Circle{ props: ({cx: '4.57143', cy: '10.5714', r: '1.07143', stroke: 'white'})
         }
-        Circle{
-            props: ({cx: '1.57164', cy: '4.57143', r: '1.07143', transform: 'rotate(90 1.57164 4.57143)', stroke: 'white'})
+        Path{
+            props: ({d: 'M4.5 9.14307C4.5 7.71449 6.5 6.16667 6.5 4.5', stroke: 'white'})
         }
-        Path{ props: ({d: 'M3 4.5C4.42857 4.5 6.83333 7.5 8.5 7.5', stroke: 'white'})
+        Path{
+            props: ({d: 'M4.5 9.14307C4.125 7.64307 1.5 5.14307 1.5 3.64307', stroke: 'white'})
         }
-        Path{ props: ({d: 'M3 4.5C4.5 4.125 7 1.5 8.5 1.5', stroke: 'white'})
+        Line{ props: ({x1: '6.5', y1: '3', x2: '6.5', stroke: 'white'})
+        }
+        Line{ props: ({x1: '5', y1: '1.5', x2: '8', y2: '1.5', stroke: 'white'})
         }
     }
 }
