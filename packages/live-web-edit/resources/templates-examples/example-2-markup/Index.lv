@@ -2,7 +2,6 @@ import live-web.dom
 import live-elements-web-server.view
 import live-elements-web-server.style
 
-
 // create a column component
 component Col < Div{ 
     classes: ['col'] 
@@ -10,7 +9,6 @@ component Col < Div{
 
 // component Markup extends PageView
 component Markup < PageView{
-
     // link to index.css
     static Array use = [ScopedStyle{ src: './index.css'}]
 

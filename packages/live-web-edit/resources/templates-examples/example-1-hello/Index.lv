@@ -3,7 +3,6 @@ import live-elements-web-server.view
 
 // component Hello extends PageView
 component Hello < PageView{
-
     // create <div>
     Div{ 
         // create <h1>Hello from Live Elements</h1>
