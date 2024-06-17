@@ -18,12 +18,10 @@ component A < DOMElement{
 
     string href: ''
     on hrefChanged: () => {
-        this.props['href'] = this.href
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('href', this.href)
     }
     string alt: ''
     on altChanged: () => {
-        this.props['alt'] = this.alt
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('href', this.href)
     }
 }

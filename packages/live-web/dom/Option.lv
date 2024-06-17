@@ -5,14 +5,14 @@ component Option < DOMElement{
     }
 
     any value: null
-    on valueChanged: () => { this.props['value'] = this.value; this.propsChanged.emit() }
+    on valueChanged: () => { this.setOwnAttributeAndUpdate('value', this.value) }
 
     boolean selected: false
     on selectedChanged: () => { 
         if ( this.selected ){
-            this.props['selected'] = this.selected
+            this.setOwnAttributeAndUpdate('selected', this.selected)
         } else {
-            delete this.props['selected']
+            this.deleteOwnAttribute('selected')
+            this.attributesChanged.emit()
         }
-        this.propsChanged.emit()
 }

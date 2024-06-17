@@ -15,7 +15,7 @@ component RefreshButton < IconButton{
     on targetChanged: () => {
         if ( this.target ){
             const refId = this.props.data.ref
-            if ( this.target.props.data ){
+            if ( this.target.props && this.target.props.data ){
                 this.target.props.data.refrefresh = 'refresh-' + refId
             } else {
                 this.target.props = { data: { refrefresh: 'refresh-' + refId }}

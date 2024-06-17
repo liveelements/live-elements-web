@@ -17,14 +17,14 @@ component PageProperties{
             var child = this.children[i]
             if ( this.children[i] instanceof Meta ){
                 var meta =  document.createElement("meta")
-                var props = this.children[i].props
+                var props = this.children[i].attributes
                 for (const [key, value] of Object.entries(props)) {
                     meta.setAttribute(key, value)
                 }
                 document.head.appendChild(meta)
             } else if ( this.children[i] instanceof Script ){
                 var script = document.createElement("script")
-                var props = this.children[i].props
+                var props = this.children[i].attributes
                 for (const [key, value] of Object.entries(props)) {
                     if ( key !== 'src' )
                         script.setAttribute(key, value)
@@ -47,7 +47,7 @@ component PageProperties{
             } else if ( this.children[i] instanceof Link ){
                 
                 var link =  document.createElement("link")
-                var props = this.children[i].props
+                var props = this.children[i].attributes
                 for (const [key, value] of Object.entries(props)) {
                     link.setAttribute(key, value)
                 }
@@ -57,11 +57,12 @@ component PageProperties{
                 link.rel = 'stylesheet'
                 link.href = this.children[i].href
                 document.head.appendChild(link)
-            } else if ( this.children[i] instanceof Body ){                
+            } else if ( this.children[i] instanceof Body ){
                 const body = this.children[i]
-                for (let key in body.props ){
+                const attributes = body.attributes
+                for (let key in attributes ){
                     var name = key.replace(/([A-Z])/g, '-$1').toLowerCase()
-                    document.body.setAttribute(name, body.props[key]);
+                    document.body.setAttribute(name, attributes[key]);
                 }
                 if ( body.classes.length ){
                     document.body.className = body.classes.join(' ')
