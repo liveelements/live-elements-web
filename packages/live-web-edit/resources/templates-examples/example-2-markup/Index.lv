@@ -2,18 +2,14 @@ import live-web.dom
 import live-elements-web-server.view
 import live-elements-web-server.style
 
-// create a column component
-component Col < Div{ 
-    classes: ['col'] 
-}
-
 // component Markup extends PageView
 component Markup < PageView{
     // link to index.css
     static Array use = [ScopedStyle{ src: './index.css'}]
 
+    // <article>
     Article{
-        // similar as calling "new H1('This is a heading')" in js
+        // <h1>This is a heading</h1>
         H1`This is a heading`
 
         // the same as calling "new P('This is a heading')" in js
@@ -24,14 +20,19 @@ component Markup < PageView{
               This paragraph is written on multiple lines.`
         }
 
+        // <h2>Subheading</h2>
+        H2`Subheading`
+
+        // <ul>
         Ul{
-            Li`First list item`
-            Li`Second list item`
+            Li`First list item` // <li>
+            Li`Second list item` // <li>
         }
 
         Section{
             Col{ P`Paragraph in column one` }
             Col{ P`Paragraph in column two` }
         }
-    }
+        
+    } // </article>
 }
