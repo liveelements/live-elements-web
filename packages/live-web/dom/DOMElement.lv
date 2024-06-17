@@ -14,6 +14,36 @@ component DOMElement{
     get tag(){ return this._tag }
     get isVoid(){ return this._isVoid }
     get domEvents(){ return this._domEvents }
+    get attributes(){
+        return {
+            ...this.props,
+            ...this._ownAttributes
+        }
+    }
+
+    fn setOwnAttribute(name:string, value:any){
+        if ( !this._ownAttributes ){
+            this._ownAttributes = {}
+            this._ownAttributes[name] = value
+        } else {
+            this._ownAttributes[name] = value
+        }
+    }
+    fn setOwnAttributeAndUpdate(name:string, value:any){
+        this.setOwnAttribute(name, value)
+        this.attributesChanged.emit()
+    }
+    fn deleteOwnAttribute(name:string){
+        if ( this._ownAttributes )
+            delete this._ownAttributes[name]
+    }
+
+    event attributesChanged()
+    on attributesChanged: () => {
+        if ( this.dom ){
+            DOMElement.patchOuter(this.dom, this)
+        }
+    }
 
     static Object EventTypes = ({
         'auxclick': 'auxclick',
@@ -119,12 +149,8 @@ component DOMElement{
         }
     }
 
-    object props: ({})
-    on propsChanged: () => {
-        if ( this.dom ){
-            DOMElement.patchOuter(this.dom, this)
-        }
-    }
+    object props: undefined
+    on propsChanged: () => { this.attributesChanged.emit() }
     string key: ''
     object dom: null
 
@@ -164,7 +190,7 @@ component DOMElement{
                 props.push('style', style)
             }
             if ( element.props ){
-                var key = undefined
+                let key = undefined
                 for (let key in element.props) {
                     if (element.props.hasOwnProperty(key)) {
                         var val = element.props[key]
@@ -173,6 +199,17 @@ component DOMElement{
                         } else {
                             props.push(key, val)
                         }
+                    }
+                }
+            }
+            if ( element._ownAttributes ){
+                let key = undefined
+                for (let key in element._ownAttributes) {
+                    let val = element._ownAttributes[key]
+                    if ( typeof val === 'object' ){
+                        props = props.concat(DOMElement.__unwrapAttributes(key, val))
+                    } else {
+                        props.push(key, val)
                     }
                 }
             }

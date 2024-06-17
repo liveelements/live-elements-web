@@ -47,7 +47,7 @@ export default class ScopedComponentCollection{
 
     componentsForView(viewsc){
         const result = new ScopedComponentCollection()
-        result._components = this._components.filter(s => s.isUsedInView(viewsc))
+        result._components = this._components.filter(s => (s.isUsedInView(viewsc) || s.uri === viewsc.uri))
         return result
     }
 

@@ -7,7 +7,7 @@ component TextArea < DOMElement{
     }
 
     string placeholder: ''
-    on placeholderChanged: () => { this.props['placeholder'] = this.placeholder; this.propsChanged.emit() }
+    on placeholderChanged: () => { this.setOwnAttributeAndUpdate('placeholder', this.placeholder) }
 
     string currentValue: ''
     on input: () => { 

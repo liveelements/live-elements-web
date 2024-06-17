@@ -6,25 +6,22 @@ component Link < DOMElement{
 
     string href: ''
     on hrefChanged: () => {
-        this.props['href'] = this.href
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('href', this.href)
     }
     string rel: ''
     on relChanged: () => {
-        this.props['rel'] = this.rel
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('rel', this.rel)
     }
     string type: ''
     on typeChanged: () => {
-        this.props['type'] = this.type
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('type', this.type)
     }
     string crossorigin: false
     on crossoriginChanged: () => {
         if ( this.crossorigin )
-            this.props['crossorigin'] = this.crossorigin
+            this.setOwnAttribute('crossorigin', this.crossorigin)
         else
-            delete this.props['crossorigin']
+            this.deleteOwnAttribute('crossorigin')
         this.propsChanged.emit()
     }
 }

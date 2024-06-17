@@ -8,12 +8,10 @@ component Img < DOMElement{
 
     string src: ''
     on srcChanged: () => {
-        this.props['src'] = this.src
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('src', this.src)
     }
     string alt: ''
     on altChanged: () => {
-        this.props['alt'] = this.alt
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('alt', this.alt)
     }
 }

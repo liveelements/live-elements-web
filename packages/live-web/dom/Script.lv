@@ -13,12 +13,10 @@ component Script < DOMElement{
 
     string crossorigin
     on crossoriginChanged: () => {
-        this.props['crossorigin'] = this.crossorigin
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('crossorigin', this.crossorigin)
     }
     string integrity
     on integrityChanged: () => {
-        this.props['integrity'] = this.integrity
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('integrity', this.integrity)
     }
 }

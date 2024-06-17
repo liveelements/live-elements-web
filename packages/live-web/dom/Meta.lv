@@ -8,18 +8,15 @@ component Meta < DOMElement{
 
     string name
     on nameChanged: () => {
-        this.props['name'] = this.name
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('name', this.name)
     }
     string content
     on contentChanged: () => {
-        this.props['content'] = this.content
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('content', this.content)
     }
     string property
     on propertyChanged: () => {
-        this.props['property'] = this.property
-        this.propsChanged.emit()
+        this.setOwnAttributeAndUpdate('property', this.property)
     }
 
 }
