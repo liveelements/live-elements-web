@@ -43,6 +43,10 @@ class StyleOutput{
         return input
     }
 
+    containsInput(file){
+        return this._inputs.find(inp => inp._file === file)
+    }
+
     addInputUnique(file, processor){
         const exists = this._inputs.find(inp => inp._file === file)
         if ( !exists ){
@@ -168,16 +172,19 @@ export default class StyleContainer extends EventEmitter {
     }
 
     async __addComponentScopedStyles(ct, ScopedProcessor, scopedComponentCollection, rootViews, output){
-        const selectors = ScopedComponentSelectors.from(scopedComponentCollection, ct)
         const isRoot = rootViews.includes(ct)
         const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
         if ( ct.inherits ){
             await this.__addComponentScopedStyles(ct.inherits, ScopedProcessor, scopedComponentCollection, rootViews, output)
         }
+
         for ( let j = 0; j < ct._styles.length; ++j ){
             // add each component input style with it's own component selector transformations
             const sst = ct._styles[j]
-            output.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
+            if ( !output.containsInput(sst.resolved.src) ){
+                const selectors = ScopedComponentSelectors.fromStyle(scopedComponentCollection, sst)
+                output.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
+            }
         }
     }
 
@@ -185,7 +192,6 @@ export default class StyleContainer extends EventEmitter {
         if ( scopedComponentCollection.size() ){
             const ScopedProcessor = await ScopedStyleProcess.loadScopedProcessor()
             const scopedStylesOutput = this.configureOutput('scoped.css')
-
             const rootViews = scopedComponentCollection.rootViews()
             for ( let i = scopedComponentCollection.size() - 1; i >= 0; --i ){
                 const ct = scopedComponentCollection._components[i]
