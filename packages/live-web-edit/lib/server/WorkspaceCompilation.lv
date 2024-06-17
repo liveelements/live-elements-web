@@ -89,10 +89,10 @@ component WorkspaceCompilation{
         
             let main = null
 
-            const wsAssets = r.assets.map(asset => WorkspaceAsset{
+            const wsAssets = r.assets.map(asset => (WorkspaceAsset{
                 name: asset.name
                 content: asset.content
-            })
+            }))
 
             for ( let i = 0; i < r.assets.length; ++i ){
                 const asset = r.assets[i]
