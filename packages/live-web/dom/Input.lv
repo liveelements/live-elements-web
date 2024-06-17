@@ -12,6 +12,8 @@ component Input < DOMElement{
     on minChanged: () => { if ( this.min !== null ) this.props['min'] = this.min; this.propsChanged.emit() }
     int max: null
     on maxChanged: () => { if ( this.max !== null ) this.props['max'] = this.max; this.propsChanged.emit() }
+    boolean autofocus
+    on autofocusChanged: () => { if (this.autofocus) this.props['autofocus'] = this.autofocus }
     any value: ''
     on valueChanged: () => {
         if ( this.type === 'checkbox' ){
