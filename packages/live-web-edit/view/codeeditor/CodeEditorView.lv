@@ -3,6 +3,7 @@ import live-web.behavior
 import live-elements-web-server.style
 
 import {EditorView, basicSetup} from 'codemirror'
+import {indentUnit} from '@codemirror/language'
 import {keymap} from '@codemirror/view'
 import {EditorState, Compartment} from "@codemirror/state"
 import {javascript} from "@codemirror/lang-javascript"
@@ -94,7 +95,7 @@ component CodeEditorView < Div{
 
         const theme = colorScheme === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme
 
-        const extensions = [basicSetup, javascript(), this._theme.of(theme)]
+        const extensions = [basicSetup, javascript(), this._theme.of(theme), indentUnit.of('    ')]
 
         const that = this
         let args = undefined

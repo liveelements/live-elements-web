@@ -28,11 +28,6 @@ component Markup < PageView{
             Li`First list item` // <li>
             Li`Second list item` // <li>
         }
-
-        Section{
-            Col{ P`Paragraph in column one` }
-            Col{ P`Paragraph in column two` }
-        }
         
     } // </article>
 }
