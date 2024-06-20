@@ -6,11 +6,11 @@ component Img < DOMElement{
         Img.prototype.__initialize.call(this)
     }
 
-    string src: ''
+    string src
     on srcChanged: () => {
         this.setOwnAttributeAndUpdate('src', this.src)
     }
-    string alt: ''
+    string alt
     on altChanged: () => {
         this.setOwnAttributeAndUpdate('alt', this.alt)
     }
