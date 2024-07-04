@@ -108,9 +108,9 @@ component TreeView < Ul{
                                 p = p.parentNode
                             }
                             if ( p ){
-                                for ( let j = 0; j < p.childNodes.length; ++j ){
-                                    if ( p.childNodes[j].classList.contains('expandable') ){
-                                        p.childNodes[j].classList.toggle('expand')
+                                for ( let j = 0; j < p.children.length; ++j ){
+                                    if ( p.children[j].classList.contains('expandable') ){
+                                        p.children[j].classList.toggle('expand')
                                         expander.classList.toggle('expand')
                                     }
                                 }
