@@ -1,0 +1,62 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component WorkspaceOpenSelector < Div{
+    id: workspaceOpenSelector
+
+    static Array use = [
+        ScopedStyle{ src: './style/workspaceopenselector.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    boolean isOpen : false
+
+    Object data = { templates: [] }
+    Object workspaceForkHandler : null
+
+    classes: [ScopedStyle.className(WorkspaceOpenSelector), this.isOpen ? 'open' : '']
+
+    constructor(){
+        super()
+        WorkspaceOpenSelector.prototype.__initialize.call(this)
+    }
+
+    H3`Create`
+    Ul{
+        Li{
+            A{ href: '/create/default' 
+               classes: ['new-link']
+               on click: (e) => {
+                    e.preventDefault()
+                    if ( workspaceOpenSelector.workspaceForkHandler )
+                        workspaceOpenSelector.workspaceForkHandler('default')
+                }
+
+                T`New Workspace`
+            }
+        }
+    }
+
+    Section{    
+        H3{
+            T`Templates`
+        }
+        Ul{
+            children: workspaceOpenSelector.data.templates.map(template => {
+                return Li{
+                    A{ 
+                        href: `/create/${template.name}`
+                        on click: (e) => {
+                            e.preventDefault()
+                            if ( workspaceOpenSelector.workspaceForkHandler )
+                                workspaceOpenSelector.workspaceForkHandler(template.name)
+                        }
+                        
+                        T{ text: template.label }
+                    }
+                }
+            })
+        }
+    }
+
+}

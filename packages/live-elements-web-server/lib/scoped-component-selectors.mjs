@@ -33,6 +33,33 @@ export default class ScopedComponentSelectors{
         return result
     }
 
+    static fromStyle(collection, style){
+        let cts = []
+        // find out which components use this style
+        for ( let i = 0; i < collection.size(); ++i ){
+            const ct = collection._components[i]    
+            for ( let j = 0; j < ct._styles.length; ++j ){
+                const sst = ct._styles[j]
+                if ( sst.resolved.src === style.resolved.src ){
+                    cts.push(ct)
+                }
+            }
+        }
+
+        const result = {}
+
+        for ( let i = 0; i < cts.length; ++i ){
+            const ctsresult = ScopedComponentSelectors.from(collection, cts[i])
+            for (let [key, value] of Object.entries(ctsresult)) {
+                if ( !result.hasOwnProperty(key) ){
+                    result[key] = value
+                }
+            }
+        }
+
+        return result
+    }
+
     static from(collection, sc){
         return ScopedComponentSelectors.fromComponent(collection, sc)
     }

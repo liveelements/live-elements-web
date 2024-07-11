@@ -10,10 +10,16 @@ export default class ClientPageViewLoader{
         }
         const renderLocaiton = locations[0]
 
+        
+        const loadInfo = { 
+            url: window.location.pathname + window.location.search + window.location.hash, 
+            render: 'C' 
+        }
+
         let pagePlacements = await Promise.all(placements.map(async (placement) => {
             const module = await placement.module
             const c = module[placement.name]
-            const pagePlacement = new c()
+            const pagePlacement = new c(loadInfo)
             pagePlacement.renderProperties = { url: window.location.pathname }
             BaseElement.complete(pagePlacement)
             return pagePlacement
@@ -63,7 +69,7 @@ export default class ClientPageViewLoader{
                     }
                 }
     
-                window.pageView = window.__serverData__ ? new c(window.__serverData__) : new c()
+                window.pageView = window.__serverData__ ? new c(window.__serverData__, loadInfo) : new c(undefined, loadInfo)
                 BaseElement.complete(window.pageView)
     
                 if ( window.pageView.head )

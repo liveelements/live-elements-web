@@ -14,17 +14,12 @@ component Markup < PageView{
 
         P{
             T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
-              This paragraph is written on multiple lines.`
+                This paragraph is written on multiple lines.`
         }
 
         Ul{
             Li`First list item`
             Li`Second list item`
-        }
-
-        Section{
-            Col{ P`Paragraph in column one` }
-            Col{ P`Paragraph in column two`}
         }
     }
 }

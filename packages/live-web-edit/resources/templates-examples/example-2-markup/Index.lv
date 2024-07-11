@@ -1,0 +1,33 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+// component Markup extends PageView
+component Markup < PageView{
+    // link to index.css
+    static Array use = [ScopedStyle{ src: './index.css'}]
+
+    // <article>
+    Article{
+        // <h1>This is a heading</h1>
+        H1`This is a heading`
+
+        // the same as calling "new P('This is a heading')" in js
+        P`This is a paragraph`
+
+        P{  // call new T(...), new B(...), ...
+            T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
+              This paragraph is written on multiple lines.`
+        }
+
+        // <h2>Subheading</h2>
+        H2`Subheading`
+
+        // <ul>
+        Ul{
+            Li`First list item` // <li>
+            Li`Second list item` // <li>
+        }
+        
+    } // </article>
+}

@@ -15,7 +15,7 @@ component Frame < PageView{
         IconButton,
         TopNav,
         Resizable,
-        Fullscreen,
+        FullScreen,
         ColorSchemeToggleButton,
         ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
@@ -34,7 +34,7 @@ component Frame < PageView{
                 ColorSchemeToggleButton{}
             }
         }
-        Fullscreen{ extraClasses: ['pad-topnav']
+        FullScreen{ extraClasses: ['pad-topnav']
             Resizable{ id: resizable fill: true border: true
                 IFrame{
                     id: frame

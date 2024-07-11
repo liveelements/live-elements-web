@@ -1,0 +1,14 @@
+
+input{
+    font-family: sans-serif;
+    font-size: 14px;
+}
+.strike{
+    text-decoration: line-through;
+}
+.li-square{
+    list-style-type: square;
+}
+.pointer{
+    cursor: pointer;
+}

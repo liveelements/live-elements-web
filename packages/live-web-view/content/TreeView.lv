@@ -3,19 +3,28 @@ import live-web.behavior
 import live-elements-web-server.style
 
 component TreeViewDefaultView < Div{
+
     constructor(data:Object){
         super()
         TreeViewDefaultView.prototype.__initialize.call(this)
+        this.initData(data)
+    }
+
+    fn expand(){
+        this.classes = this.classes.concat(['expand'])
+    }
+
+    fn initData(data:Object){
         if ( data.children && data.children.length ){
             this.children = [
                 Svg{ classes: ['expand-icon'] props: ({xmlns: 'http://www.w3.org/2000/svg', width: '14', height: '14', viewBox: '0 0 16 16'})
                     Path{ props: ({fill: 'none', stroke: {'': 'currentColor',linecap: 'round',linejoin: 'round',width: '2'}, d: 'M5 14l6-6-6-6'}) }
                 },
-                T.(data.label){}
+                T{ text = data.label }
             ]
             this.classes = ['expander']
         } else {
-            this.children = [T.(data.label){}]
+            this.children = [T{ text = data.label }]
         }
     }
 }
@@ -35,6 +44,26 @@ component TreeView < Ul{
 
     component c: TreeViewDefaultView
     on cChanged: () => { this.__create()}
+
+    fn __expand(currentElem:DOMElement, currentData:Object, searchData:Object){
+        if ( currentData.children ){
+            const lis = this.children
+            for ( let i = 0; i < currentData.children.length; ++i ){
+                const c = lis[i].children[0]
+                if ( currentData.children[i] === searchData ){
+                    c.expand()
+                    const ul = lis[i].children[1]
+                    ul.classes = ul.classes.concat(['expand'])
+                    break;
+                }
+                this.__expand(c, currentData.children[i], searchData)
+            }
+        }
+    }
+
+    fn expand(dataNode:Object){
+        this.__expand(this, this.data, dataNode)
+    }
 
     fn __createRecurse(data:Object){
         const c = this.c
@@ -79,9 +108,9 @@ component TreeView < Ul{
                                 p = p.parentNode
                             }
                             if ( p ){
-                                for ( let j = 0; j < p.childNodes.length; ++j ){
-                                    if ( p.childNodes[j].classList.contains('expandable') ){
-                                        p.childNodes[j].classList.toggle('expand')
+                                for ( let j = 0; j < p.children.length; ++j ){
+                                    if ( p.children[j].classList.contains('expandable') ){
+                                        p.children[j].classList.toggle('expand')
                                         expander.classList.toggle('expand')
                                     }
                                 }

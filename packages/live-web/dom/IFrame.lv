@@ -6,11 +6,11 @@ component IFrame < DOMElement{
     }
     string src: ''
     on srcChanged: () => {
-        this.props['src'] = this.src
+        this.setOwnAttribute('src', this.src)
         if ( this.dom ){
             this.dom.src = this.src
         } else {
-            this.propsChanged.emit()
+            this.attributesChanged.emit()
         }
     }
 

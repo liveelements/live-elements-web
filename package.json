@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "live-elements-core": "file:packages/live-elements-core",
-        "live-elements-js-compiler": "^0.1.11",
+        "live-elements-js-compiler": "^0.1.13",
         "live-elements-loader": "file:packages/live-elements-loader",
         "live-elements-web-cli": "file:packages/live-elements-web-cli",
         "live-elements-web-server": "file:packages/live-elements-web-server",

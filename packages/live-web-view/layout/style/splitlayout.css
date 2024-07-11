@@ -1,5 +1,5 @@
 &SplitLayout {
-    @apply flex flex-col md:flex-row w-full h-screen;
+    @apply relative flex flex-col md:flex-row w-full h-screen;
 }
 &SplitPane {
     @apply overflow-auto w-auto h-1/2 md:w-1/2 md:h-auto;
@@ -12,4 +12,10 @@
 }
 .handle-pointer{
     @apply absolute w-full h-[3px] left-0 top-[-3px] md:w-[3px] md:h-full md:left-[-1px] cursor-ns-resize md:cursor-ew-resize;
+}
+.overlay{
+    @apply hidden w-full h-full fixed;
+}
+.overlay.show{
+    @apply block;
 }

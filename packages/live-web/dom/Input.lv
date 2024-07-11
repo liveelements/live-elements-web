@@ -4,23 +4,25 @@ component Input < DOMElement{
         Input.prototype.__initialize.call(this)
     }
 
-    string type: ''
-    on typeChanged: () => { this.props['type'] = this.type; this.propsChanged.emit() }
-    string placeholder: ''
-    on placeholderChanged: () => { this.props['placeholder'] = this.placeholder; this.propsChanged.emit() }
-    int min: null
-    on minChanged: () => { if ( this.min !== null ) this.props['min'] = this.min; this.propsChanged.emit() }
-    int max: null
-    on maxChanged: () => { if ( this.max !== null ) this.props['max'] = this.max; this.propsChanged.emit() }
-    any value: ''
+    string type
+    on typeChanged: () => { this.setOwnAttributeAndUpdate('type', this.type) }
+    string placeholder
+    on placeholderChanged: () => { this.setOwnAttributeAndUpdate('placeholder', this.placeholder) }
+    int min
+    on minChanged: () => { if ( this.min !== undefined ) this.setOwnAttributeAndUpdate('min', this.min) }
+    int max
+    on maxChanged: () => { if ( this.max !== undefined ) this.setOwnAttributeAndUpdate('max', this.max) }
+    boolean autofocus
+    on autofocusChanged: () => { if (this.autofocus) this.setOwnAttributeAndUpdate('autofocus', this.autofocus) }
+    any value
     on valueChanged: () => {
         if ( this.type === 'checkbox' ){
             if ( this.value )
-                this.props['checked'] = this.value;
+                this.setOwnAttribute('checked', this.value)
             else
-                delete this.props['checked']
+                this.deleteOwnAttribute('checked')
         } else {
-            this.props['value'] = this.value; 
+            this.setOwnAttribute('value', this.value)
         }
          if ( this.dom ){
             if ( this.type === 'checkbox' ){
@@ -29,11 +31,21 @@ component Input < DOMElement{
                 this.dom.value = this.value
             }
         } else {
-            this.propsChanged.emit()
+            this.attributesChanged.emit()
         }
         this.currentValue = this.value
     }
     any currentValue: 0
+
+    fn resetValue(){
+        if ( this.value !== '' ){
+            this.value = ''
+        } else {
+            if ( this.dom ){
+                this.dom.value = ''
+            }
+        }
+    }
 
     on input: () => {
         if ( this.type === 'checkbox' ){

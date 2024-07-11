@@ -1,0 +1,23 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import live-web-view.button
+
+component OpenWorkspaceButton < IconButton{
+    id: openWorkspaceButton
+    static Array use = []
+    classes: [ScopedStyle.className(OpenWorkspaceButton)]
+
+    Svg{ 
+        props: ({width: '15', height: '15', viewBox: '0 -5 35 45', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Rect{
+            props: ({x: '1', y: '5.88867', width: '33', height: '29.1111', rx: '3', stroke: {'': 'currentColor',width: '2'}})
+        }
+        Rect{
+            props: ({y: '4.88867', width: '35', height: '31.1111', rx: '4', fill: 'currentColor'})
+        }
+        Path{
+            props: ({d: 'M3.88867 2C3.88867 0.895432 4.7841 0 5.88867 0H13.5553C14.6599 0 15.5553 0.89543 15.5553 2V4.88889H3.88867V2Z', fill: 'currentColor'})
+        }
+    }
+}

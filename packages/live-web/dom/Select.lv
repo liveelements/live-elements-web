@@ -5,7 +5,7 @@ component Select < DOMElement{
     }
 
     string name: ''
-    on nameChanged: () => { this.props['name'] = this.name; this.propsChanged.emit() }
+    on nameChanged: () => { this.setOwnAttributeAndUpdate('name', this.name) }
 
     number currentValue: 0
     on change: () => {

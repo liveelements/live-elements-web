@@ -1,0 +1,19 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.style
+
+component TooltipArea < Div{
+    static Array use = [ 
+        Tooltip,
+        ScopedStyle{ src: './style/tooltiparea.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
+    ]
+    
+    Array extraClasses: []
+
+    props = { data: { c: 'tooltiparea' } }
+
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(TooltipArea)
+    ])
+}

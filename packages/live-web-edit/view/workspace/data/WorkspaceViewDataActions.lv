@@ -61,6 +61,15 @@ component WorkspaceViewDataActions{
         return true
     }
 
+    async fn forkTemplate(name:string){
+        const route = this.serverRoutes.fork.replace(':workspace', name)
+        const res = await ky.post(route, {json: {} }).json()
+        if ( res.error ){
+            throw (this.toError(res))
+        }
+        return res
+    }
+
     async fn fork(data:WorkViewData){        
         const route = this.serverRoutes.fork.replace(':workspace', data.workspaceName)
         const res = await ky.post(route, {json: {} }).json()

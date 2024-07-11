@@ -1,10 +1,12 @@
 import live-web.dom
+import live-web.behavior
 import live-elements-web-server.view
 import live-elements-web-server.style
 import live-web-view.form
 import live-web-view.layout
 import live-web-view.button
 import live-web-view.color
+import live-web-view.content
 import live-web-view.navigation
 import live-web-view.iframe
 
@@ -28,8 +30,10 @@ component WorkspaceView < Div{
         FullScreen,
         SplitLayout,
         TabLayout,
+        TooltipArea,
         CodeEditorView,
         ColorSchemeToggleButton,
+        WorkspaceOpenSelector,
         ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
     
@@ -79,7 +83,10 @@ component WorkspaceView < Div{
         try{
             if ( data.name === '-'){
                 const ws = await ky.get('/w-load/-').json()
-                this.data = WorkspaceViewData.fromJSON(ws)
+                
+                const newData = WorkspaceViewData.fromJSON(ws)
+                newData.templates = this.data.templates
+                this.data = newData
 
                 if ( this.data.workspaceName === '' || this.data.workspaceName === '-' ){
                     return
@@ -98,21 +105,56 @@ component WorkspaceView < Div{
         } catch ( e ){
             console.error(e)
         }
-
     }
 
     TopNav{ position: 'static'
         NavContent{
-            CompileButton{ extraClasses: [workspaceView.data.canWrite ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.compile() }}
-            ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
-            WriteLockButton{ isLocked: !workspaceView.data.canWrite on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+            TooltipArea{
+                OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.toggleWorkspaceOpenSelector(); } }
+                Tooltip`Open Workspace`
+            }
+            
+            TooltipArea{
+                ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
+                Tooltip`Fork`
+            }
+            
+            TooltipArea{
+                CompileButton{ extraClasses: [workspaceView.data.canWrite ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.compile() }}
+                Tooltip`Compile`
+            }
+            
+            TooltipArea{
+                WriteLockButton{ isLocked: !workspaceView.data.canWrite on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+                Tooltip`Lock Write`
+            }
         }
         NavContent{
-            RefreshButton{ target: frame }
-            ZoomInButton{ target: frame }
-            ZoomOutButton{ target: frame }
-            ResizableFillButton{ target: resizable isFilled: true }
-            ColorSchemeToggleButton{}
+            
+            TooltipArea{
+                RefreshButton{ target: frame }
+                Tooltip`Refresh`
+            }
+            
+            TooltipArea{
+                ZoomInButton{ target: frame }
+                Tooltip`Zoom Out`
+            }
+            
+            TooltipArea{
+                ZoomOutButton{ target: frame }
+                Tooltip`Zoom In`
+            }
+            
+            TooltipArea{
+                ResizableFillButton{ target: resizable isFilled: true }
+                Tooltip`Resize`
+            }
+            
+            TooltipArea{
+                ColorSchemeToggleButton{}
+                Tooltip.("Color Scheme"){ extraClasses: ['position-left'] }
+            }
         }
     }
 
@@ -177,6 +219,32 @@ component WorkspaceView < Div{
                     }
                 }
             ]
+        }
+    }
+
+    WorkspaceOpenSelector{
+        id: workspaceOpenSelector
+        data : ({
+            templates: workspaceView.data.templates
+        })
+        workspaceForkHandler: (name) => {
+            workspaceView._workspaceViewActions.forkTemplate(name) 
+        }
+        isOpen : workspaceView.data.workspaceSelector
+    }
+
+    DOMBehavior{
+        domReady: (d) => {
+            window.onclick = (e) => {
+                if ( workspaceView.data.workspaceSelector ){ 
+                    const dom = workspaceOpenSelector.dom
+                    if ( dom ){
+                        if ( !dom.contains(e.target) ){
+                            workspaceView.data.workspaceSelector = false
+                        }
+                    }   
+                }
+            }
         }
     }
 }
