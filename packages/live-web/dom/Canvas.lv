@@ -1,0 +1,37 @@
+component Canvas < DOMElement{
+    constructor(){
+        super('canvas')
+        Canvas.prototype.__initialize.call(this)
+    }
+
+    number height
+    on heightChanged: () => {
+        this.setOwnAttributeAndUpdate('height', this.height)
+    }
+
+    number width
+    on widthChanged: () => {
+        this.setOwnAttributeAndUpdate('width', this.width)
+    }
+
+    fn on(eventName:string, fn:any){
+        if ( eventName === 'contextlost' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else if ( eventName === 'contextrestored' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else if ( eventName === 'webglcontextcreationerror' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else if ( eventName === 'webglcontextlost' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else if ( eventName === 'webglcontextrestored' ){
+            this._initializeDOMEvent(eventName, 'on' + eventName)
+            BaseElement.prototype.on.call(this, eventName, fn)
+        } else {
+            DOMElement.prototype.on.call(this, eventName, fn)
+        }
+    }
+}
