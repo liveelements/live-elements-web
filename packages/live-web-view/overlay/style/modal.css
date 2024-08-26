@@ -1,0 +1,18 @@
+
+&Modal{
+    @apply fixed z-10 inset-0 overflow-y-auto z-[10000];
+    display: none;
+  }
+&Modal&.visible{
+    display: block;
+}
+  
+.modal-backdrop {
+    background-color: #131313aa;
+    @apply fixed inset-0  transition-opacity;
+}
+
+.modal-content{
+    height: 100%;
+    @apply flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0;
+}

@@ -1,0 +1,51 @@
+import live-web.dom
+import live-web.model
+import live-web-view.button
+import live-elements-web-server.style
+
+component ModalConfirmBox < ModalBox{
+    id: modalConfirm
+
+    static Array use = [ 
+        PrimaryButton,
+        ScopedStyle{ src: './style/modalconfirmbox.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(ModalConfirmBox)])
+
+    string title: ''
+    string message: ''
+    Object yes: null
+    Object no: null
+
+    Div{ 
+        H3{ classes: ['modal-title']
+
+            T{ text: modalConfirm.title }
+        }
+        Div{ classes: ['modal-text']
+            P{ classes: ['modal-message'];
+                T{ text: modalConfirm.message }
+            }
+        }
+    }
+    Div{ classes: ['button-container'];
+        PrimaryButton{ 
+            on click: () => {
+                if ( modalConfirm.yes )
+                    modalConfirm.yes()
+            }
+            T`Yes`
+        }
+        PrimaryButton{
+            on click: () => {
+                if ( modalConfirm.no )
+                    modalConfirm.no()
+            }
+
+            T`No`
+        }
+    }
+}
+

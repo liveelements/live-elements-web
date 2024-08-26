@@ -1,0 +1,38 @@
+import live-web.dom
+import live-web.model
+import live-web-view.button
+import live-elements-web-server.style
+
+component ModalBox < Div{}
+
+component Modal < Div{
+    id: modal
+
+    static Array use = [ 
+        PrimaryButton,
+        ScopedStyle{ src: './style/modal.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Modal)])
+
+    DOMElement box
+
+    fn show(box:DOMElement){
+        if ( box )
+            this.box = box
+        this.classes = this.classes.concat(['visible'])
+    }
+
+    fn hide(){
+        this.classes = this.classes.filter( c => c !== 'visible')
+    }
+
+    Div{ classes: ['modal-backdrop'] 
+        
+    }
+    Div{ classes: ['modal-content']
+        children: modal.box ? [modal.box] : []
+    }
+}
+

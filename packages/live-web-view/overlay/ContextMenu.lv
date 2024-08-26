@@ -1,0 +1,62 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component ContextMenuView < Div{
+    Object whenInit: null
+    Object whenClose: null
+}
+
+component ContextMenu < Div{
+    
+    static Array use = [ 
+        ScopedStyle{ src: './style/contextmenu.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    classes: [ScopedStyle.className(ContextMenu)]
+
+    Div{ classes: ['menu-content']
+    }
+
+    boolean visible: false
+    function clickHandle: null
+    static fn clickHandler(){ 
+        this.hide() 
+    }
+
+    on click: (e) => {
+        e.preventDefault()
+        this.hide()
+    }
+
+    fn show(position:Object, view:DOMElement){
+        if ( this.visible ){
+            this.hide()
+        }
+        if ( !this.clickHandle ){
+            this.clickHandle = ContextMenu.clickHandler.bind(this)
+        }
+        this.visible = true
+        this.classes = this.classes.concat(['visible'])
+
+        const menuContent = this.children[0]
+        menuContent.style = {
+            left: position.x + 'px',
+            top:  (position.y - 30) + 'px'
+        }
+        menuContent.children = [view]
+        if ( view.whenInit ){
+            view.whenInit()
+        }
+    }
+
+    fn hide(){
+        if ( this.visible ){
+            this.visible = false
+            this.classes = this.classes.filter(e => e !== 'visible')
+            const menuContent = this.children[0]
+            if ( menuContent.children[0].whenClose )
+                menuContent.children[0].whenClose()
+            menuContent.children = []
+        }
+    }
+}
