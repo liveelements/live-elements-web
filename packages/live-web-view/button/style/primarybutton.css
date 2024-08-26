@@ -3,5 +3,5 @@
 }
 
 &PrimaryButton&.text-color-button{
-    @apply text-white dark:text-[#f1f1f1];
+    @apply text-[#313131] dark:text-white;
 }
