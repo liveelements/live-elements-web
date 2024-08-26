@@ -185,7 +185,7 @@ export default class BundleWebpack extends EventEmitter {
         })
     }
 
-    compileExternalBundle(name, files, publicPath){
+    compileExternalBundle(name, files, publicPath, opts){
         const virtualModules = {}
         files.filter(file => file.content).forEach(file => {
             virtualModules[file.path] = file.content
@@ -196,16 +196,21 @@ export default class BundleWebpack extends EventEmitter {
         entriesConfig[name] = entries
 
         const entryName = `${name}.bundle.js`
+        const outputFileName = opts && opts.hasOwnProperty('outputFileName') ? opts.outputFileName : '[name].bundle.js'
+        const mode = opts && opts.hasOwnProperty('mode') ? opts.mode : this._mode
+        const devTool = mode === 'production' ? false : 'inline-source-map'
+
+        const outputPath = opts && opts.hasOwnProperty('outputPath') ? opts.outputPath : `${this._distPath}/scripts`
 
         const configuration = {
             entry: entriesConfig,
             output: {
-                filename: '[name].bundle.js',
-                path: `${this._distPath}/scripts`,
+                filename: outputFileName,
+                path: outputPath,
                 publicPath : publicPath
             },
-            devtool: this._devTool,
-            mode: this._mode,
+            devtool: devTool,
+            mode: mode,
             plugins: [
                 new VirtualModulesPlugin(virtualModules)
             ],
