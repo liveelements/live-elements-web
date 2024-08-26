@@ -1,8 +1,14 @@
 &SplitLayout {
     @apply relative flex flex-col md:flex-row w-full h-screen;
 }
+&SplitLayout&.no-break{
+    @apply flex-row;
+}
 &SplitPane {
     @apply overflow-auto w-auto h-1/2 md:w-1/2 md:h-auto;
+}
+&SplitLayout&.no-break &SplitPane{
+    @apply overflow-auto w-1/2 h-auto;
 }
 &SplitPane&.pad{
     @apply p-2;
@@ -10,8 +16,14 @@
 .handle {
     @apply relative w-full md:w-[1px] h-[1px] md:h-full bg-[#a1a1a1] dark:bg-[#515151];
 }
+&SplitLayout&.no-break .handle{
+    @apply w-[1px] h-full;
+}
 .handle-pointer{
     @apply absolute w-full h-[3px] left-0 top-[-3px] md:w-[3px] md:h-full md:left-[-1px] cursor-ns-resize md:cursor-ew-resize;
+}
+&SplitLayout&.no-break .handle-pointer{
+    @apply w-[3px] h-full left-[-1px] cursor-ew-resize;
 }
 .overlay{
     @apply hidden w-full h-full fixed;
