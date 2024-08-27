@@ -1,0 +1,8 @@
+import live-web.dom
+import live-web.behavior
+
+component ReadyEvent < DOMBehavior{
+    domReady: (d) => {
+        console.log("DOM READY:", d)
+    }
+}

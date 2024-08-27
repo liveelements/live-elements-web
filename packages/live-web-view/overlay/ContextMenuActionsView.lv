@@ -1,0 +1,24 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component ContextMenuActionsView < ContextMenuView{
+    constructor(){
+        super()
+        this{}
+        this._actions = []
+    }
+
+    static fn create(data:Object){
+        const res = ContextMenuActionsView{}
+        res._actions = data.map(d => {
+            return { label: d.label, action: d.action }
+        })
+        res.children = data.map(item => {
+            return Button{
+                on click: () => { item.action() }
+                T{ text: item.label }
+            }}
+        )
+        return res
+    }
+}

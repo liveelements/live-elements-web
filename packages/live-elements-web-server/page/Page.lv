@@ -85,16 +85,7 @@ component Page{
                         throw new Error("Only a single child of type 'Body' is allowed on a page.")
 
                     body = child
-                    for ( var j = 0; j < body.children.length; ++j ){
-                        var temp = document.createElement('div')
-                        temp.className = 'temp'
-                        body.children[j].expandTo(temp)
-
-                        for ( var k = 0; k < temp.children.length; ++k ){
-                            var child = temp.children[k]
-                            document.body.appendChild(child)
-                        }
-                    }
+                    DOMElement.patchOuter(document.body, body)
                 } else if ( this.children[i] instanceof StyleLink ){
                     styles.push(this.children[i])
                 } else if ( child.constructor.name === 'Script' ){

@@ -181,6 +181,9 @@ export default class StyleContainer extends EventEmitter {
         for ( let j = 0; j < ct._styles.length; ++j ){
             // add each component input style with it's own component selector transformations
             const sst = ct._styles[j]
+            if ( !sst.resolved.src ){
+                throw new Error(`Style path was not resolved '${sst.src}' in component '${ct.uri}'`)
+            }
             if ( !output.containsInput(sst.resolved.src) ){
                 const selectors = ScopedComponentSelectors.fromStyle(scopedComponentCollection, sst)
                 output.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))

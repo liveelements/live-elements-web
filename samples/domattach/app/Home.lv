@@ -1,0 +1,16 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+import .samples.domattach.attach
+
+component Home < PageView{
+
+    head: PageProperties{ title: "Live Elements" }
+
+    Div{
+        H1`DOM Attach sample.`
+
+        DOMAttach{ c: ReadyEvent }
+    }
+
+}

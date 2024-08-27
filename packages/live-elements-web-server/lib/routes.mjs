@@ -146,7 +146,17 @@ export class ServerViewRoute extends ServerRoute{
             v.expandTo(insertionDOM)
         }
 
-        const behaviorResult = ServerRenderer.scanBehaviors(pageDOM.window.document, pagePlacements.length ? pagePlacements[0] : v)
+        const viewPath = ComponentRegistry.findComponentPath(route.c, bundleLookupPath)
+        const viewPathName = path.parse(viewPath).name.toLowerCase() + '.behaviors'
+        const viewBehaviorBundlePath = path.join(path.dirname(viewPath), viewPathName + '.mjs')
+        const viewPackage = route.c.Meta.module.substr(0, route.c.Meta.module.indexOf('.'))
+
+        const behaviorResult = ServerRenderer.scanBehaviors(
+            pageDOM.window.document, 
+            pagePlacements.length ? pagePlacements[0] : v, 
+            viewBehaviorBundlePath,
+            viewPackage
+        )
         const behaviorReport = behaviorResult.hasReport ? behaviorResult.report : null
         const behaviors = behaviorResult.behaviors
         const behaviorScriptsUrl = baseUrl === '/' ? '/scripts/behavior/' : `${baseUrl}/scripts/behavior/`
@@ -158,9 +168,6 @@ export class ServerViewRoute extends ServerRoute{
             ServerRenderer.assignBehaviorsId(0, behaviors)
             ServerRenderer.assignBehaviorsToDom(behaviors)
             const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
-            const viewPath = ComponentRegistry.findComponentPath(route.c, bundleLookupPath)
-            const viewPathName = path.parse(viewPath).name.toLowerCase() + '.behaviors'
-            const viewBehaviorBundlePath = path.join(path.dirname(viewPath), viewPathName + '.mjs')
 
             try{
                 compiledBundles = await webpack.compileExternalBundle(

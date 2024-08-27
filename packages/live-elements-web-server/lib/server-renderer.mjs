@@ -1,3 +1,6 @@
+import ComponentRegistry from "./component-registry.mjs"
+import path from 'path'
+
 class BehaviorReport{
     constructor(behaviors, report){
         this._behaviors = behaviors || []
@@ -24,11 +27,11 @@ class BehaviorReport{
 
 export default class ServerRenderer{
 
-    static scanBehaviors(document, element){
+    static scanBehaviors(document, element, behaviorPath, behaviorPackage){
         let behaviors = new BehaviorReport()
         if ( element.children ){
             for ( let i = 0; i < element.children.length; ++i ){
-                behaviors = behaviors.join(ServerRenderer.scanBehaviors(document, element.children[i]))
+                behaviors = behaviors.join(ServerRenderer.scanBehaviors(document, element.children[i], behaviorPath, behaviorPackage))
             }
         } else if ( element.constructor.name === 'DOMBehavior' ){
             let behaviorEvents = {}
@@ -52,6 +55,28 @@ export default class ServerRenderer{
                 dom: behaviorDOM,
                 reference: reference,
                 events: behaviorEvents
+            }
+            behaviors.behaviors.push(behavior)
+        } else if ( element.constructor.name === 'DOMAttach' ){
+            const attachmentPackage = element.c.Meta.module.substr(0, element.c.Meta.module.indexOf('.'))
+            let attachImport = null
+            if ( attachmentPackage === behaviorPackage ){
+                const attachmentPath = ComponentRegistry.findComponentPath(element.c, path.dirname(behaviorPath))
+                attachImport = path.relative(path.dirname(behaviorPath), attachmentPath)
+            } else {
+                attachImport = element.c.Meta.module.split('.').join('/') + '/' + element.c.Meta.sourceFileName
+            }
+            
+            const ready = `function (d){\n` +
+                `import('live-elements-web-server/client/client-behavior-attach.mjs').then( attach => {\n` + 
+                    `attach.default(import('${attachImport}'), '${element.c.name}', d) \n` + 
+                `})\n` + 
+            `}\n` 
+            let behavior = {
+                id: null,
+                dom: element.target.dom,
+                reference: null,
+                events: { ready: ready  }
             }
             behaviors.behaviors.push(behavior)
         }

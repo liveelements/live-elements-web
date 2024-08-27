@@ -3,17 +3,26 @@ import live-web.behavior
 import live-elements-web-server.style
 
 component SplitLayout < Div{
+    id: splitLayout
+
     static Array use = [ 
         SplitPane,
         ScopedStyle{ src: './style/splitlayout.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
 
+    boolean breakPoint: true
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(SplitLayout)], this.breakPoint ? '' : 'no-break')
+
     Array panes: []
     DOMElement handle: Div{ classes: ['handle'] 
         Div{ classes: ['handle-pointer']
+            props: ({ data: { breakpoint: splitLayout.breakPoint } })
             DOMBehavior{
                 domReady: (handle) => {
+                    const breakPoint = handle.dataset.breakpoint === 'false' ? false : true
                     const container = handle.parentNode.parentNode
                     let isDragging = false
                     let overlay = null
@@ -45,11 +54,11 @@ component SplitLayout < Div{
                         const leftPane = container.childNodes[0]
                         const rightPane = container.childNodes[2]
                         let delta = e.clientX - container.getBoundingClientRect().left;
-                        if (window.innerWidth >= 768) { // 'md' breakpoint
+                        if (window.innerWidth >= 768 || !breakPoint) { // 'md' breakpoint
                             if (delta < 100) delta = 100; // Minimum width constraint
                             if (delta > container.clientWidth - 100) delta = container.clientWidth - 100; // Maximum width constraint
                             leftPane.style.width = `${delta}px`;
-                            rightPane.style.width = `${container.clientWidth - delta}px`;
+                            rightPane.style.width = `calc(100% - ${delta}px`
                             leftPane.style.height = '100%'
                             rightPane.style.height = '100%'
                         } else {
@@ -78,11 +87,6 @@ component SplitLayout < Div{
         }
     }
     
-    Array extraClasses: []
-    classes: this.extraClasses.concat([
-        ScopedStyle.className(SplitLayout)
-    ])
-
     children: this.panes.reduce((acc, item, index) => {
         acc.push(item)
         if (index !== this.panes.length - 1){
