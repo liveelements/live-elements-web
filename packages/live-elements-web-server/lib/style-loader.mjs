@@ -191,10 +191,10 @@ export default class StyleContainer extends EventEmitter {
         }
     }
 
-    async addScopedStyles(scopedComponentCollection){
+    async addScopedStyles(scopedComponentCollection, output){
         if ( scopedComponentCollection.size() ){
             const ScopedProcessor = await ScopedStyleProcess.loadScopedProcessor()
-            const scopedStylesOutput = this.configureOutput('scoped.css')
+            const scopedStylesOutput = output ? output : this.configureOutput('scoped.css')
             const rootViews = scopedComponentCollection.rootViews()
             for ( let i = scopedComponentCollection.size() - 1; i >= 0; --i ){
                 const ct = scopedComponentCollection._components[i]
