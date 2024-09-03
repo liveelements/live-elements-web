@@ -654,11 +654,11 @@ export default class WebServer extends EventEmitter{
         let routes = this._routes
         routes.each(route => {
             if ( ServerViewRoute.isType(route) ){
-                this._app.get(route.url, this.getViewRouteUseDist.bind(this, route, distPath))
+                this._app.get(route.url, route.userMiddleware, this.getViewRouteUseDist.bind(this, route, distPath))
             } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.GET ){
-                this._app.get(route.url, ErrorHandler.forward(route.f))
+                this._app.get(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
             } else if ( ServerApiRoute.isType(route) && route.type === ServerApiRoute.POST ){
-                this._app.post(route.url, ErrorHandler.forward(route.f))
+                this._app.post(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
             } else if ( ServerMiddlewareRoute.isType(route) ){
                 this._app.use(route.url, route.f)
             }
