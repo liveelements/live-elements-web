@@ -5,7 +5,7 @@ import BundleWebpack from 'live-elements-web-server/lib/bundle-webpack.mjs'
 import {VirtualScript} from 'live-elements-web-server/lib/scripts.mjs'
 import ScopedAssignmentControl from 'live-elements-web-server/lib/scoped-assignment-control.mjs'
 import ScopedComponentPaths from 'live-elements-web-server/lib/scoped-component-paths.mjs'
-import StyleContainer from 'live-elements-web-server/lib/style-loader.mjs'
+import StyleContainer from 'live-elements-web-server/lib/style-container.mjs'
 import ScopedComponentCollection from 'live-elements-web-server/shared/scoped-component-collection.mjs'
 
 import generateLoader from '../../resources/loader/generate-loader.mjs'

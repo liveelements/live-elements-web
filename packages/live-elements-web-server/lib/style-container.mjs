@@ -1,55 +1,58 @@
 import path from 'path'
 import fs from 'fs'
+import url from 'url'
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import { EventEmitter } from 'node:events'
 import ScopedComponentSelectors from './scoped-component-selectors.mjs'
 import BundleData from './bundle-data.mjs'
-import ScopedStyleProcess from './scoped-style-process.mjs'
+import StyleChainProcessor from './style-chain-processor.mjs'
+import Memory from './memory/memory.mjs'
 
-class StyleInput{
-    constructor(file, processor){
+class StyleInput {
+    constructor(file, processor) {
         this._file = file
         this._processedContent = ''
         this._processor = processor
     }
-    
-    async reload(output){
+
+    async reload(output) {
         const content = await fs.promises.readFile(this._file, 'utf8')
         if (this._processor) {
             let processedResult = typeof this._processor === 'function'
                 ? await this._processor(this._file, content, output)
                 : await this._processor.process(this._file, content, output)
             this._processedContent = processedResult.content
+            // this._processedContent = content
         } else {
             this._processedContent = content
         }
     }
 }
 
-class StyleOutput{
-    constructor(output, dist){
+class StyleOutput {
+    constructor(output, dist) {
         this._inputs = []
         this._output = output
         this._content = ''
         this._dist = dist
     }
 
-    get output(){ return this._output }
-    get content(){ return this._content }
+    get output() { return this._output }
+    get content() { return this._content }
 
-    addInput(file, processor){
+    addInput(file, processor) {
         const input = new StyleInput(file, processor)
         this._inputs.push(input)
         return input
     }
 
-    containsInput(file){
+    containsInput(file) {
         return this._inputs.find(inp => inp._file === file)
     }
 
-    addInputUnique(file, processor){
+    addInputUnique(file, processor) {
         const exists = this._inputs.find(inp => inp._file === file)
-        if ( !exists ){
+        if (!exists) {
             const input = new StyleInput(file, processor)
             this._inputs.push(input)
             return input
@@ -57,25 +60,25 @@ class StyleOutput{
         return exists
     }
 
-    allInputPaths(){
+    allInputPaths() {
         return this._inputs.map(input => input._file)
     }
 
-    async reload(){
+    async reload() {
         let content = ''
-        for ( let i = 0; i < this._inputs.length; ++i ){
+        for (let i = 0; i < this._inputs.length; ++i) {
             await this._inputs[i].reload(this._dist + '/' + this._output + '.css')
             content += this._inputs[i]._processedContent
         }
         this._content = content
     }
 
-    async reloadInputFile(path){
-        const input = this._inputs.find(i => i._file === path )
-        if ( input ){
+    async reloadInputFile(path) {
+        const input = this._inputs.find(i => i._file === path)
+        if (input) {
             await input.reload(this._dist + '/' + this._output + '.css')
             let content = ''
-            for ( let i = 0; i < this._inputs.length; ++i ){
+            for (let i = 0; i < this._inputs.length; ++i) {
                 content += this._inputs[i]._processedContent
             }
             this._content = content
@@ -83,7 +86,7 @@ class StyleOutput{
         return input
     }
 
-    inputByPath(path){
+    inputByPath(path) {
         return this._inputs.find(i => i._file === path)
     }
 }
@@ -95,47 +98,47 @@ export default class StyleContainer extends EventEmitter {
         this._outputs = []
     }
 
-    addOutput(output){
+    addOutput(output) {
         const style = new StyleOutput(output, this._dist)
         this._outputs.push(style)
         return style
     }
 
-    getOutput(key){
+    getOutput(key) {
         return this._outputs.find(s => s.output === key)
     }
 
-    configureOutput(output){
+    configureOutput(output) {
         const style = this.getOutput(output)
         return style ? style : this.addOutput(output)
     }
 
-    async reload(){
-        for ( let i = 0; i < this._outputs.length; ++i ){
+    async reload() {
+        for (let i = 0; i < this._outputs.length; ++i) {
             await this._outputs[i].reload()
         }
         this.emit('change')
     }
 
-    async reloadInputFile(path){
+    async reloadInputFile(path) {
         const outputsChanged = []
-        for ( let i = 0; i < this._outputs.length; ++i ){
+        for (let i = 0; i < this._outputs.length; ++i) {
             const hasInput = await this._outputs[i].reloadInputFile(path)
-            if ( hasInput )
+            if (hasInput)
                 outputsChanged.push(this._outputs[i].output)
         }
         this.emit('change', outputsChanged)
     }
 
-    static resolveSrc(src, bundleRootPath){
+    static resolveSrc(src, bundleRootPath) {
         let packageSeparator = src.indexOf('/');
         if (packageSeparator === -1) {
             throw new Error(`Cannot find style file: ${src}`);
         }
         let packageName = src.substr(0, packageSeparator)
-        if ( packageName.startsWith('@') ){
+        if (packageName.startsWith('@')) {
             let nextPackageSeparator = src.indexOf('/', packageSeparator + 1)
-            if ( nextPackageSeparator !== -1 ){
+            if (nextPackageSeparator !== -1) {
                 packageSeparator = nextPackageSeparator
                 packageName = src.substr(0, nextPackageSeparator)
             }
@@ -146,16 +149,16 @@ export default class StyleContainer extends EventEmitter {
         return path.join(packagePath, pathFromPackage)
     }
 
-    static async load(bundlePath, configuredStyles){
+    static async load(bundlePath, configuredStyles) {
         let bundleRootPath = BundleData.findPackagePath(bundlePath)
         const styles = new StyleContainer(path.join(bundleRootPath, 'styles'))
 
         for (var i = 0; i < configuredStyles.length; ++i) {
             let style = configuredStyles[i]
-            if ( !style.src ){
+            if (!style.src) {
                 throw new Error("Style missing 'src' field.")
             }
-            if ( !style.output ){
+            if (!style.output) {
                 throw new Error("Style missing 'output' field.")
             }
 
@@ -164,55 +167,61 @@ export default class StyleContainer extends EventEmitter {
             styleOutput.addInput(styleSrc, style.process)
         }
 
-        for ( let i = 0; i < styles._outputs.length; ++i ){
+        for (let i = 0; i < styles._outputs.length; ++i) {
             await styles._outputs[i].reload()
         }
 
         return styles
     }
 
-    async __addComponentScopedStyles(ct, ScopedProcessor, scopedComponentCollection, rootViews, output){
+    async __addComponentScopedStyles(ct, scopedComponentCollection, rootViews, output) {
         const isRoot = rootViews.includes(ct)
         const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
-        if ( ct.inherits ){
-            await this.__addComponentScopedStyles(ct.inherits, ScopedProcessor, scopedComponentCollection, rootViews, output)
+        if (ct.inherits) {
+            await this.__addComponentScopedStyles(ct.inherits, scopedComponentCollection, rootViews, output)
         }
 
-        for ( let j = 0; j < ct._styles.length; ++j ){
+        const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
+        const pathToScopedCSS = path.resolve(path.join(currentDir, '..', 'style', 'processors', 'private', 'ScopedCSS.lv'))
+
+        for (let j = 0; j < ct._styles.length; ++j) {
             // add each component input style with it's own component selector transformations
             const sst = ct._styles[j]
-            if ( !sst.resolved.src ){
+            if (!sst.resolved.src) {
                 throw new Error(`Style path was not resolved '${sst.src}' in component '${ct.uri}'`)
             }
-            if ( !output.containsInput(sst.resolved.src) ){
+            if (!output.containsInput(sst.resolved.src)) {
                 const selectors = ScopedComponentSelectors.fromStyle(scopedComponentCollection, sst)
-                output.addInputUnique(sst.resolved.src, ScopedProcessor.create(selectors, `${classNameWithPrefix}`, await ScopedStyleProcess.processFunction(sst)))
+
+                const scopedProcessor = { file: pathToScopedCSS, args: { lookups: selectors, defaultPrefix: classNameWithPrefix } }
+                const sstProcessor = sst.resolved.process ? { file: sst.resolved.process, args: undefined } : null
+                const processChain = sstProcessor ? [scopedProcessor, sstProcessor] : [scopedProcessor]
+                output.addInputUnique(sst.resolved.src, await StyleChainProcessor.create(processChain))
             }
         }
     }
 
-    async addScopedStyles(scopedComponentCollection, output){
-        if ( scopedComponentCollection.size() ){
-            const ScopedProcessor = await ScopedStyleProcess.loadScopedProcessor()
+    async addScopedStyles(scopedComponentCollection, output) {
+        if (scopedComponentCollection.size()) {
             const scopedStylesOutput = output ? output : this.configureOutput('scoped.css')
             const rootViews = scopedComponentCollection.rootViews()
-            for ( let i = scopedComponentCollection.size() - 1; i >= 0; --i ){
+            for (let i = scopedComponentCollection.size() - 1; i >= 0; --i) {
                 const ct = scopedComponentCollection._components[i]
-                await this.__addComponentScopedStyles(ct, ScopedProcessor, scopedComponentCollection, rootViews, scopedStylesOutput)
+                await this.__addComponentScopedStyles(ct, scopedComponentCollection, rootViews, scopedStylesOutput)
             }
             await scopedStylesOutput.reload()
         }
     }
 
-    inputFiles(){
+    inputFiles() {
         let files = []
-        for ( let i = 0; i < this._outputs.length; ++i ){
+        for (let i = 0; i < this._outputs.length; ++i) {
             files = files.concat(this._outputs[i].allInputPaths())
         }
         return files
     }
 
-    get outputs(){
+    get outputs() {
         return this._outputs
     }
 }

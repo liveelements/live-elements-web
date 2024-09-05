@@ -4,10 +4,11 @@ component ScopedCSS{
 
     string lookups: ''
     string defaultPrefix: ''
-    any transform: null
 
-    static fn create(lookups:Object, defaultPrefix:string, transform:any){
-        const scopedcss = ScopedCSS{ lookups: lookups defaultPrefix: defaultPrefix transform: transform }
+    static fn create(opt:Object){
+        const lookups = opt.lookups
+        const defaultPrefix = opt.defaultPrefix
+        const scopedcss = ScopedCSS{ lookups: lookups defaultPrefix: defaultPrefix }
         return scopedcss
     }
 
@@ -22,6 +23,7 @@ component ScopedCSS{
                         if (rule.parent.type === 'atrule' && rule.parent.name === 'keyframes'){
                             return
                         }
+
                         
                         rule.selector = rule.selector.replace(/&([A-Za-z0-9_.-]+)\&?/g, (match, componentName) => {
                             return this.lookups[componentName] ? `.${this.lookups[componentName]}` : match
@@ -51,11 +53,6 @@ component ScopedCSS{
         return postcss([plugin])
             .process(content, { from: file, to: destination })
             .then(result => {
-                if ( this.transform ){
-                    return typeof this._processor === 'function'
-                        ? this.transform(file, result.css, destination)
-                        : this.transform.process(file, result.css, destination)
-                }
                 return { content: result.css, map: result.map ? result.map.toString() : null }
             })
     }

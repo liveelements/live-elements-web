@@ -7,7 +7,7 @@ import { EventEmitter } from 'node:events'
 import lvimport from 'live-elements-core/lvimport.mjs'
 import LvDOMEmulator from './lvdomemulator.mjs'
 import ClassInfo from './class-info.mjs'
-import StyleContainer from './style-loader.mjs'
+import StyleContainer from './style-container.mjs'
 import ErrorHandler from './error-handler.mjs'
 import { Watcher, WatcherGroup } from './watcher.mjs'
 import BundleWebpack from './bundle-webpack.mjs'
@@ -23,6 +23,8 @@ import ScopedComponentPaths from './scoped-component-paths.mjs'
 import ScopedComponentCollection from '../shared/scoped-component-collection.mjs'
 import BundleData from './bundle-data.mjs'
 import PageNotFoundError from './page-not-found-error.mjs'
+import Memory from './memory/memory.mjs'
+import StyleChainProcessor from './style-chain-processor.mjs'
 
 class WebServerInit{
 
@@ -128,9 +130,7 @@ export default class WebServer extends EventEmitter{
     get watcher(){ return this._watcher }
     get app(){ return this._app }
 
-    static currentDir(){ 
-        return path.dirname(url.fileURLToPath(import.meta.url)) 
-    }
+    static currentDir(){ return path.dirname(url.fileURLToPath(import.meta.url)) }
 
     static urlToFileName(url){
         const cacheUrl = url.startsWith('/') ? url.substr(1) : url
@@ -366,7 +366,6 @@ export default class WebServer extends EventEmitter{
             const isSSR = route.render === ComponentRegistry.Components.ViewRoute.SSR || route.render === ComponentRegistry.Components.ViewRoute.SSC
             const isParameterless = !ComponentRegistry.Components.Route.hasParameters(route.url)
             const cacheable = isSSR && isParameterless && ((!route.data) || route.render === ComponentRegistry.Components.ViewRoute.SSC)
-
             if ( cacheable ){
                 let data = null
                 if ( route.data ){
@@ -406,6 +405,7 @@ export default class WebServer extends EventEmitter{
 
 
         this._webpack.compiler.run((error, stats) => {
+            StyleChainProcessor.terminateWorkers()
             if (error) {
                 log.e('Compilation failed:', error)
             } else {
