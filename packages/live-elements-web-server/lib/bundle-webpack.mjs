@@ -218,7 +218,10 @@ export default class BundleWebpack extends EventEmitter {
                 rules: [
                     {
                         test: /\.lv$/,
-                        use: [{ loader: 'live-elements-loader' }],
+                        use: [{ 
+                            loader: opts && opts.hasOwnProperty('lvloader') ? opts.lvloader : 'live-elements-loader',
+                            options: opts && opts.hasOwnProperty('lvloaderopts') ? opts.lvloaderopts : {}
+                        }],
                     },
                 ]
             }
