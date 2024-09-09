@@ -7,41 +7,39 @@ import ScopedComponentSelectors from './scoped-component-selectors.mjs'
 import BundleData from './bundle-data.mjs'
 import StyleChainProcessor from './style-chain-processor.mjs'
 import Memory from './memory/memory.mjs'
+import StyleCachedProcessor from './style-cached-processor.mjs'
 
 class StyleInput {
-    constructor(file, processor) {
+    constructor(file, processor, processorCache) {
         this._file = file
         this._processedContent = ''
         this._processor = processor
+        this._processorCache = processorCache
+    }
+
+    invalidate(){
+        this._processorCache.invalidate(this._file)
     }
 
     async reload(output) {
-        const content = await fs.promises.readFile(this._file, 'utf8')
-        if (this._processor) {
-            let processedResult = typeof this._processor === 'function'
-                ? await this._processor(this._file, content, output)
-                : await this._processor.process(this._file, content, output)
-            this._processedContent = processedResult.content
-            // this._processedContent = content
-        } else {
-            this._processedContent = content
-        }
+        this._processedContent = await this._processorCache.process(this._file, this._processor, output)
     }
 }
 
 class StyleOutput {
-    constructor(output, dist) {
+    constructor(output, dist, cacheProcessor) {
         this._inputs = []
         this._output = output
         this._content = ''
         this._dist = dist
+        this._cachedStyleProcessor = cacheProcessor
     }
 
     get output() { return this._output }
     get content() { return this._content }
 
     addInput(file, processor) {
-        const input = new StyleInput(file, processor)
+        const input = new StyleInput(file, processor, this._cachedStyleProcessor)
         this._inputs.push(input)
         return input
     }
@@ -53,7 +51,7 @@ class StyleOutput {
     addInputUnique(file, processor) {
         const exists = this._inputs.find(inp => inp._file === file)
         if (!exists) {
-            const input = new StyleInput(file, processor)
+            const input = new StyleInput(file, processor, this._cachedStyleProcessor)
             this._inputs.push(input)
             return input
         }
@@ -76,6 +74,7 @@ class StyleOutput {
     async reloadInputFile(path) {
         const input = this._inputs.find(i => i._file === path)
         if (input) {
+            input.invalidate()
             await input.reload(this._dist + '/' + this._output + '.css')
             let content = ''
             for (let i = 0; i < this._inputs.length; ++i) {
@@ -92,16 +91,25 @@ class StyleOutput {
 }
 
 export default class StyleContainer extends EventEmitter {
-    constructor(dist) {
+    constructor(dist, cachePath) {
         super()
         this._dist = dist
         this._outputs = []
+        this._cachedStyleProcessor = StyleCachedProcessor.create(cachePath)
     }
 
     addOutput(output) {
-        const style = new StyleOutput(output, this._dist)
+        const style = new StyleOutput(output, this._dist, this._cachedStyleProcessor)
         this._outputs.push(style)
         return style
+    }
+
+    saveCache(location){
+        this._cachedStyleProcessor.saveCache(location)
+    }
+
+    loadFromCache(location){
+        this._cachedStyleProcessor = StyleCachedProcessor.createFromCache(location)
     }
 
     getOutput(key) {
@@ -149,9 +157,9 @@ export default class StyleContainer extends EventEmitter {
         return path.join(packagePath, pathFromPackage)
     }
 
-    static async load(bundlePath, configuredStyles) {
+    static async load(bundlePath, configuredStyles, cachePath) {
         let bundleRootPath = BundleData.findPackagePath(bundlePath)
-        const styles = new StyleContainer(path.join(bundleRootPath, 'styles'))
+        const styles = new StyleContainer(path.join(bundleRootPath, 'styles'), cachePath)
 
         for (var i = 0; i < configuredStyles.length; ++i) {
             let style = configuredStyles[i]

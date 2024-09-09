@@ -121,6 +121,9 @@ export default class WebServer extends EventEmitter{
         this._assets = null
         this._pages = []
         this._routes = []
+
+        this._distPath = path.join(this._bundleLookupPath, 'dist')
+        this._cachePath = path.join(this._distPath, 'cache')
     }
 
     get config(){ return this._config }
@@ -129,6 +132,22 @@ export default class WebServer extends EventEmitter{
     get webpack(){ return this._webpack }
     get watcher(){ return this._watcher }
     get app(){ return this._app }
+
+    get distPath(){ return this._distPath }
+    establishedDistPath(){ 
+        if ( !fs.existsSync(this._distPath) ){
+            fs.mkdirSync(this._distPath)
+        }
+        return this._distPath
+    }
+
+    get cachePath(){ return this._cachePath }
+    establishedCachePath(){
+        if ( !fs.existsSync(this._cachePath) ){
+            fs.mkdirSync(this._cachePath, { recursive: true })
+        }
+        return this._cachePath
+    }
 
     static currentDir(){ return path.dirname(url.fileURLToPath(import.meta.url)) }
 
@@ -168,10 +187,10 @@ export default class WebServer extends EventEmitter{
     static async loadBundle(bundle, config){
         WebServer.assertInit()
 
-        const bundleServer = new WebServer(config, bundle)
-        if ( bundleServer._watcher ){
+        const webServer = new WebServer(config, bundle)
+        if ( webServer._watcher ){
             const files = Watcher.scanPackage(bundle.packagePath, '*.lv')
-            bundleServer._watcher.assignFiles(files, bundleServer._watcher.findGroup('server'))
+            webServer._watcher.assignFiles(files, webServer._watcher.findGroup('server'))
         }
         
         const bundleScan = await bundle.scan([
@@ -179,20 +198,20 @@ export default class WebServer extends EventEmitter{
             ComponentRegistry.Components.AssetProviderCollector.create(),
             ComponentRegistry.Components.ScopedStyleCollector.create(),
             ComponentRegistry.Components.StylesheetCollector.create(),
-            ComponentRegistry.Components.PageCollector.create(bundleServer._domEmulator, bundleServer._config.entryScriptUrl)
+            ComponentRegistry.Components.PageCollector.create(webServer._domEmulator, webServer._config.entryScriptUrl)
         ])
 
-        bundleServer._routes = bundleScan.routes
-        bundleServer._assets = bundleScan.assets.data
-        bundleServer._scopedStyles = bundleScan.scopedStyles
-        bundleServer._styles = await StyleContainer.load(bundle.file, bundleScan.styles)
-        bundleServer._pages = bundleScan.pages
+        webServer._routes = bundleScan.routes
+        webServer._assets = bundleScan.assets.data
+        webServer._scopedStyles = bundleScan.scopedStyles
+        webServer._styles = await StyleContainer.load(bundle.file, bundleScan.styles, webServer.establishedCachePath())
+        webServer._pages = bundleScan.pages
 
-        try{ await bundleServer._styles.addScopedStyles(bundleServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }        
+        try{ await webServer._styles.addScopedStyles(webServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }        
 
-        bundleServer.addWebpack()
+        webServer.addWebpack()
 
-        return bundleServer
+        return webServer
     }
 
     viewLoaderData(view, placement){
@@ -291,7 +310,7 @@ export default class WebServer extends EventEmitter{
         this._webpack = new BundleWebpack(
             entries, 
             this._bundlePath, 
-            path.resolve(this.bundleLookupPath, 'dist'),
+            this._distPath,
             { 
                 watcher: this._watcher,
                 mode: this.config.runMode === WebServer.RunMode.Production ? 'production' : 'development',
@@ -329,10 +348,7 @@ export default class WebServer extends EventEmitter{
             return
         }
         
-        const distPath = path.join(this.bundleLookupPath, 'dist')
-        if ( !fs.existsSync(distPath) )
-            fs.mkdirSync(distPath)
-
+        const distPath = this.establishedDistPath()
         const stylePath = path.join(distPath, 'styles')
         if ( !fs.existsSync(stylePath) )
             fs.mkdirSync(stylePath)
@@ -344,7 +360,7 @@ export default class WebServer extends EventEmitter{
             log.i(`Asset written: ${path.relative(distPath, styleOutputPath)}`)
         }
 
-        const assetPath = path.join(this.bundleLookupPath, 'dist', 'assets')
+        const assetPath = path.join(distPath, 'assets')
         if ( !fs.existsSync(assetPath) )
             fs.mkdirSync(assetPath, { recursive: true })
 
@@ -367,6 +383,7 @@ export default class WebServer extends EventEmitter{
             const isParameterless = !ComponentRegistry.Components.Route.hasParameters(route.url)
             const cacheable = isSSR && isParameterless && ((!route.data) || route.render === ComponentRegistry.Components.ViewRoute.SSC)
             if ( cacheable ){
+                const performanceStart = performance.now()
                 let data = null
                 if ( route.data ){
                     if ( typeof route.data === 'function' ){
@@ -379,7 +396,7 @@ export default class WebServer extends EventEmitter{
                 const content = await this.renderRouteContent(route, data)
                 const routeUrl = route.url.replaceAll('*', '-')
                 const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
-                log.i(`Route written: ${path.relative(distPath, routePath)}`)
+                log.i(`Route written: ${path.relative(distPath, routePath)} in ${(performance.now() - performanceStart).toFixed(2)} ms`)
                 fs.writeFileSync(routePath, content)
 
                 route.behaviors.bundles.forEach(bundle => {
@@ -643,7 +660,7 @@ export default class WebServer extends EventEmitter{
     }
 
     async run(){
-        const distPath = path.join(this.bundleLookupPath, 'dist')
+        const distPath = this.establishedDistPath()
 
         this._app.use('/scripts', express.static(path.join(distPath, 'scripts')))
         this._app.use('/styles', express.static(path.join(distPath, 'styles')))

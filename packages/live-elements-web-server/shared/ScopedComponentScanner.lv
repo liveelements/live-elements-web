@@ -71,12 +71,14 @@ component ScopedComponentScanner{
                 } else if (typeof use === 'function' && ClassInfo.extends(use, BaseElement) ){
                     const useScExists = this._collection.findScopedComponent(use)
                     if ( useScExists ){
-                        useScExists.addViewUsage(rootsc)
+                        if ( rootsc )
+                            useScExists.addViewUsage(rootsc)
                         sc.addUse(useScExists)
                         ScopedComponentScanner.updateViewUsageRecurse(useScExists, rootsc)
                     } else {    
                         const useSc = this._collection.addComponent(c.use[i])
-                        useSc.addViewUsage(rootsc)
+                        if ( rootsc )
+                            useSc.addViewUsage(rootsc)
                         sc.addUse(useSc)
                         this.scanRecurse(useSc, rootsc)
                     }
