@@ -1,5 +1,5 @@
 import ComponentRegistry from "./component-registry.mjs"
-import ResultWithReport from "./result-with.report.mjs"
+import ValueWithReport from "./core/value-with-report.mjs"
 import ServerRenderer from "./server-renderer.mjs"
 import { BaseElement } from 'live-elements-core/baseelement.js'
 
@@ -7,6 +7,7 @@ import log from './server-log.mjs'
 
 import path from 'path'
 import url from 'url'
+import WebpackBundler from "./bundle-webpack.mjs"
 
 export class ServerRoute{
     constructor(url, userMiddleware, f){
@@ -97,7 +98,7 @@ export class ServerViewRoute extends ServerRoute{
         return filename
     }
 
-    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, webpack, scopedStyleLinks){
+    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, distPath, scopedStyleLinks){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -169,52 +170,57 @@ export class ServerViewRoute extends ServerRoute{
             ServerRenderer.assignBehaviorsToDom(behaviors)
             const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
 
-            try{
-                compiledBundles = await webpack.compileExternalBundle(
-                    viewPathName, 
-                    [
+            const compiledBundlesResult = await WebpackBundler.compile(
+                [
+                    WebpackBundler.Entry.create(viewPathName, [
                         { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
                         { path: clientBehaviorEvents }
-                    ],
-                    behaviorScriptsUrl
-                )
-            } catch ( e ){
-                log.e(e.message)
-                if ( e.errors ){
-                    log.e(e.errors)
+                    ])
+                ],
+                WebpackBundler.Config.create({
+                    mode: 'production',
+                    outputFileName: '[name].bundle.js',
+                    publicPath: behaviorScriptsUrl,
+                    outputPath: path.join(distPath, 'behaviors')
+                })
+            )
+
+            const compiledBundles = compiledBundlesResult.unwrapAnd((_errors, warning) => {
+                warning.forEach(w => log.w(w.message))
+            })
+            
+            if ( !compiledBundlesResult.hasErrors ){
+                route.behaviors = {
+                    bundles: compiledBundles.assets
                 }
+        
+                const document = pageDOM.window.document
+                const scripts = route.behaviors.bundles.filter(cbu => cbu.isMainEntry).map(cbu => {
+                    const script = document.createElement('script')
+                    script.src = `${behaviorScriptsUrl}${cbu.name}`
+                    return script
+                })
+           
+                scripts.forEach(script => document.body.appendChild(script))
+                
+                if ( scopedStyleLinks ){
+                    scopedStyleLinks.forEach(sl => {
+                        var link = document.createElement('link');
+                        link.rel = 'stylesheet'
+                        link.type = 'text/css'
+                        link.href = sl
+                        document.head.appendChild(link)
+                    })
+                }
+        
+                const content = domEmulator.serializeDOM(pageDOM)
+                return new ValueWithReport(content, behaviorReport)
+            } else {
+                return compiledBundlesResult
             }
         }
-        
-        if ( compiledBundles.warnings ){
-            log.w(compiledBundles.warnings)
-        }
 
-        route.behaviors = {
-            bundles: compiledBundles.assets
-        }
-
-        const document = pageDOM.window.document
-        const scripts = route.behaviors.bundles.filter(cbu => cbu.isMainEntry).map(cbu => {
-            const script = document.createElement('script')
-            script.src = `${behaviorScriptsUrl}${cbu.name}`
-            return script
-        })
-   
-        scripts.forEach(script => document.body.appendChild(script))
-        
-        if ( scopedStyleLinks ){
-            scopedStyleLinks.forEach(sl => {
-                var link = document.createElement('link');
-                link.rel = 'stylesheet'
-                link.type = 'text/css'
-                link.href = sl
-                document.head.appendChild(link)
-            })
-        }
-
-        const content = domEmulator.serializeDOM(pageDOM)
-        return new ResultWithReport(content, behaviorReport)
+        return new ValueWithReport(undefined, behaviorReport)
     }
 }
 

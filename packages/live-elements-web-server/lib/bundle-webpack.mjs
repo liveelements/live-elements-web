@@ -13,10 +13,60 @@ import { Environment } from './environment.mjs'
 import { WatcherGroup } from './watcher.mjs'
 
 import serverLog from './server-log.mjs'
+import ValueWithReport from './core/value-with-report.mjs'
 
 const log = Environment.defineLogger('webpack', { parent: serverLog, prefix: ['.Webpack'], prefixDecorated: [chalk.cyan('.Webpack')] })
 
-export default class BundleWebpack extends EventEmitter {
+class WebpackBundlerConfig{
+    constructor(opts){
+        if ( !('outputPath' in opts) ){
+            throw new Error(`WebpackBundler.Config: outputPath is required in constructor object.`)
+        }
+        if ( !('publicPath' in opts) ){
+            throw new Error(`WebpackBundler.Config: publicPath is required in constructor object.`)
+        }
+
+        this._outputFileName  = 'outputFileName' in opts ? opts.outputFileName : '[name].bundle.js'
+        this._mode            = 'mode' in opts ? opts.mode : 'development'
+        this._devTool         = 'devTool' in opts 
+            ? opts.devTool
+            : this._mode === 'production' ? false : 'inline-source-map'
+        this._lvloader        = 'lvloader' in opts ? opts.lvloader : 'live-elements-loader'
+        this._lvloaderOptions = 'lvloaderOptions' in opts ? opts.lvloaderOptions : {}
+        
+        this._outputPath      = opts.outputPath
+        this._publicPath      = opts.publicPath
+    }
+
+    static create(opts){ return new WebpackBundlerConfig(opts) }
+
+    get outputFileName(){ return this._outputFileName }
+    get mode(){ return this._mode }
+    get devTool(){ return this._devTool }
+    get lvloader(){ return this._lvloader }
+    get lvloaderOptions(){ return this._lvloaderOptions }
+    get outputPath(){ return this._outputPath }
+    get publicPath(){ return this._publicPath }
+}
+
+class WebpackBundlerEntry{
+    constructor(name, files){
+        this._name = name
+        this._files = files
+    }
+
+    static create(name, files){ return new WebpackBundlerEntry(name, files) }
+
+    get name(){ return this._name }
+    get files(){ return this._files }
+}
+
+WebpackBundlerConfig.Mode = {
+    Development: 'development',
+    Production: 'production'
+}
+
+export default class WebpackBundler extends EventEmitter {
     constructor(entries, bundle, distPath, config) {
         super()
         const publicPath = (config.publicPath
@@ -185,42 +235,42 @@ export default class BundleWebpack extends EventEmitter {
         })
     }
 
-    compileExternalBundle(name, files, publicPath, opts){
+    static compile(entries, config){
         const virtualModules = {}
-        files.filter(file => file.content).forEach(file => {
-            virtualModules[file.path] = file.content
+        const entriesConfig = {}
+        if ( entries.length === 0 ){
+            return Promise.resolve(ValueWithReport.fromError(`No files specified`))
+        }
+        entries.forEach(entry => {    
+            entry.files.filter(file => file.content).forEach(file => {
+                virtualModules[file.path] = file.content
+            })
+
+            entriesConfig[entry.name] = entry.files.map(file => file.path)
         })
 
-        const entries = files.map(file => file.path)
-        const entriesConfig = {}
-        entriesConfig[name] = entries
-
-        const entryName = `${name}.bundle.js`
-        const outputFileName = opts && opts.hasOwnProperty('outputFileName') ? opts.outputFileName : '[name].bundle.js'
-        const mode = opts && opts.hasOwnProperty('mode') ? opts.mode : this._mode
-        const devTool = mode === 'production' ? false : 'inline-source-map'
-
-        const outputPath = opts && opts.hasOwnProperty('outputPath') ? opts.outputPath : `${this._distPath}/scripts`
+        const mainEntries = entries.map(entry => ({
+            output: config.outputFileName.replace('[name]', entry.name),
+            name: entry.name
+        }))
 
         const configuration = {
             entry: entriesConfig,
             output: {
-                filename: outputFileName,
-                path: outputPath,
-                publicPath : publicPath
+                filename: config.outputFileName,
+                path: config.outputPath,
+                publicPath : config.publicPath
             },
-            devtool: devTool,
-            mode: mode,
-            plugins: [
-                new VirtualModulesPlugin(virtualModules)
-            ],
+            devtool: config.devTool,
+            mode: config.mode,
+            plugins: [ new VirtualModulesPlugin(virtualModules) ],
             module: {
                 rules: [
                     {
                         test: /\.lv$/,
                         use: [{ 
-                            loader: opts && opts.hasOwnProperty('lvloader') ? opts.lvloader : 'live-elements-loader',
-                            options: opts && opts.hasOwnProperty('lvloaderopts') ? opts.lvloaderopts : {}
+                            loader: config.lvloader,
+                            options: config.lvloaderOptions
                         }],
                     },
                 ]
@@ -231,39 +281,35 @@ export default class BundleWebpack extends EventEmitter {
         const compiler = webpack(configuration)
         compiler.outputFileSystem = memfsWithVolumne
 
-        return new Promise((resolve, reject) => {
-
+        return new Promise((resolve) => {
             compiler.run((err, stats) => {
                 if (err) {
-                    reject(err)
+                    resolve(ValueWithReport.fromError(err))
                     return
                 }
                 const info = stats.toJson()
                 if (stats.hasErrors()) {
-                    const e = new Error(JSON.stringify(info.errors.map(e => e.message)))
-                    e.errors = info.errors
-                    reject(e)
+                    resolve(ValueWithReport.fromErrors(info.errors.map(e => new Error(e.message))))
                     return
                 }
 
-                if (stats.hasWarnings()) {
-                    console.warn(info.warnings)
-                }
+                const warnings = stats.hasWarnings()
+                    ? info.warnings.map(w => new Warning(w.message))
+                    : []
                 
                 const outputPath = configuration.output.path
                 const assets = info.assets.map(asset => {
                     const assetPath = path.join(outputPath, asset.name)
+                    const mainEntry = mainEntries.find(me => me.output === asset.name)
                     return {
                         name: asset.name,
                         path: assetPath,
-                        isMainEntry: asset.name === entryName ? true : false,
+                        isMainEntry: mainEntry ? true : false,
+                        entryName: mainEntry ? mainEntry.name : null,
                         content: memfsWithVolumne.readFileSync(assetPath).toString()
                     }
                 })
-                resolve({
-                    warnings: stats.hasWarnings() ? info.warnings: null,
-                    assets: assets
-                })
+                resolve(new ValueWithReport({ assets: assets }, warnings))
             });
         })
     }
@@ -280,3 +326,6 @@ export default class BundleWebpack extends EventEmitter {
     get middleware() { return this._middleware; }
     get virtualModulesPlugin(){ return this._virtualModulesPlugin }
 }
+
+WebpackBundler.Entry  = WebpackBundlerEntry
+WebpackBundler.Config = WebpackBundlerConfig

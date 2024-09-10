@@ -1,7 +1,7 @@
 import live-elements-web-server.page.index
 
 import LvDOMEmulator from 'live-elements-web-server/lib/lvdomemulator.mjs'
-import BundleWebpack from 'live-elements-web-server/lib/bundle-webpack.mjs'
+import WebpackBundler from 'live-elements-web-server/lib/bundle-webpack.mjs'
 import {VirtualScript} from 'live-elements-web-server/lib/scripts.mjs'
 import ScopedAssignmentControl from 'live-elements-web-server/lib/scoped-assignment-control.mjs'
 import ScopedComponentPaths from 'live-elements-web-server/lib/scoped-component-paths.mjs'
@@ -78,7 +78,7 @@ component WorkspaceCompilation{
         const loaderScript = new VirtualScript( path.join(workspace.path, 'ws.bundle.js'), loaderScriptContent)
 
         try{
-            const r = await BundleWebpack.compileBundle(
+            const r = await WebpackBundler.compileBundle(
                 'ws', 
                 [loaderScript], 
                 `${baseUrl}/v-scripts/${workspace.name}/`, 

@@ -10,7 +10,7 @@ import ClassInfo from './class-info.mjs'
 import StyleContainer from './style-container.mjs'
 import ErrorHandler from './error-handler.mjs'
 import { Watcher, WatcherGroup } from './watcher.mjs'
-import BundleWebpack from './bundle-webpack.mjs'
+import WebpackBundler from './bundle-webpack.mjs'
 import  { ServerBundleSocket} from './server-bundle-socket.mjs'
 import log from './server-log.mjs'
 import chalk from 'chalk'
@@ -165,6 +165,11 @@ export default class WebServer extends EventEmitter{
         log.colorless('w', `WARNING: ${message}`)
     }
 
+    static logError(message){
+        log.decorated('e', chalk.redBright(`ERROR: ${message}`))
+        log.colorless('e', `ERROR: ${message}`)
+    }
+
     static assertInit(){
         if ( !ComponentRegistry.Components.Route )
             throw new Error(`ComponentRegistry.Components have not been initialized. Run 'await WebServer.Init.run()' before using WebServer.`)
@@ -307,7 +312,7 @@ export default class WebServer extends EventEmitter{
             }
         }
 
-        this._webpack = new BundleWebpack(
+        this._webpack = new WebpackBundler(
             entries, 
             this._bundlePath, 
             this._distPath,
@@ -496,10 +501,13 @@ export default class WebServer extends EventEmitter{
             this._domEmulator, 
             this.config.baseUrl, 
             this.bundleLookupPath, 
-            this.webpack,
+            this._distPath,
             scopedStyleLinks
         )
-        const render = renderResult.unwrapAnd(report => report.forEach(WebServer.logWarning))
+        const render = renderResult.unwrapAnd(
+            errors => errors.forEach(WebServer.logError), 
+            warnings => warnings.forEach(WebServer.logWarning)
+        )
         return render
     }
 
