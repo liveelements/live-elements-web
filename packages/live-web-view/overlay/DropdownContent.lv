@@ -1,0 +1,7 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component DropdownContent < Div{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(DropdownContent)])
+}

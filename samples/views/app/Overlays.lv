@@ -16,6 +16,7 @@ component Overlays < PageView{
         IconButton,
         PrimaryButton,
         ContextMenu,
+        Dropdown,
         CenterLayout,
         ColorSchemeToggleButton,
         Modal,
@@ -69,6 +70,20 @@ component Overlays < PageView{
                                     no: () => { console.log("Not Confirmed"); modal.hide(); }
                                 }
                             )
+                        }
+                    }
+                }
+                Li{
+                    Dropdown{
+                        DropdownToggleButton{
+                            T`Dropdown`
+                        }
+                        DropdownContent{
+                            UlV{ border: true
+                                Li`Item 1`
+                                Li`Item 2`
+                                Li`Item 3`
+                            }
                         }
                     }
                 }

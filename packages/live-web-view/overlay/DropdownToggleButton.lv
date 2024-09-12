@@ -1,0 +1,26 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component DropdownToggleButton < Button{
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(DropdownToggleButton)])
+
+    DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                e.preventDefault()
+                let dropdown = e.currentTarget
+                while ( dropdown ){
+                    if ( 'toggle' in dropdown.dataset ){
+                        const toggleClass = dropdown.dataset.toggle
+                        const toggleElem = dropdown.querySelector(`.${toggleClass}`)
+                        toggleElem.classList.toggle('show')
+                        break
+                    }
+                    dropdown = dropdown.parentNode
+                }
+            }
+        }
+    }
+}

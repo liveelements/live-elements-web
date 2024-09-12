@@ -1,0 +1,14 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component Dropdown < Div{
+    
+    static Array use = [ 
+        DropdownToggleButton,
+        DropdownContent,
+        ScopedStyle{ src: './style/dropdown.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    props : { data: { toggle: ScopedStyle.className(DropdownContent) } }
+    classes: [ScopedStyle.className(Dropdown)]
+}
