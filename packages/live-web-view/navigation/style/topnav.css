@@ -37,7 +37,7 @@
 }
 
 &TopNav .md-hidden{
-    @apply block md:hidden;
+    @apply block md:hidden md:m-0;
 }
 
 @screen md {
