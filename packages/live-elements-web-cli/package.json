@@ -21,7 +21,6 @@
     "dependencies": {
         "commander": "^9.0.0",
         "chalk": "^5.0.1",
-        "jsdom": "^19.0.0",
         "live-elements-js-compiler": "^0.1.10",
         "live-elements-core": "^0.1.10",
         "live-elements-loader": "^0.1.10",

@@ -7,6 +7,7 @@
 
 import * as jsdomModule from 'jsdom'
 import * as prettyModule from 'pretty'
+import { parseHTML } from 'linkedom'
 
 export default class LvDOMEmulator{
 
@@ -17,11 +18,13 @@ export default class LvDOMEmulator{
     }
 
     setup(content){
-        return new this.JSDOM(content)
+        return parseHTML(content)
+        // return new this.JSDOM(content)
     }
 
     serializeDOM(dom){
-        const result = dom.serialize()
+        const result = `<!DOCTYPE html>\n${dom.document.documentElement.outerHTML}`
+        // const result = dom.serialize()
         return this.options.beautify ? this.pretty(result) : result
     }
 
