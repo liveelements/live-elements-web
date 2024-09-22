@@ -11,8 +11,9 @@ component ResizableHandlePoint < Div{
             const resizableDiv = d.parentNode
 
             function resize(e) {
-                resizableDiv.style.width = e.clientX - resizableDiv.offsetLeft + 'px';
-                resizableDiv.style.height = e.clientY - resizableDiv.offsetTop + 'px';
+                const rect = resizableDiv.getBoundingClientRect()
+                resizableDiv.style.width = e.clientX - rect.left + 'px'
+                resizableDiv.style.height = e.clientY - rect.top + 'px'
             }
 
             function stopResize() {
