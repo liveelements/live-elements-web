@@ -12,17 +12,20 @@ component SplitLayout < Div{
     ]
 
     boolean breakPoint: true
+    boolean vertical: false
 
     Array extraClasses: []
-    classes: this.extraClasses.concat([ScopedStyle.className(SplitLayout)], this.breakPoint ? '' : 'no-break')
+    classes: this.extraClasses.concat([ScopedStyle.className(SplitLayout), this.breakPoint ? '' : 'no-break', this.vertical ? 'vertical' : ''])
 
     Array panes: []
     DOMElement handle: Div{ classes: ['handle'] 
         Div{ classes: ['handle-pointer']
-            props: ({ data: { breakpoint: splitLayout.breakPoint } })
+            props: ({ data: { breakpoint: splitLayout.breakPoint, vertical: splitLayout.vertical } })
             DOMBehavior{
                 domReady: (handle) => {
                     const breakPoint = handle.dataset.breakpoint === 'false' ? false : true
+                    const vertical = handle.dataset.vertical === 'true' ? true : false
+
                     const container = handle.parentNode.parentNode
                     let isDragging = false
                     let overlay = null
@@ -54,7 +57,10 @@ component SplitLayout < Div{
                         const leftPane = container.childNodes[0]
                         const rightPane = container.childNodes[2]
                         let delta = e.clientX - container.getBoundingClientRect().left;
-                        if (window.innerWidth >= 768 || !breakPoint) { // 'md' breakpoint
+
+                        const isVertical = vertical || !(window.innerWidth >= 768 || !breakPoint)
+
+                        if (!isVertical) { // 'md' breakpoint
                             if (delta < 100) delta = 100; // Minimum width constraint
                             if (delta > container.clientWidth - 100) delta = container.clientWidth - 100; // Maximum width constraint
                             leftPane.style.width = `${delta}px`;
