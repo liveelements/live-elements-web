@@ -100,11 +100,11 @@ export default class ClientPageViewLoader{
         return ClientPageViewLoader.loadAwaitingModule(awaitingModule, componentName, placements, serverData).catch(e => console.error("Failed to load module:", e))
     }
 
-    static findPageViewInModule(module){
+    static findPrototypeInModule(module, prototypeName){
         for (let [_key, value] of Object.entries(module)) {
             let prototype = Object.getPrototypeOf(value)
             while (prototype != null) {
-                if ( prototype.name === 'PageView' )
+                if ( prototype.name === prototypeName )
                     break
                 prototype = Object.getPrototypeOf(prototype)
             }
@@ -113,6 +113,10 @@ export default class ClientPageViewLoader{
             }
         }
         return null
+    }
+
+    static findPageViewInModule(module){
+        return ClientPageViewLoader.findPrototypeInModule(module, 'PageView')
     }
 
     static __usagesToObject(c){
