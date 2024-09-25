@@ -21,6 +21,49 @@
     @apply p-2;
 }
 
+&SplitLayout&.split-one &SplitPane&:first-child{
+    height: 100% !important;
+}
+&SplitLayout&.split-one &SplitPane&:nth-child(3){
+    @apply hidden;
+}
+&SplitLayout&.split-one .handle{
+    @apply hidden;
+}
+
+&SplitLayout&.split-3-1{
+    @apply h-full;
+}
+
+&SplitLayout&.split-3-1 &SplitPane&:first-child{
+    @apply h-3/4;
+}
+&SplitLayout&.split-3-1 &SplitPane&:nth-child(3){
+    @apply h-1/4;
+}
+
+&SplitLayout &SplitPane .log-view{
+    @apply w-full h-full bg-[#212121] text-[14px];
+    
+}
+&SplitLayout &SplitPane .log-view h2{
+    @apply h-[36px] px-2 py-2 text-[#919191] border-b border-[#717171];
+}
+&SplitLayout &SplitPane .log-view .log-messages{
+    @apply overflow-auto p-2 text-[12px];
+    height: calc(100% - 36px);
+    font-family: 'Courier New', Courier, monospace;
+}
+&SplitLayout &SplitPane .log-view .log-message:first-child{
+    @apply pt-0;
+}
+&SplitLayout &SplitPane .log-view .log-message{
+    @apply py-1 border-b border-[#515151];
+}
+&SplitLayout &SplitPane .log-view .log-message:last-child{
+    @apply border-b-0;
+}
+
 &TabLayout{
     flex: 1;
 }

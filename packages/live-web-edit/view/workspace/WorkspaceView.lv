@@ -77,6 +77,8 @@ component WorkspaceView < Div{
         window.addEventListener('message', (event) => {
             if (event.data.type === 'error') {
                 this.data.errors = [`Client error: ${event.data.message}`]
+            } else if ( event.data.type === 'log' ){
+                this.data.appendLogMessage(event.data.message.join(' '))
             }
         }, false)
 
@@ -210,12 +212,28 @@ component WorkspaceView < Div{
                     }
                 },
                 SplitPane{
-                    Resizable{ id: resizable fill: true border: true
-                        IFrame{
-                            id: frame
-                            src: workspaceView.data.workspaceViewUrl ? workspaceView.data.route('/v/' + workspaceView.data.workspaceViewUrl) : ''
-                        }
-                        ResizableHandlePoint{}
+                    SplitLayout{ vertical: true extraClasses: ['split-3-1', workspaceView.data.logMessages.length === 0 ? 'split-one' : '']
+                        panes: [
+                            SplitPane{ extraClasses: ['flex-content']
+                                Resizable{ id: resizable fill: true border: true
+                                    IFrame{
+                                        id: frame
+                                        src: workspaceView.data.workspaceViewUrl ? workspaceView.data.route('/v/' + workspaceView.data.workspaceViewUrl) : ''
+                                    }
+                                    ResizableHandlePoint{}
+                                }
+                            },
+                            SplitPane{
+                                Div{ classes: ['log-view']
+                                    H2`Console`
+                                    Div{ classes: ['log-messages']
+                                        children: workspaceView.data.logMessages.map(e => { 
+                                            return Div{ classes: ['log-message'] T{ text: e } }
+                                        })
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             ]

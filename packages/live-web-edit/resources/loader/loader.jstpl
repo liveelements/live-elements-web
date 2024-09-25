@@ -1,15 +1,36 @@
 import Loader from "live-elements-web-server/client/client-pageview-loader.mjs"
+import { BaseElement } from "live-elements-core/baseelement.js"
 import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
 import ky from 'ky'
 
 const importer = import('<<<mainEntry>>>')
 importer.then(imp => {
-    const page = Loader.findPageViewInModule(imp)
-    const collection = ScopedComponentScanner.scanAndCollect(page)
-    const pagesc = collection.findScopedComponent(page)
-    const pageUsages = pagesc.toJSON()
+    try{
+        const consoleLog = console.log.bind(console)
+        const consoleInfo = console.info.bind(console)
+        const consoleWarn = console.warn.bind(console)
+        const consoleError = console.error.bind(console)
+        console.log = (...args) => { window.parent.postMessage({ type: 'log', message: args.map(a => a.toString()) }, '*'); consoleLog(...args) }
+        console.info = (...args) => { window.parent.postMessage({ type: 'log', message: args.map(a => a.toString()) }, '*'); consoleInfo(...args) }
+        console.warn = (...args) => { window.parent.postMessage({ type: 'log', message: args.map(a => a.toString()) }, '*'); consoleWarn(...args) }
+        console.error = (...args) => { window.parent.postMessage({ type: 'log', message: args.map(a => a.toString()) }, '*'); consoleError(...args) }
 
-    ky.post('<<<usagesRoute>>>', {json: { page: pageUsages } }).json()
+        const page = Loader.findPageViewInModule(imp)
+        if ( !page ){
+            const Application = Loader.findPrototypeInModule(imp, 'Application')
+            if ( !Application ){
+                throw new Error(`Failed to find export of type 'PageView' or 'Application' in module exports: ${Object.keys(imp).map(m => `"${m}"`).join(',')}`)
+            }
+            const app = new Application()
+            BaseElement.complete(app)
+            return
+        }
+
+        const collection = ScopedComponentScanner.scanAndCollect(page)
+        const pagesc = collection.findScopedComponent(page)
+        const pageUsages = pagesc.toJSON()
+
+        ky.post('<<<usagesRoute>>>', {json: { page: pageUsages } }).json()
             .then(serverData => {  
                 return Loader.loadAwaitingModule(importer, "*", [], {
                     scopedStyles: serverData.scopedStyles,
@@ -23,4 +44,11 @@ importer.then(imp => {
                     message: error.message
                 }, '*')
             })
+
+    } catch ( error ){
+        window.parent.postMessage({
+            type: 'error',
+            message: error.message
+        }, '*')
+    }
 })

@@ -1,0 +1,7 @@
+import live-web
+
+component App < Application{
+    run: () => {
+        console.log('Application is now running.')
+    }
+}

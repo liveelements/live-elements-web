@@ -1,0 +1,10 @@
+{
+    "name":"application",
+    "label" : "Application: Console",
+    "entry":"Index.lv",
+    "documents":[
+        {"path": "Index.lv", "type": "lv"},
+        {"path": "index.css", "type:": "css"}
+    ],
+    "createdOn":"2024-05-15T12:49:22.022Z"
+}

@@ -10,8 +10,17 @@ component WorkspaceViewData{
     bool workspaceSelector: false
     Array<Object> templates: []
     Array<Object> errors: []
+    Array<Object> logMessages: []
 
     fn route(url:string):string{ return this.baseUrl + url }
+
+    fn appendLogMessage(message:string){
+        while ( this.logMessages.length > 50 ){
+            this.logMessages.shift()
+        }
+        this.logMessages.push(message)
+        this.logMessagesChanged.emit()
+    }
 
     static fn fromJSON(data:Object):WorkspaceViewData{
         return WorkspaceViewData{    
