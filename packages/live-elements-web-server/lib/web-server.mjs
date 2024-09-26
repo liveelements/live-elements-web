@@ -511,8 +511,14 @@ export default class WebServer extends EventEmitter{
         return render
     }
 
-    async renderRouteSSR(route, req, res, next, cacheDir){
+    async renderRouteSSR(route, req, res, next, cacheDir, render){
         if ( route.data ){
+            if ( render && cacheDir && render === ComponentRegistry.Components.ViewRoute.SSC ){
+                const cachePath = path.join(cacheDir, WebServer.urlToFileName(route.url))
+                if ( fs.existsSync(cachePath ) ){
+                    return res.sendFile(cachePath)
+                }
+            }
             let data = null
             if ( typeof route.data === 'function' ){
                 try{
@@ -573,7 +579,7 @@ export default class WebServer extends EventEmitter{
         if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
             this.renderRouteCSR(route, req, res, next)
         } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
-            this.renderRouteSSR(route, req, res, next, cacheDir)
+            this.renderRouteSSR(route, req, res, next, cacheDir, render)
         }
     }
 
