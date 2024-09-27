@@ -172,14 +172,14 @@ export class ServerViewRoute extends ServerRoute{
 
             const compiledBundlesResult = await WebpackBundler.compile(
                 [
-                    WebpackBundler.Entry.create(viewPathName, [
+                    WebpackBundler.Entry.create('main', [
                         { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
                         { path: clientBehaviorEvents }
                     ])
                 ],
                 WebpackBundler.Config.create({
                     mode: 'production',
-                    outputFileName: '[name].bundle.js',
+                    outputFileName: `${path.parse(viewPath).name.toLowerCase()}.[name].bundle.js`,
                     publicPath: behaviorScriptsUrl,
                     outputPath: path.join(distPath, 'behaviors')
                 })
