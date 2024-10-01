@@ -52,9 +52,15 @@ jobs:
           cd ../live-elements-web-server
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
+          cd ../live-testspec
+          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
+          npm publish --access=public
           cd ../live-web
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
-          cd ../live-testspec
+          cd ../live-web-edit
+          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
+          npm publish --access=public
+          cd ../live-web-view
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
