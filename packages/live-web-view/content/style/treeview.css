@@ -2,6 +2,13 @@
     @apply p-2;
 }
 
+.tree-node > div{
+    @apply ml-[calc(14px+0.25rem)];
+}
+.tree-node .expander{
+    @apply ml-0;
+}
+
 .nested{
     @apply pl-4;
 }
