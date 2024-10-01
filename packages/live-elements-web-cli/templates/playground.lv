@@ -1,0 +1,111 @@
+import .lib
+
+instance playground GeneratorPack{
+    name: 'playground'
+
+FileGenerator{
+    output: 'package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+  \"version\": \"0.1.0\",
+  \"description\": \"\",
+  \"main\": \"index.js\",
+  \"scripts\": {
+    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"
+  },
+  \"lvweb\" : { \"bundle\": \"./bundle/bundle.lv\" },
+  \"author\": \"\",
+  \"license\": \"UNLICENSED\",
+  \"dependencies\": {
+    \"live-elements-web-server\": \"^0.1.11\",
+    \"live-elements-loader\": \"^0.1.11\",
+    \"live-elements-core\": \"^0.1.11\",
+    \"live-elements-web-cli\": \"^0.1.11\",
+    \"live-elements-web\": \"^0.1.11\",
+    \"live-web\": \"^0.1.11\",
+    \"live-web-edit\": \"^0.1.11\",
+    \"live-web-view\": \"^0.1.11\"
+  }
+}
+```
+}
+
+FileGenerator{
+    output: 'live.package.json'
+
+FileGeneratorContent```
+{
+  \"name\": \"
+```
+
+FileGeneratorInfo`package`
+
+FileGeneratorContent```
+\",
+    \"version\" : \"0.1.0\"
+}
+```
+}
+
+
+FileGenerator{
+    output: 'app/Main.lv'
+
+FileGeneratorContent```
+import live-web.dom
+import live-web-view.color
+import live-web-edit.view.workspace
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Main < PageView{
+    static Array use = [WorkspaceView]
+    head: PageProperties{ ColorSchemeLoader{} }
+
+    constructor(data:Object){
+        super()
+        this.data = data
+        this{}
+    }
+
+    WorkspaceView.(this.data){}
+}
+```
+}
+
+FileGenerator{
+    output: 'bundle/bundle.lv'
+
+FileGeneratorContent```
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-web-edit.lib.server
+import .app
+
+import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
+import path from 'path'
+
+instance bundle Bundle{
+
+    string currentPackage = path.dirname(PackagePath.findPackageJson(path.resolve('.')))
+    string liveWebEdit = PackagePath.find('live-web-edit', path.resolve('.'))
+    string examplesTemplatesPath = path.join(this.liveWebEdit, 'resources', 'templates-examples')
+    Array<Object> examplesTemplates = WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath)
+
+    WorkspaceRoute.(path.join(this.currentPackage, 'workspaces'), this.examplesTemplates){
+        view: Main
+    }
+}
+```
+}
+
+} // webpackBundle Generator
