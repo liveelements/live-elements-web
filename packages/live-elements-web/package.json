@@ -1,6 +1,6 @@
 {
     "name": "live-elements-web",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "description": "Live Elements Web Main Package.",
     "keywords": [
         "live",
@@ -14,8 +14,8 @@
     "license": "MIT",
     "dependencies": {
         "live-elements-js-compiler": "^0.1.10",
-        "live-elements-core": "^0.1.11",
-        "live-elements-loader": "^0.1.11",
-        "live-web": "^0.1.11"
+        "live-elements-core": "^0.1.12",
+        "live-elements-loader": "^0.1.12",
+        "live-web": "^0.1.12"
     }
 }

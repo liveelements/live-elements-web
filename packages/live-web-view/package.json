@@ -1,6 +1,6 @@
 {
     "name": "live-web-view",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "description": "Live Elements Web View Package.",
     "keywords": [
         "live",
@@ -19,7 +19,7 @@
     "author": "Dinu SV",
     "license": "MIT",
     "dependencies": {
-        "live-web": "^0.1.11",
+        "live-web": "^0.1.12",
         "incremental-dom": "^0.7.0",
         "navigo": "^8.11.1"
     }
