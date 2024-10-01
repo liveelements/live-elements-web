@@ -23,7 +23,7 @@ component ZoomInButton < IconButton{
     }
 
     Object target: null
-    int scale: 1.0
+    number scale: 1.0
 
     DOMBehavior{
         domEvents: {

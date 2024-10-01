@@ -3,7 +3,7 @@ import live-web.model
 import live-web.dom
 
 component Counter < State{
-    int counter : 0
+    number counter : 0
 }
 
 component CounterView < PageView{

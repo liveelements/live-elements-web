@@ -12,7 +12,7 @@ component TabLayout < Div{
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
     
-    int selected: 0
+    number selected: 0
     on selectedChanged: () => {
         this.__updateSelection(this.selected)
         this.activated.emit(this.selected)

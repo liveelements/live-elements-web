@@ -9,8 +9,8 @@ instance style Style{
         'pixelWidth': (value) => { this.assign('width', value + 'px' ) },
         'pixelHeight': (value) => { this.assign('height', value + 'px') }
     })
-    int pixelWidth: 200
-    int pixelHeight: 30
+    number pixelWidth: 200
+    number pixelHeight: 30
     color background: '#333'
     Object borderRadius: '5px'
 }
