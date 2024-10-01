@@ -1,6 +1,5 @@
 import live-web.dom
 import live-web.model
-import live-web-view.button
 import live-elements-web-server.style
 
 component ModalBox < Div{}
@@ -9,7 +8,6 @@ component Modal < Div{
     id: modal
 
     static Array use = [ 
-        PrimaryButton,
         ScopedStyle{ src: './style/modal.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
