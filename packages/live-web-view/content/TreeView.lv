@@ -31,12 +31,12 @@ component TreeViewDefaultView < Div{
 
 component TreeView < Ul{
 
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/treeview.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(TreeView)])
 
     Object data

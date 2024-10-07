@@ -4,11 +4,11 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component Content < Div{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/content.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat(ScopedStyle.className(Content))
 }

@@ -5,7 +5,7 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component Main < PageView{
-    static Array use = [WorkspaceView]
+    static any[] use = [WorkspaceView]
     head: PageProperties{ ColorSchemeLoader{} }
 
     constructor(data:Object){

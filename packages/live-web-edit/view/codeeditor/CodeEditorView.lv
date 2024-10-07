@@ -10,7 +10,7 @@ import {javascript} from "@codemirror/lang-javascript"
 import {oneDark} from "@codemirror/theme-one-dark"
 
 component CodeEditorView < Div{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './codeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
         ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
@@ -59,7 +59,7 @@ component CodeEditorView < Div{
         oneDark
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([
         ScopedStyle.className(CodeEditorView)
     ])

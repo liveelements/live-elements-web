@@ -6,7 +6,7 @@ import .button
 component ResizableFillButton < IconButton{
     id: resizableFillButton
 
-    static Array use = [
+    static any[] use = [
         ScopedStyle{ src: './style/resizablefillbutton.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]

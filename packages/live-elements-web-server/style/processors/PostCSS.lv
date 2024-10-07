@@ -3,7 +3,7 @@ import url from 'postcss-url'
 
 component PostCSS{
 
-    Array plugins: []
+    any[] plugins: []
 
     static fn create(plugins:Array){
         const postcss = PostCSS{}

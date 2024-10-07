@@ -3,5 +3,5 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component Index < PageView{
-    static Array use = [ScopedStyle{ src: './index.css'}]
+    static any[] use = [ScopedStyle{ src: './index.css'}]
 }

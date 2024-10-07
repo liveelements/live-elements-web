@@ -9,7 +9,7 @@ import live-web-view.color
 import live-web-view.overlay
 
 component Overlays < PageView{
-    static Array use = [
+    static any[] use = [
         Content,
         UlV,
         Float,

@@ -5,7 +5,7 @@ import live-web-view.layout
 import live-web-edit.view.codeeditor
 
 component Main < PageView{
-    static Array use = [
+    static any[] use = [
         FullScreen,
         StaticCodeEditorView
     ]

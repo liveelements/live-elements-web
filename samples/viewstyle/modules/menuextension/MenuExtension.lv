@@ -8,7 +8,7 @@ import .samples.viewstyle.modules.menu
 component MenuExtension < Menu{
     id: menuExtension
 
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './menuextension.css' process: './MenuExtensionCSS.lv' } 
     ]
 

@@ -10,7 +10,7 @@ component Menu < Nav{
     Object brand: T`Second`
     Object links: ['Link']
 
-    static Array use = [ ScopedStyle{ src: './menu.css' process: './MenuCSS.lv' } ]
+    static any[] use = [ ScopedStyle{ src: './menu.css' process: './MenuCSS.lv' } ]
 
     classes: ['navbar', ScopedStyle.className(Menu)]
 

@@ -3,7 +3,7 @@ import live-elements-web-server.style
 
 component Dropdown < Div{
     
-    static Array use = [ 
+    static any[] use = [ 
         DropdownToggleButton,
         DropdownContent,
         ScopedStyle{ src: './style/dropdown.css' process: 'live-web-view/style/CSSProcessor.lv' }

@@ -2,6 +2,6 @@ import live-web.dom
 import live-elements-web-server.style
 
 component Aside < Div{
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Aside)])
 }

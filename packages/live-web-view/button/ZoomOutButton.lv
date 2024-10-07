@@ -4,7 +4,7 @@ import live-elements-web-server.style
 
 component ZoomOutButton < IconButton{
     id: zoomOutButton
-    static Array use = []
+    static any[] use = []
 
     id: zoomOutButton
 

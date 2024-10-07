@@ -4,6 +4,6 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component SubmitButton < Button{
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(SubmitButton), 'text-color-button'])
 }

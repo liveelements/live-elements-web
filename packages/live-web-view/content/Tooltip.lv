@@ -3,7 +3,7 @@ import live-web.behavior
 import live-elements-web-server.style
 
 component Tooltip < Div{
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Tooltip)])
 
     constructor(text:string){

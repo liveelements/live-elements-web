@@ -5,7 +5,7 @@ import live-web-view.button
 
 component CompileButton < IconButton{
     id: compileButton
-    static Array use = []
+    static any[] use = []
     classes: [ScopedStyle.className(CompileButton)]
 
     Svg{ 

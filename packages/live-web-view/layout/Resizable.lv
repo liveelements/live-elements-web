@@ -4,7 +4,7 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component Resizable < Div{
-    static Array use = [ 
+    static any[] use = [ 
         ResizableHandlePoint,
         ResizableFillButton,
         ScopedStyle{ src: './style/resizable.css' process: '../style/CSSProcessor.lv' }, 
@@ -14,7 +14,7 @@ component Resizable < Div{
     boolean border: false
     boolean fill: false
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Resizable), this.border ? 'surround-border' : '', this.fill ? 'resize-fill' : ''])
 
     

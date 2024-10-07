@@ -4,7 +4,7 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component Float < Div{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/float.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
@@ -17,6 +17,6 @@ component Float < Div{
 
     string position: ''
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Float), this.position ? 'position-' + this.position.toLowerCase() : ''])
 }

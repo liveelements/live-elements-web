@@ -11,7 +11,7 @@ import {oneDark} from "@codemirror/theme-one-dark"
 component StaticCodeEditorView < Div{
     id: staticCodeEditorView
 
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './staticcodeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
         ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
@@ -55,7 +55,7 @@ component StaticCodeEditorView < Div{
         })
     }
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(StaticCodeEditorView)])
 
     constructor(){

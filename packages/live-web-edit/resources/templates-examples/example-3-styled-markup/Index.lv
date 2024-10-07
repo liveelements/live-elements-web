@@ -7,7 +7,7 @@ import live-elements-web-server.style
 // component StyledMarkup extends PageView
 component StyledMarkup < PageView{
 
-    static Array use = [
+    static any[] use = [
         // import styles from live-web-view.content.Content
         Content,
         // import styles from live-web-view.layout.ColLayout

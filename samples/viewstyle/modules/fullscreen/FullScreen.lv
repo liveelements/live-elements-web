@@ -6,7 +6,7 @@ import live-elements-web-server.style
 component Fullscreen < Nav{
     id: fullscreen
 
-    static Array use = [ ScopedStyle{ src: './fullscreen.css' process: './FullscreenCSS.lv' } ]
+    static any[] use = [ ScopedStyle{ src: './fullscreen.css' process: './FullscreenCSS.lv' } ]
 
     classes: [ScopedStyle.className(Fullscreen)]
 

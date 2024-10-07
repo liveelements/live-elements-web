@@ -5,7 +5,7 @@ import .button
 
 component RefreshButton < IconButton{
     id: refreshButton
-    static Array use = []
+    static any[] use = []
 
     props = {
         data: { ref: Math.floor(Math.random() * Date.now()).toString(16) }

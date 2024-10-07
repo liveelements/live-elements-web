@@ -5,7 +5,7 @@ import live-web-view.button
 
 component OpenWorkspaceButton < IconButton{
     id: openWorkspaceButton
-    static Array use = []
+    static any[] use = []
     classes: [ScopedStyle.className(OpenWorkspaceButton)]
 
     Svg{ 

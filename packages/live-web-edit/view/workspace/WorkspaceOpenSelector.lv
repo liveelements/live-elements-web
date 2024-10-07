@@ -5,7 +5,7 @@ import live-elements-web-server.style
 component WorkspaceOpenSelector < Div{
     id: workspaceOpenSelector
 
-    static Array use = [
+    static any[] use = [
         ScopedStyle{ src: './style/workspaceopenselector.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
 

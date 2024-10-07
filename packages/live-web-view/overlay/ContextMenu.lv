@@ -8,7 +8,7 @@ component ContextMenuView < Div{
 
 component ContextMenu < Div{
     
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/contextmenu.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 

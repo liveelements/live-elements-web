@@ -3,14 +3,14 @@ import live-web
 import live-elements-web-server.style
 
 component ColLayout < Div{
-    static Array use = [ 
+    static any[] use = [ 
         Col, 
         ScopedStyle{ src: './style/collayout.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
     
     String justify: ''
-    Array extraClasses: []
+    string[] extraClasses: []
 
     classes: this.extraClasses.concat([
         ScopedStyle.className(ColLayout),

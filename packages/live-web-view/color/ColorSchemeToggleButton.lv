@@ -6,7 +6,7 @@ import live-elements-web-server.style
 import .button
 
 component ColorSchemeToggleButton < IconButton{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/colorschemetogglebutton.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]

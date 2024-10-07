@@ -6,7 +6,7 @@ import live-web-view.form
 import live-web-view.layout
 
 component Views < PageView{
-    static Array use = [
+    static any[] use = [
         FormContainer, ColLayout,
         ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]

@@ -10,7 +10,7 @@ import live-web-view.content
 import live-web-view.content.data
 
 component Tree < PageView{
-    static Array use = [
+    static any[] use = [
         ColorSchemeToggleButton,
         TreeView,
         ColLayout,

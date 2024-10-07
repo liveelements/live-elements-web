@@ -11,7 +11,7 @@ import live-web-view.navigation
 import live-web-view.iframe
 
 component Frame < PageView{
-    static Array use = [
+    static any[] use = [
         IconButton,
         TopNav,
         Resizable,

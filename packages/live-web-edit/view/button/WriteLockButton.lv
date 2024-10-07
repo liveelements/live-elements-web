@@ -7,7 +7,7 @@ component WriteLockButton < IconButton{
     id: writeLockButton
     boolean isLocked: false
     
-    static Array use = []
+    static any[] use = []
     classes: this.extraClasses.concat([ScopedStyle.className(WriteLockButton), this.isLocked ? 'locked' : ''])
 
     children: this.isLocked 

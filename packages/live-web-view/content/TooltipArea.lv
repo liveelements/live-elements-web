@@ -3,13 +3,13 @@ import live-web
 import live-elements-web-server.style
 
 component TooltipArea < Div{
-    static Array use = [ 
+    static any[] use = [ 
         Tooltip,
         ScopedStyle{ src: './style/tooltiparea.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
     
-    Array extraClasses: []
+    string[] extraClasses: []
 
     props = { data: { c: 'tooltiparea' } }
 

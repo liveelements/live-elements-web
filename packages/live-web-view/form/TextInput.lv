@@ -6,6 +6,6 @@ import live-elements-web-server.style
 component TextInput < Input{
     type: 'text'
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(TextInput), 'text-color', 'text-color-input'])
 }

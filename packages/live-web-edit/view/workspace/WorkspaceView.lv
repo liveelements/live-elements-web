@@ -20,7 +20,7 @@ import ky from 'ky'
 component WorkspaceView < Div{
     id: workspaceView
 
-     static Array use = [
+     static any[] use = [
         IconButton,
         WriteLockButton,
         CompileButton,
@@ -37,7 +37,7 @@ component WorkspaceView < Div{
         ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
     
-    Array extraClasses = []
+    string[] extraClasses = []
     classes: this.extraClasses.concat([ScopedStyle.className(WorkspaceView)])
     Object data = WorkspaceViewData.fromJSON({ name: '-' })
     WorkspaceViewKeymap keymap = WorkspaceViewKeymap.(this._workspaceViewActions.actionMap()){}

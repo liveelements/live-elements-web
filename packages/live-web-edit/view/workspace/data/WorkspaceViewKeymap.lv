@@ -16,7 +16,7 @@ component WorkspaceViewKeymap{
         }
     }
     
-    Array keymap = [
+    Object[] keymap = [
         indentWithTab,
         { key: "Mod-s", run: async (view) => { this.run('save'); return true; } },
         { key: "Ctrl-Alt-r", run: (view) => { this.run('compile'); return true; } },

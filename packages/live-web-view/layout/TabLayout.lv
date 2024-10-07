@@ -3,7 +3,7 @@ import live-web
 import live-elements-web-server.style
 
 component TabLayout < Div{
-    static Array use = [ 
+    static any[] use = [ 
         TabHeader, 
         TabButton,
         TabContent,
@@ -38,7 +38,7 @@ component TabLayout < Div{
         }
     }
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([
         ScopedStyle.className(TabLayout)
     ])

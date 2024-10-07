@@ -3,12 +3,12 @@ import live-web
 import live-elements-web-server.style
 
 component CenterLayout < Div{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/centerlayout.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
     
-    Array extraClasses: []
+    string[] extraClasses: []
 
     classes: this.extraClasses.concat([
         ScopedStyle.className(CenterLayout)

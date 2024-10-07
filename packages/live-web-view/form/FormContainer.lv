@@ -6,7 +6,7 @@ import live-elements-web-server.style
 component FormContainer < Form{
     id: formContainer
 
-    static Array use = [ 
+    static any[] use = [ 
         FormGroup,
         FormMessage,
         TextInput,
@@ -15,6 +15,6 @@ component FormContainer < Form{
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat(ScopedStyle.className(FormContainer))
 }

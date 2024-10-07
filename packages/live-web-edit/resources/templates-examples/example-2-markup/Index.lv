@@ -5,7 +5,7 @@ import live-elements-web-server.style
 // component Markup extends PageView
 component Markup < PageView{
     // link to index.css
-    static Array use = [ScopedStyle{ src: './index.css'}]
+    static any[] use = [ScopedStyle{ src: './index.css'}]
 
     // <article>
     Article{

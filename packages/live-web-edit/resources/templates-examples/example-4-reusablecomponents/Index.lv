@@ -28,7 +28,7 @@ component Card < Li{
 component ReusableComponents < PageView{
     
     // import index.css
-    static Array use = [ScopedStyle{ src: './index.css'}]
+    static any[] use = [ScopedStyle{ src: './index.css'}]
       
 
     Div{ classes: ['h-full', 'center']

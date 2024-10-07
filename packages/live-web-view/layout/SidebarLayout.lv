@@ -3,7 +3,7 @@ import live-web
 import live-elements-web-server.style
 
 component SidebarLayout < Div{
-    static Array use = [ 
+    static any[] use = [ 
         Sidebar, 
         SidebarCompact,
         Aside,
@@ -11,7 +11,7 @@ component SidebarLayout < Div{
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
     
-    Array extraClasses: []
+    string[] extraClasses: []
 
     classes: this.extraClasses.concat([
         ScopedStyle.className(SidebarLayout)

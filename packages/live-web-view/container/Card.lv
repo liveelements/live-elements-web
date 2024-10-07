@@ -6,7 +6,7 @@ import live-elements-web-server.style
 component Card < Div{
     id: card
 
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/card.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
@@ -17,7 +17,7 @@ component Card < Div{
     classes: this.extraClasses.concat([ScopedStyle.className(Card), this.orientation === Card.Vertical ? 'card-row' : 'card-col'])
 
     number orientation : Card.Vertical
-    Array extraClasses: []
+    string[] extraClasses: []
     DOMElement image: Span`Image Placeholder`
     DOMElement title: T`Card Title`
     DOMElement description: P{

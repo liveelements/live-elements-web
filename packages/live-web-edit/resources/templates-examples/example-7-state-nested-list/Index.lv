@@ -24,7 +24,7 @@ component TodoList < State{
 component TodoListView < PageView{
     id: todoListView
 
-    static Array use = [ScopedStyle{ src: './index.css'}]
+    static any[] use = [ScopedStyle{ src: './index.css'}]
   
     TodoList state: TodoList{}
 

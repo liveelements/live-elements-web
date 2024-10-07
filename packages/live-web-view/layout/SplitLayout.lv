@@ -5,7 +5,7 @@ import live-elements-web-server.style
 component SplitLayout < Div{
     id: splitLayout
 
-    static Array use = [ 
+    static any[] use = [ 
         SplitPane,
         ScopedStyle{ src: './style/splitlayout.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
@@ -14,10 +14,10 @@ component SplitLayout < Div{
     boolean breakPoint: true
     boolean vertical: false
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(SplitLayout), this.breakPoint ? '' : 'no-break', this.vertical ? 'vertical' : ''])
 
-    Array panes: []
+    Object[] panes: []
     DOMElement handle: Div{ classes: ['handle'] 
         Div{ classes: ['handle-pointer']
             props: ({ data: { breakpoint: splitLayout.breakPoint, vertical: splitLayout.vertical } })

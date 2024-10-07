@@ -9,7 +9,7 @@ import .samples.viewstyle.modules.fullscreen
 import .samples.viewstyle.modules.layout
 
 component ViewStyle < PageView{
-    static Array use = [
+    static any[] use = [
         Menu, 
         MDup.Menu,
         MenuExtension,

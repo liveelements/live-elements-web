@@ -4,7 +4,7 @@ import path from 'path'
 component WorkspaceContainer{
     string path: ''
     string templatesPath: ''
-    Array workspaces: []
+    any[] workspaces: []
 
     static fn create(location:string, templatePath:string){
         if ( !fs.existsSync(location) ){

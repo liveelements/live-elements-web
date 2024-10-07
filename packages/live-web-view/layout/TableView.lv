@@ -3,11 +3,11 @@ import live-web
 import live-elements-web-server.style
 
 component TableView < Table{
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/tableview.css' process: '../style/CSSProcessor.lv' }
     ]
     
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([
         ScopedStyle.className(TableView)
     ])

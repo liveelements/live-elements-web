@@ -7,11 +7,11 @@ component ModalBox < Div{}
 component Modal < Div{
     id: modal
 
-    static Array use = [ 
+    static any[] use = [ 
         ScopedStyle{ src: './style/modal.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Modal)])
 
     DOMElement box

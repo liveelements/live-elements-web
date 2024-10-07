@@ -6,12 +6,12 @@ import live-elements-web-server.style
 component ModalConfirmBox < ModalBox{
     id: modalConfirm
 
-    static Array use = [ 
+    static any[] use = [ 
         PrimaryButton,
         ScopedStyle{ src: './style/modalconfirmbox.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
-    Array extraClasses: []
+    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(ModalConfirmBox)])
 
     string title: ''
