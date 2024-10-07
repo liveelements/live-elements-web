@@ -8,9 +8,9 @@ component Input < DOMElement{
     on typeChanged: () => { this.setOwnAttributeAndUpdate('type', this.type) }
     string placeholder
     on placeholderChanged: () => { this.setOwnAttributeAndUpdate('placeholder', this.placeholder) }
-    int min
+    number min
     on minChanged: () => { if ( this.min !== undefined ) this.setOwnAttributeAndUpdate('min', this.min) }
-    int max
+    number max
     on maxChanged: () => { if ( this.max !== undefined ) this.setOwnAttributeAndUpdate('max', this.max) }
     boolean autofocus
     on autofocusChanged: () => { if (this.autofocus) this.setOwnAttributeAndUpdate('autofocus', this.autofocus) }
