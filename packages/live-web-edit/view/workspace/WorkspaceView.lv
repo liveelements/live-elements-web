@@ -227,9 +227,20 @@ component WorkspaceView < Div{
                                 Div{ classes: ['log-view']
                                     H2`Console`
                                     Div{ classes: ['log-messages']
+                                        boolean manualScroll: false
                                         children: workspaceView.data.logMessages.map(e => { 
                                             return Div{ classes: ['log-message'] T{ text: e } }
                                         })
+                                        on childrenChanged: () => {
+                                            if ( this.dom && !this.manualScroll ){ // update scroll
+                                                this.dom.scrollTop = this.dom.scrollHeight
+                                            }
+                                        }
+                                        on scroll: () => {
+                                            // disable auto scroll if user interacted
+                                            const atBottom = this.dom.scrollTop + this.dom.clientHeight >= this.dom.scrollHeight - 1
+                                            this.manualScroll = !atBottom
+                                        }
                                     }
                                 }
                             }
