@@ -1,8 +1,11 @@
 #! /usr/bin/env node
 
-import {Command} from 'commander'
-const program = new Command()
+import readline from 'readline'
+import path from 'path'
+import fs from 'fs'
+import url from 'url'
 
+import {Command} from 'commander'
 import generate from './commands/generate.mjs'
 import convert from './commands/convert.mjs'
 import serve from './commands/serve.mjs'
@@ -10,14 +13,16 @@ import compile from './commands/compile.mjs'
 import run from './commands/run.mjs'
 import addView from './commands/add/view.mjs'
 import argumentPairsToObject from './lib/argument-pairs-to-object.mjs'
-import readline from 'readline'
-import path from 'path'
 import runNpmI from './lib/run-npm-i.mjs'
+
+const program = new Command()
+const packageJson = path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'package.json')
+const packageInfo = JSON.parse(fs.readFileSync(packageJson, 'utf-8'));
 
 program
     .name('lvweb')
     .description('Live Elements Web CLI')
-    .version('0.1.10')
+    .version(packageInfo.version)
 
 program.command('generate [path]')
     .description('Generate a project from a template.')
