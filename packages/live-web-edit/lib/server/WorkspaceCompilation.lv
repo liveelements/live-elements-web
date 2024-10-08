@@ -21,6 +21,7 @@ component WorkspaceCompilation{
     Date stamp: null
     Array<WorkspaceAsset> assets: []
     Array<string> errors: []
+    Array<string> warnings: []
     Array<string> styles: []
     WorkspaceAsset mainAsset: null
     Object usageAssignments: null
@@ -75,27 +76,34 @@ component WorkspaceCompilation{
             mainEntry: './Index.lv',
             usagesRoute: `${baseUrl}/v-use/${workspace.name}`
         })
-        const loaderScript = new VirtualScript( path.join(workspace.path, 'ws.bundle.js'), loaderScriptContent)
 
-        try{
-            const r = await WebpackBundler.compileBundle(
-                'ws', 
-                [loaderScript], 
-                `${baseUrl}/v-scripts/${workspace.name}/`, 
-                path.join(workspace.path, 'dist'), 
-                'inline-source-map', 
-                'development'
+        try{  
+            const compiledResult = await WebpackBundler.compile(
+                [
+                    WebpackBundler.Entry.create('w', [
+                        { path: path.join(workspace.path, 'ws.bundle.js'), content: loaderScriptContent }
+                    ])
+                ],
+                WebpackBundler.Config.create({
+                    mode: 'development',
+                    devTool: 'inline-source-map',
+                    outputFileName: '[name].bundle.js',
+                    publicPath: `${baseUrl}/v-scripts/${workspace.name}/`,
+                    outputPath: path.join(workspace.path, 'dist')
+                })
             )
+
+            const compiledBundle = compiledResult.unwrapOrThrow()
         
             let main = null
 
-            const wsAssets = r.assets.map(asset => (WorkspaceAsset{
+            const wsAssets = compiledBundle.assets.map(asset => (WorkspaceAsset{
                 name: asset.name
                 content: asset.content
             }))
 
-            for ( let i = 0; i < r.assets.length; ++i ){
-                const asset = r.assets[i]
+            for ( let i = 0; i < compiledBundle.assets.length; ++i ){
+                const asset = compiledBundle.assets[i]
                 if ( asset.isMainEntry ){
                     main = wsAssets[i]
                     break
@@ -107,13 +115,15 @@ component WorkspaceCompilation{
                 pageContent = pageContent
                 identifier = id
                 stamp = time
-                assets = r.assets
+                assets = compiledBundle.assets
                 mainAsset = main
+                warnings = compiledResult.warnings
                 styles = []
             }
             return compilation
         
         } catch ( e ){
+            console.error(e)
             return WorkspaceCompilation.__createFromErrors(
                 e instanceof Array ? e : [e], id, time, workspace
             )

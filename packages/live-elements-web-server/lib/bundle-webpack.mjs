@@ -8,10 +8,7 @@ import fs from 'fs'
 import memfs from 'memfs'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
-
 import { Environment } from './environment.mjs'
-import { WatcherGroup } from './watcher.mjs'
-
 import serverLog from './server-log.mjs'
 import ValueWithReport from './core/value-with-report.mjs'
 
@@ -161,79 +158,17 @@ export default class WebpackBundler extends EventEmitter {
         })
     }
 
-    static compileBundle(name, files, publicPath, distPath, devTool, mode){
-        const virtualModules = {}
-        files.filter(file => file.content).forEach(file => {
-            virtualModules[file.location] = file.content
+    createMiddleware(){
+        this._middleware = middleware(this._compiler, {
+            publicPath: '/scripts',
+            stats: 'errors-warnings'
         })
-        const entries = files.map(file => file.location)
-        const entriesConfig = {}
-        entriesConfig[name] = entries
-
-        const entryName = `${name}.bundle.js`
-
-        const configuration = {
-            entry: entriesConfig,
-            output: {
-                filename: '[name].bundle.js',
-                path: `${distPath}/scripts`,
-                publicPath : publicPath
-            },
-            devtool: devTool,
-            mode: mode,
-            plugins: [
-                new VirtualModulesPlugin(virtualModules)
-            ],
-            module: {
-                rules: [
-                    {
-                        test: /\.lv$/,
-                        use: [{ loader: 'live-elements-loader' }],
-                    },
-                ]
-            }
-        }
-
-        const memfsWithVolumne = memfs.createFsFromVolume(new memfs.Volume())
-        const compiler = webpack(configuration)
-        compiler.outputFileSystem = memfsWithVolumne
-
-        return new Promise((resolve, reject) => {
-
-            compiler.run((err, stats) => {
-                if (err) {
-                    reject(err)
-                    return
-                }
-                const info = stats.toJson()
-                if (stats.hasErrors()) {
-                    const e = new Error(JSON.stringify(info.errors.map(e => e.message).join(',')))
-                    e.errors = info.errors
-                    reject(e)
-                    return
-                }
-
-                if (stats.hasWarnings()) {
-                    console.warn(info.warnings)
-                }
-
-                const outputPath = configuration.output.path
-                const assets = info.assets.map(asset => {
-                    const assetPath = path.join(outputPath, asset.name)
-                    return {
-                        name: asset.name,
-                        path: assetPath,
-                        isMainEntry: asset.name === entryName ? true : false,
-                        content: memfsWithVolumne.readFileSync(assetPath).toString()
-                    }
-                })
-                resolve({
-                    warnings: stats.hasWarnings() ? info.warnings: null,
-                    assets: assets
-                })
-            });
-        })
+        return this._middleware
     }
+
+    get compiler() { return this._compiler; }
+    get middleware() { return this._middleware; }
+    get virtualModulesPlugin(){ return this._virtualModulesPlugin }
 
     static compile(entries, config){
         const virtualModules = {}
@@ -313,18 +248,6 @@ export default class WebpackBundler extends EventEmitter {
             });
         })
     }
-
-    createMiddleware(){
-        this._middleware = middleware(this._compiler, {
-            publicPath: '/scripts',
-            stats: 'errors-warnings'
-        })
-        return this._middleware
-    }
-
-    get compiler() { return this._compiler; }
-    get middleware() { return this._middleware; }
-    get virtualModulesPlugin(){ return this._virtualModulesPlugin }
 }
 
 WebpackBundler.Entry  = WebpackBundlerEntry
