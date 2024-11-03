@@ -138,6 +138,11 @@ export default class StyleContainer extends EventEmitter {
         this.emit('change', outputsChanged)
     }
 
+    static scopedCSSPath(){
+        const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
+        return path.resolve(path.join(currentDir, '..', 'style', 'processors', 'private', 'ScopedCSS.lv'))
+    }
+
     static resolveSrc(src, bundleRootPath) {
         let packageSeparator = src.indexOf('/');
         if (packageSeparator === -1) {
@@ -182,15 +187,44 @@ export default class StyleContainer extends EventEmitter {
         return styles
     }
 
+    /**
+     * Iterates through the top styles of the scopedComponent, and creates an output with the proocessed
+     * styles for that component
+     */
+    static async createTopLevelStyles(scopedComponent, scopedCollection, location, useDefaultPrefix){
+        const styleContainer = new StyleContainer(location)
+        const styleOutputs = []
+        const pathToScopedCSS = StyleContainer.scopedCSSPath()
+
+        for (let j = 0; j < scopedComponent._styles.length; ++j) {
+            // add each component input style with it's own component selector transformations
+            const sst = scopedComponent._styles[j]
+            if (!sst.resolved.src) {
+                throw new Error(`Style path was not resolved '${sst.src}' in component '${scopedComponent.uri}'`)
+            }
+            const styleOutput = styleContainer.configureOutput(sst.src)
+            const selectors = ScopedComponentSelectors.fromStyle(scopedCollection, sst)
+
+            const scopedProcessor = { file: pathToScopedCSS, args: { lookups: selectors, defaultPrefix: useDefaultPrefix ? scopedComponent.classNameWithPrefix : '' } }
+            const sstProcessor = sst.resolved.process ? { file: sst.resolved.process, args: undefined } : null
+            const processChain = sstProcessor ? [scopedProcessor, sstProcessor] : [scopedProcessor]
+            styleOutput.addInputUnique(sst.resolved.src, await StyleChainProcessor.create(processChain))
+            await styleOutput.reload()
+
+            styleOutputs.push(styleOutput)
+        }
+
+        return styleOutputs
+    }
+
     async __addComponentScopedStyles(ct, scopedComponentCollection, rootViews, output) {
         const isRoot = rootViews.includes(ct)
         const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
         if (ct.inherits) {
             await this.__addComponentScopedStyles(ct.inherits, scopedComponentCollection, rootViews, output)
         }
-
-        const currentDir = path.dirname(url.fileURLToPath(import.meta.url))
-        const pathToScopedCSS = path.resolve(path.join(currentDir, '..', 'style', 'processors', 'private', 'ScopedCSS.lv'))
+        
+        const pathToScopedCSS = StyleContainer.scopedCSSPath()
 
         for (let j = 0; j < ct._styles.length; ++j) {
             // add each component input style with it's own component selector transformations
