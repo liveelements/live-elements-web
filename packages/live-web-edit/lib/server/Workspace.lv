@@ -15,7 +15,7 @@ component Workspace{
 
     constructor(){
         super()
-        Workspace.prototype.__initialize.call(this)
+        this{}
         this._path = ''
         this._name = ''
         this._createdOn = null
@@ -210,11 +210,11 @@ component Workspace{
         return this._documents.find(d => d.path === filePath)
     }
 
-    async fn compile(baseUrl:string){
+    async fn compile(workspaceOperations:WorkspaceOperations, baseUrl:string){
         if ( !this.canWrite() ){
             throw new Error(`Workspace ${this.name} is read only. Can't compile.`)
         }
-        this._compilation = await WorkspaceCompilation.run(this, baseUrl)
+        this._compilation = await workspaceOperations.compile(this, baseUrl)
         return this._compilation
     }
 

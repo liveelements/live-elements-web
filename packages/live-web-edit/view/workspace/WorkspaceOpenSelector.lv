@@ -9,54 +9,52 @@ component WorkspaceOpenSelector < Div{
         ScopedStyle{ src: './style/workspaceopenselector.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
 
+    static fn groupBySection(data:Array<Object>){
+        const groupedData = {}
+        data.forEach(item => {
+            if (!groupedData[item.section]) {
+                groupedData[item.section] = {
+                    name: item.section,
+                    items: []
+                };
+            }
+            groupedData[item.section].items.push(item);
+        })
+        return Object.values(groupedData);
+    }
+
     boolean isOpen : false
 
     Object data = { templates: [] }
     Object workspaceForkHandler : null
+    Object groupedTemplates: WorkspaceOpenSelector.groupBySection(this.data.templates)
 
     classes: [ScopedStyle.className(WorkspaceOpenSelector), this.isOpen ? 'open' : '']
 
     constructor(){
         super()
-        WorkspaceOpenSelector.prototype.__initialize.call(this)
+        this{}
     }
 
-    H3`Create`
-    Ul{
-        Li{
-            A{ href: '/create/default' 
-               classes: ['new-link']
-               on click: (e) => {
-                    e.preventDefault()
-                    if ( workspaceOpenSelector.workspaceForkHandler )
-                        workspaceOpenSelector.workspaceForkHandler('default')
-                }
-
-                T`New Workspace`
+    children: this.groupedTemplates.map(section => {
+        return Section{
+            H3{ T{ text: section.name } }
+            Ul{
+                children: section.items.map(template => {
+                    return Li{
+                        A{ 
+                            href: `/create/${template.name}`
+                            on click: (e) => {
+                                e.preventDefault()
+                                if ( workspaceOpenSelector.workspaceForkHandler )
+                                    workspaceOpenSelector.workspaceForkHandler(template.name)
+                            }
+                            
+                            T{ text: template.label }
+                        }
+                    }
+                })
             }
         }
-    }
-
-    Section{    
-        H3{
-            T`Templates`
-        }
-        Ul{
-            children: workspaceOpenSelector.data.templates.map(template => {
-                return Li{
-                    A{ 
-                        href: `/create/${template.name}`
-                        on click: (e) => {
-                            e.preventDefault()
-                            if ( workspaceOpenSelector.workspaceForkHandler )
-                                workspaceOpenSelector.workspaceForkHandler(template.name)
-                        }
-                        
-                        T{ text: template.label }
-                    }
-                }
-            })
-        }
-    }
-
+    })
 }

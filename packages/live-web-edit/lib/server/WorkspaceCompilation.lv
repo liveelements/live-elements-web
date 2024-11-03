@@ -1,5 +1,4 @@
 import live-elements-web-server.page.index
-
 import LvDOMEmulator from 'live-elements-web-server/lib/lvdomemulator.mjs'
 import WebpackBundler from 'live-elements-web-server/lib/bundle-webpack.mjs'
 import {VirtualScript} from 'live-elements-web-server/lib/scripts.mjs'
@@ -60,76 +59,6 @@ component WorkspaceCompilation{
         return WorkspaceCompilation{ errors = errs identifier = identifier stamp = stamp }
     }
 
-    static async fn run(workspace:Object,baseUrlParam:string):WorkspaceCompilation{
-        const baseUrl = baseUrlParam ? baseUrlParam : ''
-
-        const page = IndexPage{}
-        page.entryScript = `${baseUrl}/v-scripts/${workspace.name}/ws.bundle.js`
-        const domEmulator = new LvDOMEmulator({beautify: true})
-        const pageDOM = page.captureDOM(domEmulator)
-        const pageContent = domEmulator.serializeDOM(pageDOM)
-
-        const id = WorkspaceCompilation.generateid()
-        const time = new Date()
-        
-        const loaderScriptContent = generateLoader({
-            mainEntry: './Index.lv',
-            usagesRoute: `${baseUrl}/v-use/${workspace.name}`
-        })
-
-        try{  
-            const compiledResult = await WebpackBundler.compile(
-                [
-                    WebpackBundler.Entry.create('w', [
-                        { path: path.join(workspace.path, 'ws.bundle.js'), content: loaderScriptContent }
-                    ])
-                ],
-                WebpackBundler.Config.create({
-                    mode: 'development',
-                    devTool: 'inline-source-map',
-                    outputFileName: '[name].bundle.js',
-                    publicPath: `${baseUrl}/v-scripts/${workspace.name}/`,
-                    outputPath: path.join(workspace.path, 'dist')
-                })
-            )
-
-            const compiledBundle = compiledResult.unwrapOrThrow()
-        
-            let main = null
-
-            const wsAssets = compiledBundle.assets.map(asset => (WorkspaceAsset{
-                name: asset.name
-                content: asset.content
-            }))
-
-            for ( let i = 0; i < compiledBundle.assets.length; ++i ){
-                const asset = compiledBundle.assets[i]
-                if ( asset.isMainEntry ){
-                    main = wsAssets[i]
-                    break
-                }
-            }
-
-            const compilation = WorkspaceCompilation{
-                page = page
-                pageContent = pageContent
-                identifier = id
-                stamp = time
-                assets = compiledBundle.assets
-                mainAsset = main
-                warnings = compiledResult.warnings
-                styles = []
-            }
-            return compilation
-        
-        } catch ( e ){
-            console.error(e)
-            return WorkspaceCompilation.__createFromErrors(
-                e instanceof Array ? e : [e], id, time, workspace
-            )
-        }
-    }
-
     fn hasResult(){
         return this.page ? true : false
     }
@@ -185,6 +114,7 @@ component WorkspaceCompilation{
             page: 'wsindex.html',
             styles: this.styles.map(s => s.file),
             assets: this.assets.map(a => a.name),
+            errors: this.errors,
             main: this.mainAsset.name,
             usages: this.usageAssignments,
             stamp: this.stamp.toISOString()
@@ -227,36 +157,11 @@ component WorkspaceCompilation{
             identifier = identifier
             stamp = new Date(data.stamp)
             assets = assets
+            errors = data.errors ? data.errors : []
             mainAsset = mainAsset
             usageAssignments = data.usages
             styles = styles
         }
         return compilation
-    }
-
-
-    async fn updateUsages(usageStructure:Object, wsname:string, baseUrlParam:string){
-        const baseUrl = baseUrlParam ? baseUrlParam : ''
-
-        const scopedCollection = ScopedComponentCollection.fromJSON(usageStructure)
-        ScopedComponentPaths.resolveRelativePaths(scopedCollection, path.resolve('.'))
-        const viewsc = scopedCollection.findScopedComponentByUri(usageStructure.uri)
-
-        const styleContainer = new StyleContainer('/styles')
-        await styleContainer.addScopedStyles(scopedCollection)
-
-        this.updateStyles(
-            styleContainer.outputs.map(o => ({ file: o.output, content: o.content }))
-        )
-
-        const scopedViewAssignment = new ScopedAssignmentControl()
-        const assignmentStructure = scopedViewAssignment.updateAssignmentStructure(scopedCollection, viewsc)
-
-        this.usageAssignments = {
-            scopedStyles: assignmentStructure,
-            scopedStyleLinks: scopedViewAssignment.styleLinks(scopedCollection).map(link => `${baseUrl}/v/${wsname}${link}`)
-        }
-
-        return this.usageAssignments
     }
 }

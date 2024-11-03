@@ -14,11 +14,52 @@ component WorkspaceViewActions{
         this.workView.frame.refresh()
     }
 
-    fn save(){
-        if ( !this.workView.data.canWrite )
+    async fn save(){
+        if ( !this.workView.data.writeEnabled() )
             return
         const activeEditor = this._findActiveEditor()
-        this.workView._dataActions.save(this.workView.data, activeEditor, activeEditor.document)        
+
+        try{
+            this.workView.data.loadingStatus = { message: 'Saving ...' }
+            const result = await this.workView._dataActions.save(this.workView.data, activeEditor, activeEditor.document)
+            this.workView.data.loadingStatus = null
+            if ( result.name ){
+                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                this.refreshFrame()
+            }
+        } catch ( e ){
+            this._catchError(e)
+        }
+    }
+
+    async fn saveAll(){
+        if ( !this.workView.data.writeEnabled() )
+            return
+
+        const editors = []
+        const tabLayout = this.workView.tabLayout
+        for ( let i = 0; i < tabLayout.children.length; ++i ){
+            if ( tabLayout.children[i] instanceof TabContent ){
+                const tabcontent = tabLayout.children[i]
+                for ( let j = 0; j < tabcontent.children.length; ++j ){
+                    const tabpane = tabcontent.children[j]
+                    const editor = tabpane.children[0]
+                    editors.push(editor)
+                }
+            }
+        }
+
+        try{
+            this.workView.data.loadingStatus = { message: 'Saving ...' }
+            const result = await this.workView._dataActions.saveAll(this.workView.data, editors)
+            this.workView.data.loadingStatus = null
+            if ( result.name ){
+                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                this.refreshFrame()
+            }
+        } catch ( e ){
+            this._catchError(e)
+        }
     }
 
     fn actionMap(){
@@ -29,11 +70,11 @@ component WorkspaceViewActions{
     }
 
     fn lockWrite(){
-        if ( !this.workView.data.canWrite )
+        if ( !this.workView.data.lockEnabled() )
             return
         this.workView._dataActions.lockWrite(this.workView.data).then(res => {
             if ( res ){
-                this.workView.data.canWrite = false
+                this.workView.data.writeBehavior = WorkspaceViewData.WriteBehavior.ReadOnly
             }
         }).catch(this.catchError)
     }
@@ -53,43 +94,78 @@ component WorkspaceViewActions{
         const dataActions = this.workView._dataActions
         return dataActions.forkTemplate(name)
             .then( data => {
-                const newData = WorkspaceViewData.fromJSON(data)
-                newData.templates = this.workView.data.templates
-                this.workView.data = newData
+                this.workView.data.updateFromJSON(data)
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }
-                window.history.pushState(null, null, `/w/${this.workView.data.workspaceName}`)    
+                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
+                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
+                }
+                this.workView.data.logMessages = []
+                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
 
-                if ( !this.workView.data.lastCompilation && this.workView.data.canWrite ){
+                if ( this.workView.data.lastCompilation ){
+                    this.refreshFrame()
+                } else if ( this.workView.data.writeEnabled() ){
                     this.compile()
                 }
             })
             .catch(this.catchError) 
+    }
+
+    fn load(name:string){
+        const dataActions = this.workView._dataActions
+
+        return dataActions.load(this.workView.data, name)
+            .then( data => {
+                this.workView.data.updateFromJSON(data)
+                if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
+                    return
+                }
+                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
+                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
+                }
+                this.workView.data.logMessages = []
+                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+
+                if ( this.workView.data.lastCompilation ){
+                    this.refreshFrame()
+                } else if ( this.workView.data.writeEnabled() ){
+                    this.compile()
+                }
+            })
+            .catch(this.catchError)
     }
 
     fn fork(){
         const dataActions = this.workView._dataActions
         return dataActions.fork(this.workView.data)
             .then( data => {
-                const newData = WorkspaceViewData.fromJSON(data)
-                newData.templates = this.workView.data.templates
-                this.workView.data = newData
+                this.workView.data.updateFromJSON(data)
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }
-                window.history.pushState(null, null, `/w/${this.workView.data.workspaceName}`)    
+                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
+                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
+                }
+                this.workView.data.logMessages = []
+                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))    
 
-                if ( !this.workView.data.lastCompilation && this.workView.data.canWrite ){
+                if ( this.workView.data.lastCompilation ){
+                    this.refreshFrame()
+                } else if ( this.workView.data.writeEnabled() ){
                     this.compile()
                 }
+
             })
             .catch(this.catchError) 
     }
 
     fn compile(){
+        this.workView.data.loadingStatus = { message: 'Compiling ...' }
         this.compileResolveError()
             .then( res => {
+                this.workView.data.loadingStatus = null
                 if ( res ){
                     if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
                         this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
@@ -101,13 +177,16 @@ component WorkspaceViewActions{
     }
 
     fn _catchError(e:Object){
+        this.workView.data.loadingStatus = null
         this.workView.data.errors = e.messages ? e.messages : [e.message]
+        console.error(e)
     }
 
     fn compileResolveError(){
         const dataActions = this.workView._dataActions
-        if ( !this.workView.data.canWrite )
+        if ( this.workView.data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write )
             return Promise.resolve(null)
+
         return dataActions.compile(this.workView.data)
             .then(res => {
                 this.workView.data.errors = []

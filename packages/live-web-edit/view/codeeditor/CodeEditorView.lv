@@ -72,6 +72,12 @@ component CodeEditorView < Div{
     Object config = {}
     on configChanged: () => { this.initEditor() }
 
+    Object themes = {
+        light: CodeEditorView.lightTheme,
+        dark: CodeEditorView.darkTheme
+    }
+    on themesChanged: () => { this.initEditor() }
+
     constructor(){
         super()
         this._editor = null
@@ -93,7 +99,7 @@ component CodeEditorView < Div{
             ? 'dark'
             : 'light'
 
-        const theme = colorScheme === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme
+        const theme = colorScheme === 'dark' ? this.themes.dark : this.themes.light
 
         const extensions = [basicSetup, javascript(), this._theme.of(theme), indentUnit.of('    ')]
 
@@ -132,7 +138,7 @@ component CodeEditorView < Div{
         if ( !this._colorSchemeListener && typeof window !== 'undefined' ){
             this._colorSchemeListener = window.addEventListener("colorscheme", event => {
                 if ( this._editor ){
-                    const theme = event.detail === 'dark' ? CodeEditorView.darkTheme : CodeEditorView.lightTheme
+                    const theme = event.detail === 'dark' ? this.themes.dark : this.themes.light
                     this._editor.dispatch({
                         effects: [this._theme.reconfigure(theme)]
                     })

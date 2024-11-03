@@ -42,23 +42,65 @@ component WorkspaceViewDataActions{
             activeEditor.document.isDirty = false
             if ( this.hooks && this.hooks.saveReady )
                 this.hooks.saveReady(data, activeEditor.document)
+        } else if ( res.data ){
+            data.updateFromJSON(res.data)
+            activeEditor.document.isDirty = false
+            if ( this.hooks && this.hooks.saveReady )
+                this.hooks.saveReady(data, activeEditor.document)
+            return { name: res.data.name }
         } else if ( res.error ){
-            this.errors = this.errors.concat([{ type: 'save', message: res.error.message }])
+            data.errors = data.errors.concat([{ type: 'save', message: res.error.message }])
         }
         return true
+    }
+
+    async fn saveAll(data:WorkViewData, editors:DOMElement[]){
+        const route = this.serverRoutes.save.replace(':workspace', data.workspaceName)
+        let anyDocumentDirty = null
+        let newName = null
+        for ( let i = 0; i < editors.length; ++i ){
+            const editor = editors[i]
+            const document = editor.document
+            if ( document.isDirty ){
+                anyDocumentDirty = document
+                document.content = editor.editor.state.doc.toString()
+                const res = await ky.post(route, {json: { document: document.toJSON() } }).json()
+                if ( res.success ){
+                    editor.document.isDirty = false
+                } else if ( res.data ){
+                    data.updateFromJSON(res.data)
+                    newName = { name: res.data.name }
+                } else if ( res.error ){
+                    data.errors = data.errors.concat([{ type: 'save', message: res.error.message }])
+                    return true
+                }
+            }
+        }
+        
+        if ( anyDocumentDirty ){
+            if ( this.hooks && this.hooks.saveReady )
+                this.hooks.saveReady(data, anyDocumentDirty)
+        }
+
+        return newName ? newName : true
     }
 
     async fn lockWrite(data:WorkViewData){
         const route = this.serverRoutes.lockWrite.replace(':workspace', data.workspaceName)
         const res = await ky.post(route, {json: {} }).json()
         if ( res.error ){
-            this.errors = this.errors.concat([{ type: 'lockwrite', message: res.error.message }])
+            data.errors = data.errors.concat([{ type: 'lockwrite', message: res.error.message }])
         } else {
             if ( this.hooks && this.hooks.locked ){
                 this.hooks.locked()
             }
         }
         return true
+    }
+
+    async fn load(data:WorkViewData, name:string){
+        const ws = await ky.get(`${this.serverRoutes.load}/${name}`).json()
+        return ws
     }
 
     async fn forkTemplate(name:string){

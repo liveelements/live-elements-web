@@ -5,20 +5,34 @@ component WorkspaceContainer{
     string path: ''
     string templatesPath: ''
     any[] workspaces: []
+    number loadLimit: null
+    WorkspaceOperations operations: null
 
-    static fn create(location:string, templatePath:string){
+    static fn create(location:string, templatePath:string, operations:WorkspaceOperations){
         if ( !fs.existsSync(location) ){
             fs.mkdirSync(location, { recursive: true })
         }
         if ( templatePath && !fs.existsSync(templatePath) ){
             throw new Error(`Failed to find templates path: ${templatePath}`)
         }
-        return WorkspaceContainer{ path: location templatesPath : templatePath ? templatePath : null }
+        return WorkspaceContainer{ 
+            path: location 
+            templatesPath : templatePath ? templatePath : null 
+            operations = operations ? operations : WorkspaceOperations{}
+        }
     }
 
 
     fn createWorkspace(files:Array, mainEntry:string){
         return Workspace.create(this.path, Workspace.generateName(), files, mainEntry)
+    }
+
+    fn _cleanupOnLimit(){
+        if ( this.loadLimit ){
+            while ( this.workspaces.length > this.loadLimit ){
+                this.workspaces.shift()
+            }
+        }
     }
 
     fn createWorkspaceFrom(template:string){
@@ -50,6 +64,9 @@ component WorkspaceContainer{
 
         const ws = Workspace.load(this.path, name)
         this.workspaces = this.workspaces.concat([ws])
+
+        this._cleanupOnLimit()
+
         return ws
     }
 }

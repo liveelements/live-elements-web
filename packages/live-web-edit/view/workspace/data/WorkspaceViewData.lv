@@ -1,17 +1,31 @@
 import .lib.middle
 
 component WorkspaceViewData{
+
+    static Object WriteBehavior = {
+        ReadOnly: 0,
+        Write: 1,
+        Fork: 2
+    }
+
     string baseUrl: ''
     Array<Document> documents: []
     string workspaceName: ''
-    boolean canWrite: true
+    number writeBehavior: WorkspaceViewData.WriteBehavior.Write
     string lastCompilation: null
     string workspaceViewUrl: null
     bool workspaceSelector: false
+    Object loadingStatus: null
     Array<Object> templates: []
     Array<Object> errors: []
     Array<Object> logMessages: []
 
+    fn writeEnabled():boolean{ 
+        return this.writeBehavior === WorkspaceViewData.WriteBehavior.Write || this.writeBehavior === WorkspaceViewData.WriteBehavior.Fork
+    }
+    fn lockEnabled():boolean{
+        return this.writeBehavior === WorkspaceViewData.WriteBehavior.Write
+    }
     fn route(url:string):string{ return this.baseUrl + url }
 
     fn appendLogMessage(message:string){
@@ -22,15 +36,53 @@ component WorkspaceViewData{
         this.logMessagesChanged.emit()
     }
 
+    fn updateFromJSON(data:Object){
+        this.baseUrl = data.baseUrl ? data.baseUrl : this.baseUrl
+        this.workspaceName = data.name
+        if ( data.documents ){
+            data.documents.forEach(dataDocument => {
+                const doc = this.documents.find(d => d.path === dataDocument.path)
+                if ( doc ){
+                    doc.content = dataDocument.content
+                } else {
+                    this.documents = this.documents.concat([Document.fromJSON(dataDocument)])
+                }
+            })
+            let toRemove = []
+            this.documents.forEach(thisDocument => {
+                const dataDoc = data.documents.find(d => d.path === thisDocument.path)
+                if ( !dataDoc ){
+                    toRemove.push(dataDoc)
+                }
+            })
+            toRemove.forEach(removeDoc => {
+                this.documents = this.documents.filter(d => d === removeDoc)
+            })
+        }
+        this.writeBehavior = data.writeBehavior ? data.writeBehavior : this.writeBehavior
+        this.lastCompilation = data.compilation ? data.compilation : this.lastCompilation
+        this.templates = data.templates ? data.templates : this.templates
+        this.errors = data.errors 
+            ? data.errors 
+            : data.error ? [data.error] 
+                : data.compilation && data.compilation.errors ? data.compilation.errors 
+                : this.errors
+    }
+
     static fn fromJSON(data:Object):WorkspaceViewData{
         return WorkspaceViewData{    
             baseUrl = data.baseUrl ? data.baseUrl : ''
             workspaceName = data.name
             documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
-            canWrite = data.canWrite ? data.canWrite : false
+            writeBehavior = data.writeBehavior
             lastCompilation = data.compilation ? data.compilation : null
             templates = data.templates ? data.templates : []
-            errors = data.errors ? data.errors : data.error ? [data.error] : []
+            errors = data.errors 
+                ? data.errors 
+                : data.error ? [data.error] 
+                    : data.compilation && data.compilation.errors 
+                        ? data.compilation.errors 
+                        : []
         }
     }
 }
