@@ -1,6 +1,7 @@
 component Bundle{
 
     default children: []
+    Object config = null
 
     constructor(){
         super()

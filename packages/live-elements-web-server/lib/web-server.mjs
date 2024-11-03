@@ -110,7 +110,8 @@ export default class WebServer extends EventEmitter{
         this._scopedAssignmentControl = new ScopedAssignmentControl()
 
         this._app = express()
-        this._app.use(express.json())
+        this._app.use(express.json(bundle.bundle.config && bundle.bundle.config.json ? bundle.bundle.config.json : {} ))
+
         this._webpack = null
         this._serverSocket = null
         if ( this._config.useSocket ){

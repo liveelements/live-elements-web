@@ -20,7 +20,7 @@ component RouteCollector < BundleDataCollector{
 
     fn iterateStart(group:BaseElement, trail:Object){
         const nestedMiddleware = []
-        const middlewares = group.children.filter(c => c instanceof MiddlewareRoute)
+        const middlewares = group.children.filter(c => c instanceof MiddlewareRoute && c.middleware)
         for( let i = 0; i < middlewares.length; ++i )
             nestedMiddleware.push(middlewares[i].middleware)
 
