@@ -4,6 +4,8 @@ component Document{
     string content: ''
     bool isDirty: false
 
+    event contentReset()
+
     fn toJSON():Object{
         return {
             path: this.path,

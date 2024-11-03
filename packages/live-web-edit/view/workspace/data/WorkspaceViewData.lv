@@ -44,6 +44,7 @@ component WorkspaceViewData{
                 const doc = this.documents.find(d => d.path === dataDocument.path)
                 if ( doc ){
                     doc.content = dataDocument.content
+                    doc.contentReset.emit()
                 } else {
                     this.documents = this.documents.concat([Document.fromJSON(dataDocument)])
                 }

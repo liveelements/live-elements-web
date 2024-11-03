@@ -231,6 +231,10 @@ component WorkspaceView < Div{
                                             readOnly: codeEditorView.isReadOnly,
                                             keymap: workspaceView.keymap.keymap
                                         }
+
+                                        fn completed(){ 
+                                            this.document.on('contentReset', () => this.initEditor())
+                                        }
                                     }
                                 }
                             })
