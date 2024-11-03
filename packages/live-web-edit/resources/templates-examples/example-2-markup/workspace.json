@@ -1,7 +1,8 @@
 {
     "name":"example-markup",
-    "label" : "Example: Markup",
+    "label" : "Markup",
     "entry":"Index.lv",
+    "section" : "Examples",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}

@@ -1,0 +1,49 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.button
+
+component Tabs < PageView{
+    static any[] use = [
+        TabLayout,
+        Content,
+        ScopedStyle{ src: './index.css' }
+    ]
+
+    Body{ style: { padding: '1rem' }
+        
+        TabLayout{
+            // Tab header with list of tab buttons
+            TabHeader{
+                TabButton{ T`Tab 1` }
+                TabButton{ T`Tab 2` }
+                TabButton{ T`Tab 3` }
+            }
+            // tab panes
+            TabContent{
+                TabPane{ 
+                    // style content inside pane using Content component
+                    Content{
+                        H1`Heading 1` 
+                        P`Paragraph of text`
+                    }
+                }
+                TabPane{ 
+                    Content{
+                        H1`Heading 2` 
+                        P`Paragraph of text`
+                    }
+                }
+                TabPane{ 
+                    Content{
+                        H1`Heading 3` 
+                        P`Paragraph of text`
+                    }
+                }
+            }
+        }
+    }
+}

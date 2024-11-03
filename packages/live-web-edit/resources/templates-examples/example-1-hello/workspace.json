@@ -1,7 +1,8 @@
 {
     "name":"example-hello",
-    "label" : "Example: Hello",
+    "label" : "Hello",
     "entry":"Index.lv",
+    "section" : "Examples",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}

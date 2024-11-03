@@ -1,0 +1,55 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.layout
+import live-web-view.content
+import live-web-view.content.data
+
+component Tree < PageView{
+    static any[] use = [
+        TreeView,
+        ColLayout,
+        ScopedStyle{ src: './index.css' }
+    ]
+
+    Body{ classes: [ScopedStyle.className(Tree)]
+
+        // column layout with 2 columns
+        ColLayout{
+            Col{
+                // treeview with tree node data
+                TreeView{
+                    data: TreeNode{
+                        TreeNode`Item 1`
+                        TreeNode{
+                            label: 'Item 2'
+
+                            TreeNode`Item 2.1`
+                            TreeNode`Item 2.2`
+
+                            TreeNode{
+                                label: 'Item 2.3'
+                                TreeNode`Item 2.3.1`
+                                TreeNode`Item 2.3.2`
+                            }
+                        }
+                        TreeNode`Item 3`
+                    }
+                }
+            }
+            Col{
+                // treeview with a labeled root node
+                TreeView{
+                    data: TreeNode{
+                        label: 'Root'
+                        TreeNode`Item 1`
+                        TreeNode`Item 2`
+                        TreeNode`Item 3`
+                    }
+                }
+            }
+        }
+        
+    }
+}

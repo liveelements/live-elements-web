@@ -10,12 +10,13 @@ component Markup < PageView{
     // <article>
     Article{
         // <h1>This is a heading</h1>
+        // similar to calling  "new H1('This is a heading')" in js
         H1`This is a heading`
 
-        // the same as calling "new P('This is a heading')" in js
+        // <p>This is a paragraph</p> 
         P`This is a paragraph`
 
-        P{  // call new T(...), new B(...), ...
+        P{  // call new T(...), new B(...), new T(...), ...
             T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
               This paragraph is written on multiple lines.`
         }

@@ -1,7 +1,8 @@
 {
-    "name":"example-state-nested-list",
-    "label" : "Example: State Nested List",
+    "name":"example-styled-markup",
+    "label" : "Styled Markup",
     "entry":"Index.lv",
+    "section" : "UI Examples",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}

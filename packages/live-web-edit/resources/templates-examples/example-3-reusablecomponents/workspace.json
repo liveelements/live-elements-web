@@ -1,7 +1,8 @@
 {
-    "name":"example-styled-markup",
-    "label" : "Example: Styled Markup",
+    "name":"example-reusable-components",
+    "label" : "Reusable Components",
     "entry":"Index.lv",
+    "section" : "Examples",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}

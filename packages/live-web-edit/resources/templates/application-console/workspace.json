@@ -1,7 +1,8 @@
 {
     "name":"application",
-    "label" : "Application: Console",
+    "label" : "Application (Console)",
     "entry":"Index.lv",
+    "section" : "Templates",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}

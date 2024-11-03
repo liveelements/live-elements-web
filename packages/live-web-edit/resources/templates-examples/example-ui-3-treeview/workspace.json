@@ -1,7 +1,8 @@
 {
-    "name":"default",
+    "name":"example-treeview",
+    "label" : "TreeView",
     "entry":"Index.lv",
-    "section" : "New",
+    "section" : "UI Examples",
     "documents":[
         {"path": "Index.lv", "type": "lv"},
         {"path": "index.css", "type:": "css"}
