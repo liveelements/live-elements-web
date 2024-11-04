@@ -1,6 +1,6 @@
 {
     "name": "live-elements-web-source",
-    "version": "0.1.12",
+    "version": "0.1.13",
     "description": "Live Elements for the web.",
     "private": "true",
     "lvweb": {
