@@ -98,10 +98,15 @@ instance bundle Bundle{
 
     string currentPackage = path.dirname(PackagePath.findPackageJson(path.resolve('.')))
     string liveWebEdit = PackagePath.find('live-web-edit', path.resolve('.'))
+    string templatesPath = path.join(this.liveWebEdit, 'resources', 'templates')
     string examplesTemplatesPath = path.join(this.liveWebEdit, 'resources', 'templates-examples')
-    Array<Object> examplesTemplates = WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath)
 
-    WorkspaceRoute.(path.join(this.currentPackage, 'workspaces'), this.examplesTemplates){
+    Array<Object> templates = [
+        { path: path.join(this.templatesPath, 'default'), name: 'page', section: 'New', label: 'New Page' },
+        { path: path.join(this.templatesPath, 'application-console'), name: 'application', section: 'Templates', label: 'Application (Console)' }
+    ].concat(WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath))
+
+    WorkspaceRoute.(path.join(this.currentPackage, 'workspaces'), this.templates){
         view: Main
     }
 }
