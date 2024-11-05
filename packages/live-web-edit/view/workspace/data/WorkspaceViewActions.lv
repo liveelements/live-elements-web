@@ -11,6 +11,7 @@ component WorkspaceViewActions{
     }
 
     fn refreshFrame(){
+        this.workView.data.frameLoading = true
         this.workView.frame.refresh()
     }
 
@@ -54,7 +55,6 @@ component WorkspaceViewActions{
             this.workView.data.loadingStatus = null
             if ( result.name ){
                 window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
-                this.refreshFrame()
             }
         } catch ( e ){
             this._catchError(e)

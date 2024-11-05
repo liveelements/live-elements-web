@@ -68,6 +68,7 @@ component WorkspaceViewDataActions{
                 if ( res.success ){
                     editor.document.isDirty = false
                 } else if ( res.data ){
+                    editor.document.isDirty = false
                     data.updateFromJSON(res.data)
                     newName = { name: res.data.name }
                 } else if ( res.error ){

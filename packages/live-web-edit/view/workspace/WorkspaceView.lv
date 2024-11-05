@@ -103,17 +103,19 @@ component WorkspaceView < Div{
         try{
             if ( data.name === '-'){
                 const ws = await ky.get(`${this._dataActions.serverRoutes.load}/-`).json()
-                this.data.updateFromJSON(ws)
+                this.data.updateFromJSON(ws)    
 
                 if ( this.data.workspaceName === '' || this.data.workspaceName === '-' ){
                     return
                 }
 
+                this.data.frameLoading = true
                 window.history.pushState(null, null, this.data.route(`/w/${this.data.workspaceName}`))
             }
 
             if ( this.data.lastCompilation ){
                 if ( this.data.workspaceViewUrl !== this.data.workspaceName ){
+                    this.data.frameLoading = true
                     this.data.workspaceViewUrl = this.data.workspaceName
                 }
             } else if ( this.data.writeEnabled() ){
@@ -160,7 +162,7 @@ component WorkspaceView < Div{
         NavContent{
             
             TooltipArea{
-                RefreshButton{ target: frame }
+                RefreshButton{ on click: () => { workspaceView._workspaceViewActions.refreshFrame() } }
                 Tooltip`Refresh`
             }
             
@@ -259,9 +261,21 @@ component WorkspaceView < Div{
                                 Resizable{ id: resizable fill: true border: true
                                     IFrame{
                                         id: frame
+                                        classes: [workspaceView.data.frameLoading ? 'frame-loading' : '']
                                         src: workspaceView.data.workspaceViewUrl ? workspaceView.data.route('/v/' + workspaceView.data.workspaceViewUrl) : ''
+                                        on srcChanged: () => {
+                                            if ( this.dom )
+                                                workspaceView.data.frameLoading = true
+                                        }
+                                        on load: (d) => {
+                                            workspaceView.data.frameLoading = false
+                                        }
                                     }
                                     ResizableHandlePoint{}
+                                }
+
+                                Div{ classes: ['iframe-loading', workspaceView.data.frameLoading ? 'show' : '']
+                                    Div{ classes: ['loader'] }
                                 }
                             },
                             SplitPane{

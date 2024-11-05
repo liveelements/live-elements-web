@@ -16,6 +16,7 @@ component WorkspaceViewData{
     string workspaceViewUrl: null
     bool workspaceSelector: false
     Object loadingStatus: null
+    boolean frameLoading: false
     Array<Object> templates: []
     Array<Object> errors: []
     Array<Object> logMessages: []
@@ -43,8 +44,10 @@ component WorkspaceViewData{
             data.documents.forEach(dataDocument => {
                 const doc = this.documents.find(d => d.path === dataDocument.path)
                 if ( doc ){
+                    const isReset = doc.content !== dataDocument.content
                     doc.content = dataDocument.content
-                    doc.contentReset.emit()
+                    if ( isReset )
+                        doc.contentReset.emit()
                 } else {
                     this.documents = this.documents.concat([Document.fromJSON(dataDocument)])
                 }
