@@ -7,7 +7,7 @@ component WorkspaceViewActions{
         super()
         this.workView = workView
         this.catchError = this._catchError.bind(this)
-        WorkspaceViewActions.prototype.__initialize.call(this)
+        this{}
     }
 
     fn refreshFrame(){
@@ -25,7 +25,6 @@ component WorkspaceViewActions{
             this.workView.data.loadingStatus = null
             if ( result.name ){
                 window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
-                this.refreshFrame()
             }
         } catch ( e ){
             this._catchError(e)
@@ -167,10 +166,7 @@ component WorkspaceViewActions{
             .then( res => {
                 this.workView.data.loadingStatus = null
                 if ( res ){
-                    if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
-                        this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
-                    }
-                    this.refreshFrame()
+                    this.workView.reloadFrameHandler(this.workView)
                 }
             })
             .catch(this.catchError) 

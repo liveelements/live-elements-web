@@ -54,6 +54,12 @@ component WorkspaceView < Div{
         workspaceView._workspaceViewActions.forkTemplate(name) 
         workspaceView.data.workspaceSelector = false
     }
+    Object reloadFrameHandler = (wsView) => {
+        if ( wsView.data.workspaceViewUrl !== wsView.data.workspaceName ){
+            wsView.data.workspaceViewUrl = wsView.data.workspaceName
+        }
+        wsView.frame.refresh()
+    }
 
     constructor(data:Object){
         super()
