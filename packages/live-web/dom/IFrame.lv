@@ -28,7 +28,7 @@ component IFrame < DOMElement{
 
     fn refresh(){
         if ( this.dom ){
-            this.dom.src = this.dom.src
+            this.dom.src = this.src
         }
     }
 
