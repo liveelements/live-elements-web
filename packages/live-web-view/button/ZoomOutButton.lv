@@ -29,9 +29,9 @@ component ZoomOutButton < IconButton{
                 if ( zoomOutButton.target ){
                     const target = zoomOutButton.target
                     let targetScale = 1
-                    if ( target.props.data ){
-                        if ( target.props.data.zoomScale ){
-                            targetScale = parseFloat(target.props.data.zoomScale)
+                    if ( target.attributes.data ){
+                        if ( target.attributes.data.zoomScale ){
+                            targetScale = parseFloat(target.attributes.data.zoomScale)
                         }
                     }
                     if ( targetScale <= 0.1 ){
@@ -41,12 +41,13 @@ component ZoomOutButton < IconButton{
                     const newScale = Math.round(newScaleAdd * 100) / 100
                     const newSize = 100 / newScale
 
-                    if ( target.props.data )
-                        target.props.data.zoomScale = '' + newScale
-                    else
-                        target.props.data = { zoomScale: '' + newScale }
-
-                    target.propsChanged.emit()
+                    let data = target.attributes.data
+                    if ( data ){
+                        data.zoomScale = '' + newScale
+                    } else {
+                        data = { zoomScale: '' + newScale }
+                    }
+                    target.setOwnAttributeAndUpdate('data', data)
 
                     target.style = {
                         width : `${newSize}%`,

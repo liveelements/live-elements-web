@@ -168,12 +168,12 @@ component WorkspaceView < Div{
             
             TooltipArea{
                 ZoomInButton{ target: frame }
-                Tooltip`Zoom Out`
+                Tooltip`Zoom In`
             }
             
             TooltipArea{
                 ZoomOutButton{ target: frame }
-                Tooltip`Zoom In`
+                Tooltip`Zoom Out`
             }
             
             TooltipArea{

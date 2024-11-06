@@ -31,9 +31,9 @@ component ZoomInButton < IconButton{
                 if ( zoomInButton.target ){
                     const target = zoomInButton.target
                     let targetScale = 1
-                    if ( target.props.data ){
-                        if ( target.props.data.zoomScale ){
-                            targetScale = parseFloat(target.props.data.zoomScale)
+                    if ( target.attributes.data ){
+                        if ( target.attributes.data.zoomScale ){
+                            targetScale = parseFloat(target.attributes.data.zoomScale)
                         }
                     }
                     if ( targetScale > 2.0 ){
@@ -43,12 +43,13 @@ component ZoomInButton < IconButton{
                     const newScale = Math.round(newScaleAdd * 100) / 100
                     const newSize = 100 / newScale
 
-                    if ( target.props.data )
-                        target.props.data.zoomScale = '' + newScale
-                    else
-                        target.props.data = { zoomScale: '' + newScale }
-
-                    target.propsChanged.emit()
+                    let data = target.attributes.data
+                    if ( data ){
+                        data.zoomScale = '' + newScale
+                    } else {
+                        data = { zoomScale: '' + newScale }
+                    }
+                    target.setOwnAttributeAndUpdate('data', data)
 
                     target.style = {
                         width : `${newSize}%`,
