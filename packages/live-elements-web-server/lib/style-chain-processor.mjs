@@ -1,7 +1,9 @@
 import lvimport from "live-elements-core/lvimport.mjs"
 import { Worker } from 'worker_threads'
+import errors from "../shared/errors/errors.mjs"
 import path from 'path'
 import url from 'url'
+import WorkerError from "../shared/errors/worker-error.mjs"
 
 let currentWorker = null
 
@@ -71,7 +73,9 @@ export default class StyleChainProcessor{
 
             const messageListener = (result) => { 
                 if (result.error) {
-                    reject(new Error(`${result.error} in worker '${workerPath}'`));
+                    const we = WorkerError.fromJSON(result.error, errors)
+                    const errorToSend = we instanceof WorkerError ? we.source : we
+                    reject(errorToSend);
                 } else {
                     resolve(result.value);
                 }

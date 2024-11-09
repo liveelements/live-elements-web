@@ -1,4 +1,4 @@
-import Warning from "./warning.mjs"
+import Warning from "../../shared/errors/warning.mjs"
 
 export default class ValueWithReport{
     constructor(result, report){

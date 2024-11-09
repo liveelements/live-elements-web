@@ -1,5 +1,8 @@
 import { parentPort } from 'worker_threads'
 import lvimport from 'live-elements-core/lvimport.mjs'
+import CSSError from '../../shared/errors/css-error.mjs'
+import WorkerError from '../../shared/errors/worker-error.mjs'
+import StandardError from '../../shared/errors/standard-error.mjs'
 
 const loadedComponents = {}
 
@@ -39,7 +42,10 @@ parentPort.on('message', async ({ file, content, destination, chain }) => {
         }
         parentPort.postMessage({ value: { content: result.content, map: result.map ? result.map.toString() : null }});
     } catch ( error ) {
-        console.error(error)
-        parentPort.postMessage({ error: error.message })
+        const sourceError = error.constructor.name === 'CssSyntaxError'
+            ? new CSSError(error.message, error.file, error.line, error.column)
+            : new StandardError(error.message)
+        const traceError = new WorkerError(`Error in worker.`, sourceError)
+        parentPort.postMessage({ error: traceError.toJSON() })
     }
 })
