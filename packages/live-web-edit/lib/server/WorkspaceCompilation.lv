@@ -115,7 +115,7 @@ component WorkspaceCompilation{
             styles: this.styles.map(s => s.file),
             assets: this.assets.map(a => a.name),
             errors: this.errors,
-            main: this.mainAsset.name,
+            main: this.mainAsset ? this.mainAsset.name : null,
             usages: this.usageAssignments,
             stamp: this.stamp.toISOString()
         }

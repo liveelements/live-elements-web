@@ -32,6 +32,13 @@ importer.then(imp => {
 
         ky.post('<<<usagesRoute>>>', {json: { page: pageUsages } }).json()
             .then(serverData => {  
+                if ( serverData.error ){
+                    window.parent.postMessage({
+                        type: 'error',
+                        message: serverData.error.message
+                    }, '*')
+                    return null
+                }
                 return Loader.loadAwaitingModule(importer, "*", [], {
                     scopedStyles: serverData.scopedStyles,
                     scopedStyleLinks: serverData.scopedStyleLinks,

@@ -3,6 +3,8 @@ import live-elements-web-server.page.index
 import .lib.middle
 
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
+import CSSError from 'live-elements-web-server/shared/errors/css-error.mjs'
+import StandardError from 'live-elements-web-server/shared/errors/standard-error.mjs'
 import path from 'path'
 import fs from 'fs'
 
@@ -11,6 +13,7 @@ component WorkspaceRoute < Route{
 
     string workspacesPath = ''
     string templatesPath = ''
+    string defaultProject = 'page'
     WorkspaceContainer workspaces = null
     Object view = null
     Array<Object> templates = []
@@ -104,8 +107,8 @@ component WorkspaceRoute < Route{
             const wsname = req.params.wsname
             let ws = null
             if ( wsname === '-' ){
-                if ( fs.existsSync(path.join(workspaceRoute.workspaces.path, 'page'))){
-                    ws = await workspaceRoute.workspaces.loadWorkspace('page')
+                if ( fs.existsSync(path.join(workspaceRoute.workspaces.path, workspaceRoute.defaultProject))){
+                    ws = await workspaceRoute.workspaces.loadWorkspace(workspaceRoute.defaultProject)
                 } else {
                     ws = await workspaceRoute.workspaces.createWorkspaceFrom('default')
                     ws.save()
@@ -189,6 +192,7 @@ component WorkspaceRoute < Route{
         const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
         const result = await ws.compile(workspaceRoute.workspaces.operations, workspaceRoute.url)
         if ( result.hasErrors() ){
+            ws.save()
             res.json({error: { messages: result.errors.map(e => e.message)} }).end()
         } else {
             res.json({success: true, compilation: result.identifier }).end()
@@ -252,11 +256,20 @@ component WorkspaceRoute < Route{
             if ( ws.compilation.usageAssignments ){
                 assignmentsToSend = ws.compilation.usageAssignments
             } else {
-                assignmentsToSend = await workspaceRoute.workspaces.operations.updateCompilationUsages(
-                    ws.compilation, req.body.page, ws.name, workspaceRoute.url
-                )
-                // assignmentsToSend = await ws.compilation.updateUsages(req.body.page, ws.name, workspaceRoute.url)
-                ws.save()
+                try{
+                    assignmentsToSend = await workspaceRoute.workspaces.operations.updateCompilationUsages(
+                        ws.compilation, req.body.page, ws.name, workspaceRoute.url
+                    )
+                    // assignmentsToSend = await ws.compilation.updateUsages(req.body.page, ws.name, workspaceRoute.url)
+                    ws.save()
+                } catch ( e ){
+                    if ( e instanceof CSSError ){
+                        res.json({ error: { message: WorkspaceCompilation.__replaceMessageWorkspacePaths(e.message, ws) }})
+                        ws.save()
+                        return
+                    }
+                    throw e
+                }
             }
             res.json(assignmentsToSend).end()
             return
