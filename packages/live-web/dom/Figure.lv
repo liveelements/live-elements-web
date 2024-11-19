@@ -1,0 +1,8 @@
+
+component Figure < DOMElement{
+
+    constructor(){
+        super('figure')
+        Figure.prototype.__initialize.call(this)
+    }
+}

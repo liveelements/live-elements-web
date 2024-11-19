@@ -1,0 +1,11 @@
+
+component Small < DOMElement{
+    constructor(text:string){
+        super('small')
+        Small.prototype.__initialize.call(this)
+
+        if ( text ){
+            this.children = [new T(text)]
+        }
+    }
+}
