@@ -1,0 +1,33 @@
+html, html body{
+  height: 100%;
+}
+&TopNav .nav-brand a{
+  color: white;
+  font-weight: 300;
+  padding-left: 30px;
+  letter-spacing: 0.25rem;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='95' fill='none' stroke='rgb(242,242,242)' stroke-width='10' /%3E%3C/svg%3E") no-repeat left center;
+  background-size: 20px 20px;
+}
+&SidebarLayout{
+  padding-top: 3rem;
+}
+&SidebarLayout &Aside h1{
+  padding-bottom: 0;
+  margin-bottom: 0;
+  position: relative;
+}
+&SidebarLayout &Aside h1 &SidebarCompact{
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+&FormContainer{
+  padding: 0;
+}
+&Content hr{
+  margin: 1rem 0;
+}
+&Card{
+  padding: .5rem;
+}

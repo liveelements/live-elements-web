@@ -1,0 +1,190 @@
+import live-web.dom
+import live-web-view.layout
+import live-web-view.content
+import live-web-view.content.data
+import live-web-view.navigation
+import live-web-view.button
+import live-web-view.color
+import live-web-view.form
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Index < PageView{
+  static any[] use = [
+    TopNav,
+    Content,
+    ColLayout,
+    UlV,
+    Card,
+    TreeView,
+    TableView,
+    PrimaryButton,
+    TabLayout,
+    FormContainer,
+    ColorSchemeToggleButton,
+    SidebarLayout,
+    SidebarCloseButton,
+    SidebarToggleButton,
+    ScopedStyle{ src: './index.css'}
+  ]
+
+  // load system color scheme
+  head: PageProperties{ ColorSchemeLoader{} }
+
+  Body{
+    TopNav{
+      NavContent{
+        NavBrand{ A{ href: `#` T`LOGO` } }
+        NavToggleButton{}
+      }
+      NavContentToggle{ 
+        Ul{ 
+          Li{ A{ href: `#dashboard` T`Dashboard` } }
+          Li{ A{ href: `#basic` T`Basic` } }
+          Li{ A{ href: `#advanced` T`Advanced` } }
+          Li{ A{ href: `#extra` T`Extra` } }
+          Li{ ColorSchemeToggleButton{} }
+        }
+      }
+    }
+    
+    SidebarLayout{
+      Sidebar{
+        SidebarCompact{
+          SidebarCloseButton{}
+        }
+        Header{
+          H1`Sidebar`
+        }
+        UlV{
+          Li`Item #1`
+          Li`Item #2`
+          Li`Item #3`
+          Li`Item #4`
+        }
+        Header{
+          H1`TreeView`
+        }
+        TreeView{
+          data: TreeNode{
+            TreeNode{
+              label: 'Expandable 1'
+
+              TreeNode`Item 1`
+              TreeNode`Item 2`
+            }
+            TreeNode{
+              label: 'Expandable 2'
+
+              TreeNode`Item 2.1`
+              TreeNode`Item 2.2`
+            }
+            TreeNode`Non Expandable`
+          }
+        }
+      }
+
+      Aside{
+        Content{
+          H1{
+            T`Dashboard`
+            SidebarCompact{
+              SidebarToggleButton{}
+            }
+          }
+          Small`Dashboard version 0.1.0`
+          Hr{}
+        }
+        ColLayout{
+          Col{
+            Content{
+              H3`Table Layout`
+            }
+            TableView{
+              THead{
+                Th`User`
+                Th`Status`
+                Th`Actions`
+              }
+              TBody{
+                Tr{
+                  Td`User #1`
+                  Td`Pending`
+                  Td{
+                    PrimaryButton{ T`Edit` }
+                  }
+                }
+                Tr{
+                  Td`User #2`
+                  Td`Ready`
+                  Td{
+                    PrimaryButton{ T`Edit` }
+                  }
+                }
+                Tr{
+                  Td`User #3`
+                  Td`Pending`
+                  Td{
+                    PrimaryButton{ T`Edit` }
+                  }
+                }
+                Tr{
+                  Td`User #2`
+                  Td`Ready`
+                  Td{
+                    PrimaryButton{ T`Edit` }
+                  }
+                }
+              }
+            }
+          }
+          Col{
+            FormContainer{
+              Content{
+                H3`Form`
+              }
+              FormGroup{
+                TextInput{ type='user' placeholder="Username" name="username" }
+              }
+              FormGroup{
+                TextInput{ type='email' placeholder="Email Address" name="email" }
+              }
+              FormGroup{
+                TextInput{ type='tel' placeholder="Mobile" name="mobile" }
+              }
+              FormGroup{
+                TextInput{ type='password' placeholder="Password" name="password" }
+              }
+              FormGroup{
+                SubmitButton{ T`Submit` }
+              }
+            }
+          }
+        }
+        Content{ Hr{} }
+        ColLayout{ breakPoint: 'sm'
+          Col{
+            Card{
+              Header{ H1`200` Small`stats` }
+            }
+          }
+          Col{
+            Card{
+              Header{ H1`300.15` Small`%percent` }
+            }
+          }
+          Col{
+            Card{
+              Header{ H1`4000` Small`total` }
+            }
+          }
+          Col{
+            Card{
+              Header{ H1`20.20` Small`users` }
+            }
+          }
+        }
+      }
+    }
+  }
+}
