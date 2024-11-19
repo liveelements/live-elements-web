@@ -7,6 +7,7 @@ import {indentUnit} from '@codemirror/language'
 import {keymap} from '@codemirror/view'
 import {EditorState, Compartment} from "@codemirror/state"
 import {javascript} from "@codemirror/lang-javascript"
+import {css} from "@codemirror/lang-css"
 import {oneDark} from "@codemirror/theme-one-dark"
 
 component CodeEditorView < Div{
@@ -14,6 +15,11 @@ component CodeEditorView < Div{
         ScopedStyle{ src: './codeeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' },
         ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
+
+    static Object languages = {
+        css: css, 
+        javascript: javascript
+    }
     
     static Object lightTheme = EditorView.theme({
         "&": {
@@ -101,7 +107,9 @@ component CodeEditorView < Div{
 
         const theme = colorScheme === 'dark' ? this.themes.dark : this.themes.light
 
-        const extensions = [basicSetup, javascript(), this._theme.of(theme), indentUnit.of('    ')]
+        const languageToLoad = this.config && this.config.language ? CodeEditorView.languages[this.config.language] : CodeEditorView.languages['javascript']
+
+        const extensions = [basicSetup, languageToLoad(), this._theme.of(theme), indentUnit.of('  ')]
 
         const that = this
         let args = undefined
