@@ -4,14 +4,16 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 import live-web-view.form
 import live-web-view.layout
+import live-web-view.content
 
 component Views < PageView{
     static any[] use = [
-        FormContainer, ColLayout,
+        FormContainer, 
+        ColLayout,
         ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
 
-    Body{
+    Body{ 
         classes: [ScopedStyle.className(Views)]
 
         FormContainer{
