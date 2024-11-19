@@ -88,10 +88,9 @@ component WorkspaceView < Div{
         this{}
 
         this.data = WorkspaceViewData.fromJSON(data)
-        this.load(data)
     }
 
-    async fn load(data:Object){
+    async fn completed(){
         window.addEventListener('message', (event) => {
             if (event.data.type === 'error') {
                 this.data.errors = [`Client error: ${event.data.message}`]
@@ -100,10 +99,32 @@ component WorkspaceView < Div{
             }
         }, false)
 
+        window.addEventListener('popstate', async (event) => {
+            const currentUrl = window.location.href
+            const currentPath = window.location.pathname
+            const pathSegments = currentPath.split('/').filter(segment => segment !== '')
+
+            const prevSegment = pathSegments[pathSegments.length - 2]
+            const lastSegment = pathSegments[pathSegments.length - 1]
+            if ( prevSegment === 'w' ){
+                const ws = await ky.get(`${this._dataActions.serverRoutes.load}/${lastSegment}`).json()
+                this.data.updateFromJSON(ws)
+
+                if ( this.data.lastCompilation ){
+                    if ( this.data.workspaceViewUrl !== this.data.workspaceName ){
+                        this.data.frameLoading = true
+                        this.reloadFrameHandler(this)
+                    }
+                } else if ( this.data.writeEnabled() ){
+                    this._workspaceViewActions.compile()
+                }
+            }
+        })
+
         try{
-            if ( data.name === '-'){
+            if ( this.data.name === '-'){
                 const ws = await ky.get(`${this._dataActions.serverRoutes.load}/-`).json()
-                this.data.updateFromJSON(ws)    
+                this.data.updateFromJSON(ws)
 
                 if ( this.data.workspaceName === '' || this.data.workspaceName === '-' ){
                     return
@@ -113,11 +134,10 @@ component WorkspaceView < Div{
                 window.history.pushState(null, null, this.data.route(`/w/${this.data.workspaceName}`))
             }
 
+
+
             if ( this.data.lastCompilation ){
-                if ( this.data.workspaceViewUrl !== this.data.workspaceName ){
-                    this.data.frameLoading = true
-                    this.data.workspaceViewUrl = this.data.workspaceName
-                }
+                this.reloadFrameHandler(this)
             } else if ( this.data.writeEnabled() ){
                 this._workspaceViewActions.compile()
             }
@@ -162,7 +182,9 @@ component WorkspaceView < Div{
         NavContent{
             
             TooltipArea{
-                RefreshButton{ on click: () => { workspaceView._workspaceViewActions.refreshFrame() } }
+                RefreshButton{ on click: () => { 
+                    workspaceView.reloadFrameHandler(workspaceView)
+                } }
                 Tooltip`Refresh`
             }
             
@@ -236,6 +258,7 @@ component WorkspaceView < Div{
                                                 if ( v.docChanged )
                                                     d.isDirty = true 
                                             },
+                                            language: d.path.endsWith('.css') ? 'css' : 'javascript',
                                             readOnly: codeEditorView.isReadOnly,
                                             keymap: workspaceView.keymap.keymap
                                         }
@@ -262,7 +285,6 @@ component WorkspaceView < Div{
                                     IFrame{
                                         id: frame
                                         classes: [workspaceView.data.frameLoading ? 'frame-loading' : '']
-                                        src: workspaceView.data.workspaceViewUrl ? workspaceView.data.route('/v/' + workspaceView.data.workspaceViewUrl) : ''
                                         on srcChanged: () => {
                                             if ( this.dom )
                                                 workspaceView.data.frameLoading = true

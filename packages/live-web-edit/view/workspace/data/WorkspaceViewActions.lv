@@ -10,9 +10,8 @@ component WorkspaceViewActions{
         this{}
     }
 
-    fn refreshFrame(){
-        this.workView.data.frameLoading = true
-        this.workView.frame.refresh()
+    static fn appendHistory(state:Object, route:string){
+        window.history.pushState(state, null, route)
     }
 
     async fn save(){
@@ -25,7 +24,7 @@ component WorkspaceViewActions{
             const result = await this.workView._dataActions.save(this.workView.data, activeEditor, activeEditor.document)
             this.workView.data.loadingStatus = null
             if ( result.name ){
-                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                WorkspaceViewActions.appendHistory(null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
             }
         } catch ( e ){
             this._catchError(e)
@@ -54,7 +53,7 @@ component WorkspaceViewActions{
             const result = await this.workView._dataActions.saveAll(this.workView.data, editors)
             this.workView.data.loadingStatus = null
             if ( result.name ){
-                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                WorkspaceViewActions.appendHistory(null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
             }
         } catch ( e ){
             this._catchError(e)
@@ -97,14 +96,12 @@ component WorkspaceViewActions{
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }
-                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
-                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
-                }
+                
                 this.workView.data.logMessages = []
-                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                WorkspaceViewActions.appendHistory(null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
 
                 if ( this.workView.data.lastCompilation ){
-                    this.refreshFrame()
+                    this.workView.reloadFrameHandler(this.workView)
                 } else if ( this.workView.data.writeEnabled() ){
                     this.compile()
                 }
@@ -121,14 +118,11 @@ component WorkspaceViewActions{
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }
-                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
-                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
-                }
                 this.workView.data.logMessages = []
-                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
+                WorkspaceViewActions.appendHistory(null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
 
                 if ( this.workView.data.lastCompilation ){
-                    this.refreshFrame()
+                    this.workView.reloadFrameHandler(this.workView)
                 } else if ( this.workView.data.writeEnabled() ){
                     this.compile()
                 }
@@ -144,14 +138,12 @@ component WorkspaceViewActions{
                 if ( this.workView.data.workspaceName === '' || this.workView.data.workspaceName === '-' ){
                     return
                 }
-                if ( this.workView.data.workspaceViewUrl !== this.workView.data.workspaceName ){
-                    this.workView.data.workspaceViewUrl = this.workView.data.workspaceName
-                }
+
                 this.workView.data.logMessages = []
-                window.history.pushState(null, null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))    
+                WorkspaceViewActions.appendHistory(null, this.workView.data.route(`/w/${this.workView.data.workspaceName}`))
 
                 if ( this.workView.data.lastCompilation ){
-                    this.refreshFrame()
+                    this.workView.reloadFrameHandler(this.workView)
                 } else if ( this.workView.data.writeEnabled() ){
                     this.compile()
                 }
