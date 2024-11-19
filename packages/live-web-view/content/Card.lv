@@ -1,0 +1,20 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Card < Div{
+    id: card
+
+    static any[] use = [ 
+        ScopedStyle{ src: './style/card.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    static number Vertical = 0
+    static number Horizontal = 1
+
+    classes: this.extraClasses.concat([ScopedStyle.className(Card), this.orientation === Card.Vertical ? 'card-col' : 'card-row'])
+
+    number orientation : Card.Vertical
+    string[] extraClasses: []
+}
