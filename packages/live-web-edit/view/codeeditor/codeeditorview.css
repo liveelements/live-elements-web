@@ -8,4 +8,38 @@
 
 .cm-scroller{
     @apply w-full h-full absolute;
+    resize: none !important;
+    scrollbar-color: #a1a1a1 transparent;
+    scrollbar-width: auto;
+}
+.cm-scroller:is(.dark *){
+    scrollbar-color: #515151 transparent;
+}
+
+.cm-scroller::-webkit-scrollbar {
+    width: .5rem; /* Width of vertical scrollbar */
+    height: .5rem; /* Height of horizontal scrollbar */
+  }
+  
+.cm-scroller::-webkit-scrollbar-thumb {
+    background-color: #a1a1a1; /* Thumb color */
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+    background-color: #b1b1b1; /* Thumb color on hover */
+}
+
+.cm-scroller:is(.dark *)::-webkit-scrollbar-thumb{
+    background-color: #515151; /* Thumb color */
+}
+
+.cm-scroller:is(.dark *)::-webkit-scrollbar-thumb:hover {
+    background-color: #616161; /* Thumb color on hover */
+}
+  
+.cm-scroller::-webkit-scrollbar-track {
+    background-color: transparent; /* Track color */
+}
+.cm-scroller::-webkit-resizer {
+    display: none;
 }
