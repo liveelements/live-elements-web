@@ -6,7 +6,7 @@
         "String", "Symbol", "Date", "BigInt", "Data", "DataView", "Function", "Generator", "NaN", "Number",
         "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", 
         "Float32Array", "Float64Array", "BigInt64Array", "BigUint64Array", "SharedArrayBuffer", "Atomics", "RegExp",
-        "RangeError", "ReferenceError", "SyntaxError", "TypeError", "AsyncFunction", "Promise", "setTimeout", "setInterval"
+        "RangeError", "ReferenceError", "SyntaxError", "TypeError", "AsyncFunction", "Promise", "setTimeout", "setInterval", "clearInterval", "clearTimeout"
     ],
     "importLocalPath" : "node_modules",
     "packageBuildPath" : "build",
