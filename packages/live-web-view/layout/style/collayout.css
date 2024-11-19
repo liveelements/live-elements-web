@@ -3,7 +3,13 @@
 }
 
 &ColLayout &Col {
-    @apply w-full md:flex-1 py-2 md:p-2 md:w-auto;
+    @apply w-full py-2 md:flex-1 md:p-2 md:w-auto;
+}
+&ColLayout&.break-sm &Col{
+    @apply sm:flex-1 sm:p-2 sm:w-auto;
+}
+&ColLayout&.break-lg &Col{
+    @apply md:px-0 md:w-full md:flex-auto lg:flex-1 lg:p-2 lg:w-auto;
 }
 
 &ColLayout&.col-justify-normal{	@apply justify-normal; }

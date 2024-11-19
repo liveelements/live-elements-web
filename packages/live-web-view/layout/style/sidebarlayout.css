@@ -1,10 +1,10 @@
 &SidebarLayout{
-    @apply h-full w-full md:w-[calc(100%-16rem)];
+    @apply h-full w-full;
 }
 
 &SidebarLayout &Sidebar{
-    @apply w-full py-2 px-4 left-[-100%] z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#212121] block;
-    @apply md:w-64 md:px-2 md:left-[auto] md:border-r md:border-[#c1c1c1] md:dark:border-[#515151];
+    @apply w-full py-4 px-4 left-[-100%] z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#212121] block;
+    @apply md:w-64 md:px-6 md:left-[auto] md:border-r md:border-[#c1c1c1] md:dark:border-[#515151];
     transition: left 0.5s;
 }
 

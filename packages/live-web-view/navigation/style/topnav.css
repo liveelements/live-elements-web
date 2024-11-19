@@ -1,6 +1,9 @@
 &TopNav{
-    @apply fixed flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-[#212121] text-[#555] dark:text-[#e1e1e1] z-[1001];
+    @apply fixed flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-[#212121] text-[#555] dark:text-[#e1e1e1] z-[1001] md:items-center;
     @apply border-b border-[#c1c1c1] dark:border-[#515151];
+}
+&TopNav&.position-static{
+    @apply static;
 }
 &TopNav .nav-content{
     @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
@@ -9,27 +12,28 @@
     @apply text-lg font-semibold;
 }
 &TopNav .nav-content-toggle {
-    @apply flex hidden bg-black w-full items-center;
+    @apply flex hidden w-full items-center;
 }
-
 &TopNav .nav-content-wide{
-    @apply hidden md:flex bg-black items-center;
+    @apply hidden md:flex items-center;
 }
-
 &TopNav ul {
-    @apply flex flex-col pt-2 px-3;
+    @apply flex flex-col py-1 px-3;
 }
 &TopNav ul li {
     @apply list-none;
 }
 &TopNav ul li a {
-    @apply text-white py-1 my-2 px-2 hover:bg-gray-900 no-underline w-full inline-block;
+    @apply text-[#212121] dark:text-white py-1 my-2 px-2 dark:hover:bg-[#515151] hover:bg-[#e1e1e1] no-underline w-full inline-block rounded-sm;
+}
+&TopNav ul li button{
+    @apply my-2;
 }
 &TopNav .nav-toggle-button {
     @apply block;
 }
 &TopNav .bar {
-    @apply block w-6 h-0.5 mt-1 bg-white my-1.5;
+    @apply block w-6 h-0.5 mt-1 bg-[#212121] dark:bg-white my-1.5;
 }
 
 &TopNav&.active .nav-content-toggle{

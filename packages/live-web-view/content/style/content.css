@@ -84,3 +84,7 @@ img {
 hr {
   @apply my-8 border-[#a1a1a1] dark:border-[#515151];
 }
+
+input {
+  @apply bg-gray-100 rounded-md p-1 text-sm border border-[#a1a1a1] dark:border-[#515151];
+}

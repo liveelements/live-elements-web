@@ -1,7 +1,9 @@
 &TreeView{
     @apply p-2;
 }
-
+.tree-node{
+    @apply py-1;
+}
 .tree-node > div{
     @apply ml-[calc(14px+0.25rem)];
 }
