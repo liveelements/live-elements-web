@@ -9,83 +9,83 @@ import live-web-view.color
 import live-web-view.overlay
 
 component Index < PageView{
-    static any[] use = [
-        UlV,
-        ContextMenu,
-        Dropdown, 
-        CenterLayout,
-        Float, 
-        ColorSchemeToggleButton,
-        Modal,
-        ModalConfirmBox,
-        ScopedStyle{ src: './index.css' }
-    ]
+  static any[] use = [
+    UlV,
+    ContextMenu,
+    Dropdown, 
+    CenterLayout,
+    Float, 
+    ColorSchemeToggleButton,
+    Modal,
+    ModalConfirmBox,
+    ScopedStyle{ src: './index.css' }
+  ]
 
-    head: PageProperties{
-        // load system color scheme
-        ColorSchemeLoader{}
+  head: PageProperties{
+    // load system color scheme
+    ColorSchemeLoader{}
+  }
+
+  Body{
+
+    // color scheme toggle button in bottom right corner
+    Float.('BR'){
+      ColorSchemeToggleButton{}
     }
 
-    Body{
+    ContextMenu{ id: contextMenu }
+    Modal{ id: modal }
 
-        // color scheme toggle button in bottom right corner
-        Float.('BR'){
-            ColorSchemeToggleButton{}
-        }
-
-        ContextMenu{ id: contextMenu }
-        Modal{ id: modal }
-
-        CenterLayout{
-            UlV{
-                Li{
-                    PrimaryButton{ 
-                        T`Context Menu`
-                        on click: (e) => {
-                            e.preventDefault()
-                            contextMenu.show(
-                                { x: e.pageX, y: e.pageY },
-                                ContextMenuActionsView.create([
-                                    { label: 'Item 1', action: () => {}},
-                                    { label: 'Item 2', action: () => {}},
-                                    { label: 'Item 3', action: () => {}}
-                                ])
-                            )
-                        }
-                    }
-                }
-                Li{
-                    PrimaryButton{
-                        T`Confirm Message box.`
-                        on click: (e) => {
-                            e.preventDefault()
-                            modal.show(
-                                ModalConfirmBox{
-                                    title: 'Confirm'
-                                    message: 'Confirm this message'
-                                    yes: () => { console.log("Confirmed"); modal.hide(); }
-                                    no: () => { console.log("Not Confirmed"); modal.hide(); }
-                                }
-                            )
-                        }
-                    }
-                }
-                Li{
-                    Dropdown{
-                        DropdownToggleButton{
-                            T`Dropdown`
-                        }
-                        DropdownContent{
-                            UlV{ border: true
-                                Li`Item 1`
-                                Li`Item 2`
-                                Li`Item 3`
-                            }
-                        }
-                    }
-                }
+    CenterLayout{
+      UlV{
+        Li{
+          PrimaryButton{ 
+            T`Context Menu`
+            on click: (e) => {
+              e.preventDefault()
+              contextMenu.show(
+                { x: e.pageX, y: e.pageY },
+                ContextMenuActionsView.create([
+                  { label: 'Item 1', action: () => {}},
+                  { label: 'Item 2', action: () => {}},
+                  { label: 'Item 3', action: () => {}}
+                ])
+              )
             }
+          }
         }
-
+        Li{
+          PrimaryButton{
+            T`Confirm Message box.`
+            on click: (e) => {
+              e.preventDefault()
+              modal.show(
+                ModalConfirmBox{
+                  title: 'Confirm'
+                  message: 'Confirm this message'
+                  yes: () => { console.log("Confirmed"); modal.hide(); }
+                  no: () => { console.log("Not Confirmed"); modal.hide(); }
+                }
+              )
+            }
+          }
+        }
+        Li{
+          Dropdown{
+            DropdownToggleButton{
+              T`Dropdown`
+            }
+            DropdownContent{
+              UlV{ border: true
+                Li`Item 1`
+                Li`Item 2`
+                Li`Item 3`
+              }
+            }
+          }
+        }
+      }
     }
+
+  }
 }

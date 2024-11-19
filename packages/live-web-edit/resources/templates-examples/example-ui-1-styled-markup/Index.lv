@@ -7,35 +7,35 @@ import live-elements-web-server.style
 // component StyledMarkup extends PageView
 component StyledMarkup < PageView{
 
-    static any[] use = [
-        // import styles from live-web-view.content.Content
-        Content,
-        // import styles from live-web-view.layout.ColLayout
-        ColLayout,
-        // import index.css
-        ScopedStyle{ src: './index.css'}
-    ]
+  static any[] use = [
+  // import styles from live-web-view.content.Content
+  Content,
+  // import styles from live-web-view.layout.ColLayout
+  ColLayout,
+  // import index.css
+  ScopedStyle{ src: './index.css'}
+  ]
 
-    Content{
-        // similar as calling "new H1('This is a heading')" in js
-        H1`This is a heading`
+  Content{
+  // similar as calling "new H1('This is a heading')" in js
+  H1`This is a heading`
 
-        // the same as calling "new P('This is a heading')" in js
-        P`This is a paragraph`
+  // the same as calling "new P('This is a heading')" in js
+  P`This is a paragraph`
 
-        P{  // call new T(...), new B(...), ...
-            T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
-              This paragraph is written on multiple lines.`
-        }
+  P{  // call new T(...), new B(...), ...
+    T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
+    This paragraph is written on multiple lines.`
+  }
 
-        Ul{
-            Li`First list item`
-            Li`Second list item`
-        }
+  Ul{
+    Li`First list item`
+    Li`Second list item`
+  }
 
-        ColLayout{
-            Col{ P`Paragraph in column one` }
-            Col{ P`Paragraph in column two` }
-        }
-    }
+  ColLayout{
+    Col{ P`Paragraph in column one` }
+    Col{ P`Paragraph in column two` }
+  }
+  }
 }

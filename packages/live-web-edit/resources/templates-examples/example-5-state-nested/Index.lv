@@ -3,48 +3,48 @@ import live-web.model
 import live-elements-web-server.view
 
 component Subscription < State{
-    string name: ''
-    number price: 0
+  string name: ''
+  number price: 0
 }
 
 // Service component with 2 subscription types
 component Service < State{
-    Subscription basic: Subscription{ name: 'Basic' price: 1.00 }
-    Subscription advanced: Subscription{ name: 'Advanced' price: 5.00 }
+  Subscription basic: Subscription{ name: 'Basic' price: 1.00 }
+  Subscription advanced: Subscription{ name: 'Advanced' price: 5.00 }
 }
 
 component ServiceView < PageView{
-    id: serviceView
+  id: serviceView
 
-    // main state, the service component with 2 subscriptions
-    Service state: Service{}
+  // main state, the service component with 2 subscriptions
+  Service state: Service{}
 
-    Div{ classes: ['center', 'full']
-        Div{ 
-            H2`Subscription prices`
-            Ul{
-                Li{ // basic subscription
-                    T{ text: serviceView.state.basic.name + ':' }
-                    B{ T{ text: serviceView.state.basic.price.toFixed(2) + '$' }} 
-                }
-                Li{ // advanced subscription
-                    T{ text: serviceView.state.advanced.name + ': ' }
-                    B{ T{ text: serviceView.state.advanced.price.toFixed(2) + '$' }} 
-                }
-            }
-            P{
-                Button{
-                    on click: () => {// make subscriptions more expensive
-                        serviceView.state.basic.price += 1
-                        serviceView.state.advanced.price += 1
-                    }
-                    T`Increment Prices`
-                }
-                Button{
-                    on click: () => { serviceView.state.advanced.name  = 'Premium' }
-                    T`Upgrade to premium`
-                }
-            }
+  Div{ classes: ['center', 'full']
+    Div{ 
+      H2`Subscription prices`
+      Ul{
+        Li{ // basic subscription
+          T{ text: serviceView.state.basic.name + ':' }
+          B{ T{ text: serviceView.state.basic.price.toFixed(2) + '$' }} 
         }
+        Li{ // advanced subscription
+          T{ text: serviceView.state.advanced.name + ': ' }
+          B{ T{ text: serviceView.state.advanced.price.toFixed(2) + '$' }} 
+        }
+      }
+      P{
+        Button{
+          on click: () => {// make subscriptions more expensive
+            serviceView.state.basic.price += 1
+            serviceView.state.advanced.price += 1
+          }
+          T`Increment Prices`
+        }
+        Button{
+          on click: () => { serviceView.state.advanced.name  = 'Premium' }
+          T`Upgrade to premium`
+        }
+      }
     }
+  }
 }

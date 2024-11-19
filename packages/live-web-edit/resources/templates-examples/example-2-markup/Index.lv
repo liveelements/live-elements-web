@@ -4,31 +4,31 @@ import live-elements-web-server.style
 
 // component Markup extends PageView
 component Markup < PageView{
-    // link to index.css
-    static any[] use = [ScopedStyle{ src: './index.css'}]
+  // link to index.css
+  static any[] use = [ScopedStyle{ src: './index.css'}]
 
-    // <article>
-    Article{
-        // <h1>This is a heading</h1>
-        // similar to calling  "new H1('This is a heading')" in js
-        H1`This is a heading`
+  // <article>
+  Article{
+    // <h1>This is a heading</h1>
+    // similar to calling  "new H1('This is a heading')" in js
+    H1`This is a heading`
 
-        // <p>This is a paragraph</p> 
-        P`This is a paragraph`
+    // <p>This is a paragraph</p> 
+    P`This is a paragraph`
 
-        P{  // call new T(...), new B(...), new T(...), ...
-            T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
-              This paragraph is written on multiple lines.`
-        }
+    P{  // call new T(...), new B(...), new T(...), ...
+      T`This is a second paragraph, with `B`bold`T` and `I`italic`T` text.
+        This paragraph is written on multiple lines.`
+    }
 
-        // <h2>Subheading</h2>
-        H2`Subheading`
+    // <h2>Subheading</h2>
+    H2`Subheading`
 
-        // <ul>
-        Ul{
-            Li`First list item` // <li>
-            Li`Second list item` // <li>
-        }
-        
-    } // </article>
+    // <ul>
+    Ul{
+      Li`First list item` // <li>
+      Li`Second list item` // <li>
+    }
+    
+  } // </article>
 }

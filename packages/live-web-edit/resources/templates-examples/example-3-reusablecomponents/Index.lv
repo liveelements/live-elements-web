@@ -5,38 +5,38 @@ import live-elements-web-server.style
 // reusable card component, extends Li
 // Li is the same as the html <li> tag
 component Card < Li{
-    id: card
-    classes: ['card']
+  id: card
+  classes: ['card']
 
-    // define the 3 configurable properties
-    string name: ''
-    string description: ''
-    string color: ''
+  // define the 3 configurable properties
+  string name: ''
+  string description: ''
+  string color: ''
 
-    
-    H2{ classes: ['name']  // add <h2> as child to <li>
-      T{ text: card.name } 
-    }
-    P{ // add <p> as child to <li>
-      T{ text: card.description } 
-    }
-    // add <section> as child to <li>
-    Section{ classes: ['card-color', card.color] }
+  
+  H2{ classes: ['name']  // add <h2> as child to <li>
+    T{ text: card.name } 
+  }
+  P{ // add <p> as child to <li>
+    T{ text: card.description } 
+  }
+  // add <section> as child to <li>
+  Section{ classes: ['card-color', card.color] }
 }
 
 // page component displaying the cards
 component ReusableComponents < PageView{
+  
+  // import index.css
+  static any[] use = [ScopedStyle{ src: './index.css'}]
     
-    // import index.css
-    static any[] use = [ScopedStyle{ src: './index.css'}]
-      
 
-    Div{ classes: ['h-full', 'center']
-        Ul{ classes: ['cards']
-            // create 3 cards
-            Card{ name: 'Purple' description: 'Description for purple card' color: 'purple' }
-            Card{ name: 'Yellow' description: 'Description for yellow card' color: 'yellow' }
-            Card{ name: 'Blue' description: 'Description for blue card' color: 'blue' }
-        }
+  Div{ classes: ['h-full', 'center']
+    Ul{ classes: ['cards']
+      // create 3 cards
+      Card{ name: 'Purple' description: 'Description for purple card' color: 'purple' }
+      Card{ name: 'Yellow' description: 'Description for yellow card' color: 'yellow' }
+      Card{ name: 'Blue' description: 'Description for blue card' color: 'blue' }
     }
+  }
 }

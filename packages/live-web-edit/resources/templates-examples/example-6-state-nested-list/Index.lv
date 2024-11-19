@@ -5,53 +5,53 @@ import live-elements-web-server.style
 
 // Item contains a label and isChecked flag.
 component TodoItem < State{
-    string label: ''
-    bool isChecked: false
+  string label: ''
+  bool isChecked: false
 }
 
 // TodoList contains a list of TodoItem's.
 component TodoList < State{
-    Array<TodoItem> items: []
+  Array<TodoItem> items: []
 
-    fn addItem(label:string){ 
-        // when a new item is added, the new list is assigned to the items
-        // property, triggering a new update to the Ul view
-        this.items = this.items.concat([TodoItem{ label: label }])
-    }
+  fn addItem(label:string){ 
+    // when a new item is added, the new list is assigned to the items
+    // property, triggering a new update to the Ul view
+    this.items = this.items.concat([TodoItem{ label: label }])
+  }
 }
 
 
 component TodoListView < PageView{
-    id: todoListView
+  id: todoListView
 
-    static any[] use = [ScopedStyle{ src: './index.css'}]
+  static any[] use = [ScopedStyle{ src: './index.css'}]
   
-    TodoList state: TodoList{}
+  TodoList state: TodoList{}
 
+  Div{ 
     Div{ 
-        Div{ 
-            Ul{
-                // this will also bind to todoListView.state.items
-                children: todoListView.state.items.map(item => Li{
-                    classes: item.isChecked 
-                        ? ['strike', 'pointer', 'li-square'] 
-                        : ['pointer', ['li-square']]
-                    on click: () => { item.isChecked = true }
-                    
-                    T{ text: item.label }
-                })
-            }
-            P{
-                Input{ id: newItem type: 'text' placeholder: 'item...' }
-                Button{
-                    on click: () => { 
-                        // add new item
-                        todoListView.state.addItem(newItem.currentValue)
-                        newItem.resetValue()
-                    }
-                    T`Add`
-                }
-            }
+      Ul{
+        // this will also bind to todoListView.state.items
+        children: todoListView.state.items.map(item => Li{
+          classes: item.isChecked 
+            ? ['strike', 'pointer', 'li-square'] 
+            : ['pointer', ['li-square']]
+          on click: () => { item.isChecked = true }
+          
+          T{ text: item.label }
+        })
+      }
+      P{
+        Input{ id: newItem type: 'text' placeholder: 'item...' }
+        Button{
+          on click: () => { 
+            // add new item
+            todoListView.state.addItem(newItem.currentValue)
+            newItem.resetValue()
+          }
+          T`Add`
         }
+      }
     }
+  }
 }

@@ -4,25 +4,25 @@ import live-elements-web-server.view
 
 // define a Counter state component
 component Counter < State{
-    number counter : 0
+  number counter : 0
 }
 
 component CounterView < PageView{
-    id: counterView // id to reference inside the hierarchy
+  id: counterView // id to reference inside the hierarchy
 
-    // create the counter
-    Counter state: Counter{}
+  // create the counter
+  Counter state: Counter{}
 
-    Div{ classes: ['center', 'full']
-        Div{ classes: ['counter']
-            P{ 
-                // The text property will now be bound to the counterView.state.counter
-                // Whenever counterView.stat.counter changes, the text will change as well
-                T{ text: 'Counter value: ' + counterView.state.counter } 
-            }
-            // as the 2 buttons update the state, the views will update as well
-            Button{ on click: () => {counterView.state.counter++} T`+` }
-            Button{ on click: () => {counterView.state.counter--} T`-` }
-        }
+  Div{ classes: ['center', 'full']
+    Div{ classes: ['counter']
+      P{ 
+        // The text property will now be bound to the counterView.state.counter
+        // Whenever counterView.stat.counter changes, the text will change as well
+        T{ text: 'Counter value: ' + counterView.state.counter } 
+      }
+      // as the 2 buttons update the state, the views will update as well
+      Button{ on click: () => {counterView.state.counter++} T`+` }
+      Button{ on click: () => {counterView.state.counter--} T`-` }
     }
+  }
 }

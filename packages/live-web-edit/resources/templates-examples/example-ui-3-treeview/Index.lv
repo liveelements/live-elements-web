@@ -7,49 +7,49 @@ import live-web-view.content
 import live-web-view.content.data
 
 component Tree < PageView{
-    static any[] use = [
-        TreeView,
-        ColLayout,
-        ScopedStyle{ src: './index.css' }
-    ]
+  static any[] use = [
+    TreeView,
+    ColLayout,
+    ScopedStyle{ src: './index.css' }
+  ]
 
-    Body{ classes: [ScopedStyle.className(Tree)]
+  Body{ classes: [ScopedStyle.className(Tree)]
 
-        // column layout with 2 columns
-        ColLayout{
-            Col{
-                // treeview with tree node data
-                TreeView{
-                    data: TreeNode{
-                        TreeNode`Item 1`
-                        TreeNode{
-                            label: 'Item 2'
+    // column layout with 2 columns
+    ColLayout{
+      Col{
+        // treeview with tree node data
+        TreeView{
+          data: TreeNode{
+            TreeNode`Item 1`
+            TreeNode{
+              label: 'Item 2'
 
-                            TreeNode`Item 2.1`
-                            TreeNode`Item 2.2`
+              TreeNode`Item 2.1`
+              TreeNode`Item 2.2`
 
-                            TreeNode{
-                                label: 'Item 2.3'
-                                TreeNode`Item 2.3.1`
-                                TreeNode`Item 2.3.2`
-                            }
-                        }
-                        TreeNode`Item 3`
-                    }
-                }
+              TreeNode{
+                label: 'Item 2.3'
+                TreeNode`Item 2.3.1`
+                TreeNode`Item 2.3.2`
+              }
             }
-            Col{
-                // treeview with a labeled root node
-                TreeView{
-                    data: TreeNode{
-                        label: 'Root'
-                        TreeNode`Item 1`
-                        TreeNode`Item 2`
-                        TreeNode`Item 3`
-                    }
-                }
-            }
+            TreeNode`Item 3`
+          }
         }
-        
+      }
+      Col{
+        // treeview with a labeled root node
+        TreeView{
+          data: TreeNode{
+            label: 'Root'
+            TreeNode`Item 1`
+            TreeNode`Item 2`
+            TreeNode`Item 3`
+          }
+        }
+      }
     }
+    
+  }
 }
