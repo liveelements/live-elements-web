@@ -1,7 +1,7 @@
 # Live Elements Web  ![NPM Version](https://img.shields.io/npm/v/live-elements-web?color=%23624aa6) 
 
  * **Website**: [liveelements.io](https://liveelements.io)
- * **Documentation**: [liveelements.io/docs](https://liveelements.io/documentation)
+ * **Documentation**: [liveelements.io/documentation](https://liveelements.io/documentation)
 
 ## Getting Started
 
