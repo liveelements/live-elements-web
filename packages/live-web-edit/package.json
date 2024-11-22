@@ -21,6 +21,7 @@
     "dependencies": {
         "live-web": "^0.1.14",
         "@codemirror/lang-javascript": "^6.2.2",
+        "@codemirror/lang-css": "^6.2.0",
         "@codemirror/theme-one-dark": "^6.1.2",
         "codemirror": "^6.0.1",
         "ky": "^1.1.3"
