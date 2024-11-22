@@ -25,12 +25,12 @@ FileGeneratorContent```
   \"author\": \"\",
   \"license\": \"UNLICENSED\",
   \"dependencies\": {
-    \"live-elements-web-server\": \"^0.1.14\",
-    \"live-elements-loader\": \"^0.1.14\",
-    \"live-elements-core\": \"^0.1.14\",
-    \"live-elements-web-cli\": \"^0.1.14\",
-    \"live-elements-web\": \"^0.1.14\",
-    \"live-web\": \"^0.1.14\"
+    \"live-elements-web-server\": \"^0.1.15\",
+    \"live-elements-loader\": \"^0.1.15\",
+    \"live-elements-core\": \"^0.1.15\",
+    \"live-elements-web-cli\": \"^0.1.15\",
+    \"live-elements-web\": \"^0.1.15\",
+    \"live-web\": \"^0.1.15\"
   }
 }
 ```

@@ -1,6 +1,6 @@
 {
     "name": "live-web-edit",
-    "version": "0.1.14",
+    "version": "0.1.15",
     "description": "Live Elements Web Edit Package.",
     "keywords": [
         "live",
@@ -19,7 +19,7 @@
         "prepare": "npm run build"
     },
     "dependencies": {
-        "live-web": "^0.1.14",
+        "live-web": "^0.1.15",
         "@codemirror/lang-javascript": "^6.2.2",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/theme-one-dark": "^6.1.2",
