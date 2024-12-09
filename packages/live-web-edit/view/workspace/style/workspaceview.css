@@ -15,7 +15,7 @@
 }
 
 &SplitLayout &SplitPane .error-box.show{
-    @apply bg-[rgb(105,28,35)] p-1 border border-[#717171];
+    @apply bg-[rgb(105,28,35)] p-1 border border-[#717171] text-[#e1e1e1];
 }
 &SplitLayout &SplitPane .error-box .error{
     @apply p-2;
