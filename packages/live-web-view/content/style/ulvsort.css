@@ -1,0 +1,31 @@
+&UlV{
+    @apply divide-y divide-[#c1c1c1] dark:divide-[#515151];
+}
+
+&UlV&.round-border{
+    @apply rounded border border-[#c1c1c1] dark:border-[#515151];
+}
+
+li{
+    @apply px-2 py-2;
+}
+
+li {
+  cursor: grab;
+  transition: transform 0.2s;
+}
+
+li:hover {
+  transform: scale(1.01) translate(10px, 0);
+}
+
+li.dragging {
+  @apply border border-[#c1c1c1] dark:border-[#717171] rounded;
+  transform: scale(1) translate(0, 0);
+  z-index: 10;
+}
+
+.placeholder {
+  border-top: 1px dashed #aaa;
+  transition: height 0.2s;
+}

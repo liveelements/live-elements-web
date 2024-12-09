@@ -1,0 +1,39 @@
+import live-web.dom
+import live-web.behavior
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.color
+import live-web-view.layout
+import live-web-view.content
+import live-web-view.content.data
+
+component Sortable < PageView{
+    static any[] use = [
+        UlVSort,
+        Float,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: '../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+    ]
+
+    head: PageProperties{
+        ColorSchemeLoader{}
+    }
+
+    Body{ classes: [ScopedStyle.className(Sortable)]
+
+        Float.('BR'){
+            ColorSchemeToggleButton{}
+        }
+
+        UlVSort{ 
+            LiSort{ key: '1'  T`Item 1` }
+            LiSort{ key: '2'  T`Item 2` }
+            LiSort{ key: '3'  T`Item 3` }
+            LiSort{ key: '4'  T`Item 4` }
+            LiSort{ key: '5'  T`Item 5` }
+
+            // DOMBehavior{ domReady: UlVSortBehavior.attach }
+        }
+    }
+}

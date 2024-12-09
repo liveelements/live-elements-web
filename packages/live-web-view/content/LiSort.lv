@@ -1,0 +1,14 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component LiSort < Li{
+    constructor(){
+        super()
+        this{}
+        this.setOwnAttribute('draggable', true)
+    }
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(LiSort)])
+}

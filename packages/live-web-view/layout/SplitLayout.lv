@@ -54,8 +54,8 @@ component SplitLayout < Div{
                         if (!isDragging) 
                             return
 
-                        const leftPane = container.childNodes[0]
-                        const rightPane = container.childNodes[2]
+                        const leftPane = container.children[0]
+                        const rightPane = container.children[2]
                         let delta = e.clientX - container.getBoundingClientRect().left;
 
                         const isVertical = vertical || !(window.innerWidth >= 768 || !breakPoint)

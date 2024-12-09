@@ -1,0 +1,81 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component UlVSort < Ul{
+    static any[] use = [ 
+        LiSort,
+        ScopedStyle{ src: './style/ulvsort.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    boolean border: false
+    props = { data : { lidragref : ScopedStyle.className(LiSort) } }
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(UlVSort), this.border ? 'round-border' : ''])
+
+    on dragstart: (e) => {
+        const liSortClass = ScopedStyle.className(LiSort)
+        if( e.target.classList.contains(liSortClass) ){
+            window.draggingItem = e.target
+            e.target.classList.add('dragging')
+            window.placeholder = document.createElement('div')
+            window.placeholder.classList.add('placeholder')
+        }
+    }
+
+    on dragend: (e) => {
+        const liSortClass = ScopedStyle.className(LiSort)
+        if( e.target.classList.contains(liSortClass) ){
+            e.target.classList.remove('dragging')
+            window.placeholder?.remove()
+            window.placeholder = null
+            window.draggingItem = null
+        }
+    }
+    
+    on dragover: (e) => {
+        e.preventDefault()
+        const sortableList = this.dom
+        const liSortClass = ScopedStyle.className(LiSort)
+    
+        const draggingOverItem = e.target
+        if ( draggingOverItem && draggingOverItem !== window.draggingItem && 
+            draggingOverItem.classList.contains(liSortClass) )
+        {
+            const rect = draggingOverItem.getBoundingClientRect()
+            const offset = e.clientY - rect.top
+    
+            if ( !window.placeholder.parentNode ){
+                sortableList.insertBefore(window.placeholder, draggingOverItem)
+            }
+    
+            if ( offset > rect.height / 2 ){
+                draggingOverItem.after(window.placeholder)
+            } else {
+                draggingOverItem.before(window.placeholder)
+            }
+        }
+    }
+    
+    on drop: () => {
+        if ( window.placeholder && window.draggingItem ){
+            let oldIndex = Array.from(this.dom.children).indexOf(window.draggingItem)
+            let newIndex = Array.from(this.dom.children).indexOf(window.placeholder)
+
+            if ( newIndex !== -1 ){
+                if (newIndex > oldIndex) {
+                    newIndex -= 1
+                } else {
+                    oldIndex -= 1
+                }
+
+                const movedItems = this.children.splice(oldIndex, 1)
+                this.children.splice(newIndex, 0, movedItems[0])
+                this.childrenChanged.emit()
+            }
+        }
+    }
+}

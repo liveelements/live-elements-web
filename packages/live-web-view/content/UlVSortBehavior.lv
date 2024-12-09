@@ -1,0 +1,61 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component UlVSortBehavior{
+
+    static Object attach = ((sortableList) => {
+
+        const liSortClass = sortableList.dataset.lidragref
+
+        sortableList.addEventListener('dragstart', (e) => {
+            if( e.target.classList.contains(liSortClass) ){
+                window.draggingItem = e.target
+                e.target.classList.add('dragging')
+        
+                // Create a placeholder element
+                window.placeholder = document.createElement('div')
+                window.placeholder.classList.add('placeholder')
+            }
+        })
+        
+        sortableList.addEventListener('dragend', (e) => {
+            if( e.target.classList.contains(liSortClass) ){
+                e.target.classList.remove('dragging')
+                window.placeholder?.remove()
+                window.placeholder = null
+                window.draggingItem = null
+            }
+        })
+        
+        sortableList.addEventListener('dragover', (e) => {
+            e.preventDefault()
+        
+            const draggingOverItem = e.target
+            if ( draggingOverItem && draggingOverItem !== window.draggingItem && 
+                draggingOverItem.classList.contains(liSortClass) )
+            {
+                const rect = draggingOverItem.getBoundingClientRect()
+                const offset = e.clientY - rect.top
+        
+                if ( !window.placeholder.parentNode ){
+                sortableList.insertBefore(window.placeholder, draggingOverItem)
+                }
+        
+                if ( offset > rect.height / 2 ){
+                draggingOverItem.after(window.placeholder)
+                } else {
+                draggingOverItem.before(window.placeholder)
+                }
+            }
+        })
+        
+        sortableList.addEventListener('drop', () => {
+            if ( window.placeholder && window.draggingItem ){
+                window.placeholder.replaceWith(window.draggingItem)
+                window.placeholder = null
+            }
+        })
+    })
+}

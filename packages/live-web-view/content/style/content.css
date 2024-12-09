@@ -46,11 +46,15 @@ li {
 }
 
 code {
-  @apply bg-gray-100 rounded-md p-1 text-sm;
+  @apply bg-[#e1e1e1] dark:bg-[#313131] text-[#111] dark:text-[#f1f1f1] rounded-md p-1 text-sm;
 }
 
 pre {
-  @apply bg-gray-900 text-white p-4 rounded-lg overflow-x-auto;
+  @apply bg-[#e1e1e1] dark:bg-[#313131] text-[#111] dark:text-[#f1f1f1] p-4 rounded-lg overflow-x-auto;
+}
+
+pre code{
+  @apply px-0;
 }
 
 blockquote {
@@ -62,7 +66,7 @@ table {
 }
 
 thead {
-  @apply bg-gray-50;
+  @apply bg-[#e1e1e1] dark:bg-[#313131];
 }
 
 th {

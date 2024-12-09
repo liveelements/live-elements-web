@@ -10,6 +10,7 @@ instance bundle Bundle{
     ViewRoute{ url: '/tabs' c: Tabs render: ViewRoute.SSR }
     ViewRoute{ url: '/split' c: Split render: ViewRoute.SSR }
     ViewRoute{ url: '/tree' c: Tree render: ViewRoute.SSR }
+    ViewRoute{ url: '/sortable' c: Sortable render: ViewRoute.SSR }
 
     ViewRoute{ url: '/frame' c: Frame render: ViewRoute.CSR }
     ViewRoute{ url: '/overlays' c: Overlays render: ViewRoute.CSR }
