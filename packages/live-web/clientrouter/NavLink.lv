@@ -2,11 +2,20 @@ import .dom
 
 component NavLink < A{
 
-    string to: ''
+    string to
 
     constructor(text:string){
         super(text)
-        NavLink.prototype.__initialize.call(this)
+        console.log("laksmdlksmdls", this.href)
+
+        let to = ''
+        if ( text ){
+            const separatorPos = text.indexOf('|')
+            if ( separatorPos !== -1 ){
+                to = text.substr(separatorPos + 1)
+            }
+        }
+        this{ to = to }
     }
 
     set to(value:string){

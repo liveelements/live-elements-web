@@ -72,7 +72,7 @@ component MoviePage < Div{
     Div{ classes: ['sidebar']
         H2{ 
             T{ text: 'Movies' } 
-            A`+|/add`
+            NavLink`+|/add`
         }
         Ul{
             children: moviePage.state.movies.map(entry => (Li{

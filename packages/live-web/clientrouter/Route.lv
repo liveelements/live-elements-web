@@ -2,26 +2,39 @@
 component Route{
     default children: []
 
-    var path: ''
-    var child: null
+    any path: ''
+    any child: null
     set child(value:Object){ BaseElement.setProperty(this, 'child', value) }
 
-    var component: null
+    any component: null
     set component(value:component){
         this.child = null
         BaseElement.setProperty(this, 'component', value)
     }
 
+    any load: null
+    set load(value:Object){
+        this.child = null
+        BaseElement.setProperty(this, 'load', value)
+    }
+
     get visualChildren(){ return this.child ? [this.child] : this.children }
 
     fn activate(){
-        if ( this.component ){
+        const run = (C) => {
             if ( this.child ){
                 this.child.release()
             }
-            this.child = new this.component()
+            this.child = new C()
             this.child.setParent(this)
             BaseElement.complete(this.child)
+            return true
+        }
+
+        if ( this.component )
+            return run(this.component)
+        else if ( this.load ){
+            return this.load().then(run)
         }
     }
 }
