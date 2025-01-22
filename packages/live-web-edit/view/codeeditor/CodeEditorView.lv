@@ -55,10 +55,10 @@ component CodeEditorView < Div{
     static Object darkTheme = [
         EditorView.theme({
             "&": {
-                backgroundColor: "#212121",
+                backgroundColor: "#111111",
             },
             ".cm-gutters": {
-                backgroundColor: "#212121",
+                backgroundColor: "#111111",
                 border: "none",
             }
         }, { dark: true }),

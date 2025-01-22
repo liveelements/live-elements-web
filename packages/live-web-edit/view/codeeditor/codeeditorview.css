@@ -13,7 +13,7 @@
     scrollbar-width: auto;
 }
 .cm-scroller:is(.dark *){
-    scrollbar-color: #515151 transparent;
+    scrollbar-color: #414141 transparent;
 }
 
 .cm-scroller::-webkit-scrollbar {
@@ -30,11 +30,11 @@
 }
 
 .cm-scroller:is(.dark *)::-webkit-scrollbar-thumb{
-    background-color: #515151; /* Thumb color */
+    background-color: #414141; /* Thumb color */
 }
 
 .cm-scroller:is(.dark *)::-webkit-scrollbar-thumb:hover {
-    background-color: #616161; /* Thumb color on hover */
+    background-color: #515151; /* Thumb color on hover */
 }
   
 .cm-scroller::-webkit-scrollbar-track {

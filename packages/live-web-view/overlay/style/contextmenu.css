@@ -13,10 +13,10 @@ button{
     color: #e1e1e1;
 }
 button:hover{
-    background-color: #515151;
+    background-color: #414141;
 }
 .menu-content{
-    background-color: #212121cc;
+    background-color: #111111cc;
     backdrop-filter: blur(1px);
     color: #d1d1d1;
     @apply w-48 rounded-md shadow-lg py-1 absolute mt-4 z-10;

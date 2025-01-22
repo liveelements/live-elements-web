@@ -1,5 +1,5 @@
 &Card{
-    @apply relative flex-col flex bg-white dark:bg-[#313131] rounded-lg shadow-md max-w-sm overflow-hidden;
+    @apply relative flex-col flex bg-white dark:bg-[#212121] rounded-lg shadow-md max-w-sm overflow-hidden;
 }
 &Card&.card-row{
     @apply flex-row;
@@ -8,7 +8,7 @@
     @apply flex-col;
 }
 figure{
-    @apply bg-[#d1d1d1] dark:bg-[#515151] flex items-center justify-center;
+    @apply bg-[#d1d1d1] dark:bg-[#414141] flex items-center justify-center;
 }
 &Card&.card-row figure{
     @apply w-48 h-auto;
@@ -17,7 +17,7 @@ figure{
     @apply w-full h-48;
 }
 figure span{
-    @apply p-2 text-[#515151] dark:text-[#a1a1a1] text-lg font-semibold text-center;
+    @apply p-2 text-[#414141] dark:text-[#a1a1a1] text-lg font-semibold text-center;
 }
 section{
     @apply p-5 text-base leading-snug;
@@ -26,7 +26,7 @@ section header{
     @apply mb-2;
 }
 section header h1{
-    @apply text-[#313131] dark:text-[#e1e1e1] text-2xl font-semibold mb-0;
+    @apply text-[#212121] dark:text-[#e1e1e1] text-2xl font-semibold mb-0;
 }
 section small{
     @apply text-xs;
@@ -35,7 +35,7 @@ section p{
     @apply py-2;
 }
 button{
-    @apply text-lg px-4 py-2 text-[#212121] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1];
-    @apply dark:border-[#515151] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#515151] text-lg;
-    @apply dark:bg-[#414141] dark:hover:bg-[#515151];
+    @apply text-lg px-4 py-2 text-[#111111] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1];
+    @apply dark:border-[#414141] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#414141] text-lg;
+    @apply dark:bg-[#313131] dark:hover:bg-[#414141];
 }

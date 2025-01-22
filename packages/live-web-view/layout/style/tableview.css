@@ -1,8 +1,8 @@
 &TableView{
-    @apply min-w-full divide-y divide-[#d1d1d1] dark:divide-[#515151];
+    @apply min-w-full divide-y divide-[#d1d1d1] dark:divide-[#414141];
 }
 &TableView&.border-around{
-    @apply border border-[#d1d1d1] dark:border-[#515151];
+    @apply border border-[#d1d1d1] dark:border-[#414141];
 }
 
 &TableView thead th{
@@ -10,7 +10,7 @@
 }
 
 &TableView tbody{
-    @apply text-lg divide-y divide-[#d1d1d1] dark:divide-[#515151];
+    @apply text-lg divide-y divide-[#d1d1d1] dark:divide-[#414141];
 }
 &TableView tbody td{
     @apply text-sm px-4 py-2;

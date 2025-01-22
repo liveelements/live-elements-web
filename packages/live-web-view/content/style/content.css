@@ -7,7 +7,7 @@ h1 {
 }
 
 h2 {
-  @apply text-2xl font-semibold py-2 border-b border-[#c1c1c1] dark:border-[#515151] my-3;
+  @apply text-2xl font-semibold py-2 border-b border-[#c1c1c1] dark:border-[#414141] my-3;
 }
 
 h3 {
@@ -46,11 +46,11 @@ li {
 }
 
 code {
-  @apply bg-[#e1e1e1] dark:bg-[#313131] text-[#111] dark:text-[#f1f1f1] rounded-md p-1 text-sm;
+  @apply bg-[#e1e1e1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] rounded-md p-1 text-sm;
 }
 
 pre {
-  @apply bg-[#e1e1e1] dark:bg-[#313131] text-[#111] dark:text-[#f1f1f1] p-4 rounded-lg overflow-x-auto;
+  @apply bg-[#e1e1e1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] p-4 rounded-lg overflow-x-auto;
 }
 
 pre code{
@@ -66,7 +66,7 @@ table {
 }
 
 thead {
-  @apply bg-[#e1e1e1] dark:bg-[#313131];
+  @apply bg-[#e1e1e1] dark:bg-[#212121];
 }
 
 th {
@@ -86,9 +86,9 @@ img {
 }
 
 hr {
-  @apply my-8 border-[#a1a1a1] dark:border-[#515151];
+  @apply my-8 border-[#a1a1a1] dark:border-[#414141];
 }
 
 input {
-  @apply bg-gray-100 rounded-md p-1 text-sm border border-[#a1a1a1] dark:border-[#515151];
+  @apply bg-gray-100 rounded-md p-1 text-sm border border-[#a1a1a1] dark:border-[#414141];
 }

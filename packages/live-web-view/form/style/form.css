@@ -7,7 +7,7 @@
 }
 
 &FormContainer &TextInput{
-    @apply dark:text-[#f1f1f1] dark:placeholder-[#919191] text-base block bg-white dark:bg-[#2a2a2a] w-full px-4 py-1.5 mt-2 border border-[#d1d1d1] dark:border-[#414141] rounded focus:border-[#313131] dark:focus:border-[#919191] focus:outline-none;
+    @apply dark:text-[#f1f1f1] dark:placeholder-[#717171] text-base block bg-white dark:bg-[#212121] w-full px-4 py-1.5 mt-2 border border-[#d1d1d1] dark:border-[#313131] rounded focus:border-[#212121] dark:focus:border-[#919191] focus:outline-none;
 }
 
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
@@ -15,7 +15,7 @@
 }
 
 &FormContainer &FormMessage{
-    @apply border-2 rounded p-2 p-2 dark:border-[#515151] hidden;
+    @apply border-2 rounded p-2 p-2 dark:border-[#414141] hidden;
 }
 
 &FormContainer &FormMessage&.visible{
@@ -27,10 +27,10 @@
 }
 
 &FormContainer &SubmitButton{
-    @apply text-base px-4 py-2 dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#919191] dark:bg-[#616161] border border-[#818181] rounded hover:bg-[#818181];
+    @apply text-base px-4 py-1 dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#919191] dark:bg-[#414141] border border-[#717171] rounded hover:bg-[#717171];
 }
 &FormContainer &SubmitButton&:hover{
-    @apply bg-[#a1a1a1] dark:bg-[#717171];
+    @apply bg-[#a1a1a1] dark:bg-[#515151];
 }
 
 &FormContainer .text-color-button{

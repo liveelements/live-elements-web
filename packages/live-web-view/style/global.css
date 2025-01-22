@@ -8,7 +8,7 @@
 }
 
 @initialize html.dark body{
-    background-color: #212121;
+    background-color: #111111;
     color: #e1e1e1;
     border-color: red;
 }

@@ -3,7 +3,7 @@
     resize: both;
 }
 &Resizable&.surround-border{
-    @apply border border-[#c1c1c1] dark:border-[#515151];
+    @apply border border-[#c1c1c1] dark:border-[#414141];
 }
 &Resizable&.surround-border.resize-fill{
     @apply border-0;

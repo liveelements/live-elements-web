@@ -1,5 +1,5 @@
 &WorkspaceOpenSelector{
-    @apply hidden absolute text-[#212121] dark:text-[#f1f1f1] border border-[#b1b1b1] dark:border-[#515151] rounded bg-white dark:bg-[#212121];
+    @apply hidden absolute text-[#111111] dark:text-[#f1f1f1] border border-[#b1b1b1] dark:border-[#414141] rounded bg-white dark:bg-[#111111];
     @apply p-4 pt-0 top-12 left-4 max-h-[80vh] max-w-[80wv] min-w-[16rem];
     overflow-y: auto;
 }
@@ -8,13 +8,13 @@
 }
 
 &WorkspaceOpenSelector h3{
-    @apply font-semibold my-2 border-b border-[#b1b1b1] dark:border-[#515151] my-4 pb-2;
+    @apply font-semibold my-2 border-b border-[#b1b1b1] dark:border-[#414141] my-4 pb-2;
 }
 &WorkspaceOpenSelector li{
     @apply py-1 pl-4;
 }
 &WorkspaceOpenSelector li a{
-    @apply text-[#313131] dark:text-[#c1c1c1] transition-colors duration-300;
+    @apply text-[#212121] dark:text-[#c1c1c1] transition-colors duration-300;
 }
 &WorkspaceOpenSelector li a:hover{
     @apply text-[#111111] dark:text-[#f1f1f1];

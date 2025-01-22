@@ -5,7 +5,7 @@
   }
   
 &TooltipArea &Tooltip {
-    @apply p-2 px-4 rounded text-xs text-[#212121] dark:text-white bg-white dark:bg-[#212121] border border-[#c1c1c1] dark:border-[#515151];
+    @apply p-2 px-4 rounded text-xs text-[#111111] dark:text-white bg-white dark:bg-[#111111] border border-[#c1c1c1] dark:border-[#414141];
     visibility: hidden;
     opacity: 0;
     position: absolute;
