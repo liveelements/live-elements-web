@@ -193,6 +193,9 @@ export default class WebServer extends EventEmitter{
     static async loadBundle(bundle, config){
         WebServer.assertInit()
 
+        if ( bundle.bundle.load )
+            bundle.bundle.load(config.runMode)
+
         const webServer = new WebServer(config, bundle)
         if ( webServer._watcher ){
             const files = Watcher.scanPackage(bundle.packagePath, '*.lv')

@@ -2,6 +2,7 @@ component Bundle{
 
     default children: []
     Object config = null
+    Object load = null
 
     constructor(){
         super()
