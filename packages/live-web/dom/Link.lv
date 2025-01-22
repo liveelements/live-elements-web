@@ -12,9 +12,13 @@ component Link < DOMElement{
     on relChanged: () => {
         this.setOwnAttributeAndUpdate('rel', this.rel)
     }
-    string type: ''
+    string type
     on typeChanged: () => {
         this.setOwnAttributeAndUpdate('type', this.type)
+    }
+    string sizes
+    on sizesChanged: () => {
+        this.setOwnAttributeAndUpdate('sizes', this.sizes)
     }
     string crossorigin: false
     on crossoriginChanged: () => {
