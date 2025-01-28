@@ -2,7 +2,7 @@
 component T{
     constructor(text:string){
         super()
-        this._tag = 'text'
+        this._tag = '_t'
         T.prototype.__initialize.call(this)
         this.text = text
     }

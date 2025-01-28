@@ -178,7 +178,7 @@ component DOMElement{
     }
 
     static fn render(element:Object){
-        if ( element.tag === 'text' ){
+        if ( element.tag === '_t' ){
             text(element.text)
             return
         }
