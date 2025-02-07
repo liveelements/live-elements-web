@@ -27,7 +27,7 @@
 }
 
 &FormContainer &SubmitButton{
-    @apply text-base px-4 py-1 dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#919191] dark:bg-[#414141] border border-[#717171] rounded hover:bg-[#717171];
+    @apply text-base px-4 py-1 dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#919191] dark:bg-[#313131] border border-[#515151] rounded hover:bg-[#717171];
 }
 &FormContainer &SubmitButton&:hover{
     @apply bg-[#a1a1a1] dark:bg-[#515151];
