@@ -126,7 +126,11 @@ component DOMElement{
         }
     }
 
-    string glid: ''
+    string glid
+    on glidChanged: () => {
+        if ( this.dom )
+            this.dom.id = this.glid
+    }
     list classes: []
     on classesChanged: () => {
         if ( this.dom ){
