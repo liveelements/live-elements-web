@@ -39,6 +39,14 @@ export default class StandardError extends Error{
         return result;
     }
 
+    toString(){
+        return `${this.name}: ${this.message}\n${this.stackToString()}`;
+    }
+
+    stackToString(){
+        return this.stack.split("\n").slice(1).join("\n")
+    }
+
     static __fromJSON(json, cls){
         const error = new cls(json.message ? json.message : '')
         error.name = json.name
@@ -56,6 +64,12 @@ export default class StandardError extends Error{
 
     static fromJSON(json) {
         return StandardError.__fromJSON(json, StandardError)
+    }
+
+    static errorToString(e){
+        return e instanceof StandardError
+            ? e.toString()
+            : `${e.name}: ${e.message}\n${e.stack ? e.stack.split("\n").slice(1).join("\n") : ''}`;
     }
 }
 

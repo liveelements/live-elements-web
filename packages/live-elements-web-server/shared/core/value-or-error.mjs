@@ -65,3 +65,6 @@ export default class ValueOrError{
         return new ValueOrError(undefined, new Error('ValueOrError: Object missing value or error key.'))
     }
 }
+
+ValueOrError.eob = ValueOrError.errorObject
+ValueOrError.vob = ValueOrError.valueObject

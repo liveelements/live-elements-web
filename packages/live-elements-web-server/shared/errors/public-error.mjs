@@ -10,7 +10,7 @@ export default class PublicError extends StandardError{
     get internal(){ return this._internal }
 
     toJSON(){
-        return super.toJSON(['message'])
+        return { message: this.message }
     }
 
     static mask(error, message){
