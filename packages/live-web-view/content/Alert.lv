@@ -1,0 +1,21 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Alert < Div{
+
+    string type: null
+
+    static any[] use = [ 
+        AlertContent,
+        ScopedStyle{ src: './style/alert.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(Alert),
+        this.type ? `type-${this.type}` : '',
+    ])
+}

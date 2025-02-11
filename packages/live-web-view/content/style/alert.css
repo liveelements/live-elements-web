@@ -1,0 +1,27 @@
+&Alert{
+    @apply flex flex-row items-start bg-white dark:bg-[#111] text-black dark:text-[#e1e1e1] rounded shadow-md max-w-sm overflow-hidden;
+    @apply border border-[#313131] p-4 px-4;
+}
+&AlertContent{
+    @apply text-left;
+    flex-grow: 1;
+}
+&Alert&.type-error{
+    @apply border-[rgb(162,32,40,0.80)];
+}
+&Alert&.type-error heading{
+    @apply text-[rgb(162,32,40)];
+}
+figure{
+    @apply p-1 pr-4;
+    flex-shrink: 0;
+}
+&Alert&.type-error figure svg{
+    @apply text-[rgb(162,32,40)];
+}
+section{
+    @apply text-base text-left leading-snug;
+}
+section header{
+    @apply mb-1;
+}
