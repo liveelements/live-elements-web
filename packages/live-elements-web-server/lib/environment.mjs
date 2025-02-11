@@ -24,6 +24,14 @@ import Logger from "./logger.mjs"
  *     prefixDecorated: [chalk.cyan('.Webpack')],
  *     parent: serverLog
  * });
+ * const configuredPrefix = Logger.parsePrefix('[{date}][{L}]:')
+ * const configuredPrefixDecorated = [(data) => {return chalk.grey(Logger.expandPrefix(data, configuredPrefix))}]
+ * mainLog.configure({
+ *     prefix: configuredPrefix.concat([[]]),
+ *     prefixDecorated: configuredPrefixDecorated.concat([[]]),
+ *     level: Logger.Info,
+ *     transports: [Logger.To.Console.create, Logger.To.File.create]
+ * })
  * 
  * 
  * @example
