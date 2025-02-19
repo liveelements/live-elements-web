@@ -9,6 +9,7 @@ import memfs from 'memfs'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
 import { Environment } from './environment.mjs'
+import Warning from '../shared/errors/warning.mjs'
 import serverLog from './server-log.mjs'
 import ValueWithReport from './core/value-with-report.mjs'
 
