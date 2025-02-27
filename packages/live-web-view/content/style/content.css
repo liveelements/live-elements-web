@@ -1,5 +1,5 @@
 &Content {
-  @apply mx-auto;
+  @apply mx-auto text-[#111] dark:text-[#e1e1e1];
 }
 
 h1 {
