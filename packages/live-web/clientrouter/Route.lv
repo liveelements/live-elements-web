@@ -12,6 +12,8 @@ component Route{
         BaseElement.setProperty(this, 'component', value)
     }
 
+    any componentData: null
+
     any load: null
     set load(value:Object){
         this.child = null
@@ -25,7 +27,7 @@ component Route{
             if ( this.child ){
                 this.child.release()
             }
-            this.child = new C()
+            this.child = new C(this.componentData)
             this.child.setParent(this)
             BaseElement.complete(this.child)
             return true

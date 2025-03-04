@@ -6,8 +6,6 @@ component NavLink < A{
 
     constructor(text:string){
         super(text)
-        console.log("laksmdlksmdls", this.href)
-
         let to = ''
         if ( text ){
             const separatorPos = text.indexOf('|')
