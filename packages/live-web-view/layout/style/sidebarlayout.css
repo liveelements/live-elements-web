@@ -5,6 +5,7 @@
 &SidebarLayout &Sidebar{
     @apply w-full py-4 px-4 left-[-100%] z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#111111] block;
     @apply md:w-64 md:px-6 md:left-[auto] md:border-r md:border-[#c1c1c1] md:dark:border-[#414141];
+    @apply text-[#212121] dark:text-[#e1e1e1];
     transition: left 0.5s;
 }
 
@@ -28,7 +29,7 @@
 }
 
 &SidebarLayout &Sidebar header{
-    @apply px-0 pb-4 md:py-4 text-2xl font-bold;
+    @apply px-0 pb-4 md:py-4 text-2xl font-bold mb-4;
 }
 
 &SidebarLayout &Sidebar hr{
