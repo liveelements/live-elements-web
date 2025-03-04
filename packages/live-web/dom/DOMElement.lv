@@ -128,13 +128,28 @@ component DOMElement{
 
     string glid
     on glidChanged: () => {
-        if ( this.dom )
+        if ( this.dom ){
             this.dom.id = this.glid
+            const incdom = this.dom.__incrementalDOMData
+            if ( incdom ){
+                const idIndex = incdom._attrsArr.indexOf('id')
+                if ( idIndex !== -1 ){
+                    incdom._attrsArr[idIndex + 1] = this.glid
+                }
+            }
+        }
     }
     list classes: []
     on classesChanged: () => {
         if ( this.dom ){
             this.dom.className = this.classes.join(' ')
+            const incdom = this.dom.__incrementalDOMData
+            if ( incdom ){
+                const classIndex = incdom._attrsArr.indexOf('class')
+                if ( classIndex !== -1 ){
+                    incdom._attrsArr[classIndex + 1] = this.dom.className
+                }
+            }
         }
     }
 
@@ -237,6 +252,7 @@ component DOMElement{
             if ( element.isVoid ){
                 element.dom = elementVoid.apply(null, props)
             } else {
+
                 elementOpen.apply(null, props)
                 for ( var i = 0; i < element.children.length; ++i ){
                     DOMElement.render(element.children[i])
