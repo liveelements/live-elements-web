@@ -1,11 +1,14 @@
 &UlV{
-    @apply divide-y divide-[#c1c1c1] dark:divide-[#414141];
+    @apply divide-y divide-[#c1c1c1] dark:divide-[#313131];
     @apply text-[#212121] dark:text-[#e1e1e1];
+}
+&UlV&.no-divide{
+    @apply divide-y-0;
 }
 
 &UlV&.round-border{
-    @apply rounded border border-[#c1c1c1] dark:border-[#414141];
+    @apply rounded border border-[#c1c1c1] dark:border-[#313131];
 }
 li{
-    @apply px-2 py-2;
+    @apply px-2 py-2 text-base;
 }

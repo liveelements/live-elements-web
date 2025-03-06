@@ -1,0 +1,21 @@
+import .docs.components
+
+instance components BaseElement{
+    Object[] list: [
+        { label: 'Alert', url: '/alert', c: AlertDoc },
+        { label: 'Collapsible', url: '/collapsible', c: CollapsibleDoc },
+        { label: 'Context Menu', url: '/context-menu', c: ContextMenuDoc },
+        { label: 'Dropdown', url: '/dropdown', c: DropdownDoc },
+        { label: 'Forms', url: '/forms', c: FormContainerDoc },
+        { label: 'Frame', url: '/frame', c: IFrameDoc },
+        { label: 'Layout', url: '/layout', c: LayoutDoc },
+        { label: 'Modal', url: '/modal', c: ModalDoc },
+        { label: 'Navigation', url: '/navigation', c: NavigationDoc },
+        { label: 'Sortable', url: '/sortable', c: SortableDoc },
+        { label: 'SplitLayout', url: '/splitlayout', c: SplitLayoutDoc },
+        { label: 'Tabs', url: '/tabs', c: TabLayoutDoc },
+        { label: 'Table', url: '/table', c: TableDoc },
+        { label: 'Text Formatting', url: '/text-formatting', c: ContentDoc },
+        { label: 'TreeView', url: '/treeview', c: TreeViewDoc },
+    ]
+}

@@ -1,0 +1,18 @@
+import live-web.dom
+import live-web-view.layout
+import live-web-view.content
+import live-elements-web-server.style
+
+component MainSection < Section{
+    static any[] use = [ 
+        UlV,
+        SidebarLayout,
+        SidebarCloseButton,
+        SidebarToggleButton,
+        ScopedStyle{ src: './mainsection.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(MainSection)])
+
+}

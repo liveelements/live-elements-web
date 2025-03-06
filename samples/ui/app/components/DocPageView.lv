@@ -1,0 +1,122 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.color
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.overlay
+
+import live-web-view.docs.internal
+import live-web-view.docs.components
+
+component DocPageView < PageView{
+    id: page
+
+    static any[] usedComponents = [
+        MainSection,
+        SidebarLayout,
+        ColorSchemeToggleButton,
+        ComponentUsage,
+        Collapsible,
+        UlV,
+        IconButton,
+        PrimaryButton,
+        Content,
+        HighlightSection,
+        HighlightLv,
+        TooltipArea,
+        TableOfContents,
+        SidebarLayout,
+        SidebarCloseButton,
+        SidebarToggleButton
+    ]
+
+
+    DOMElement document: null
+    string active: ''
+
+    constructor(data:Object){
+        super()
+        this{ data = data }
+    }
+
+    head: PageProperties{
+        ColorSchemeLoader{}
+    }
+
+    Body{
+        MainSection{
+            SidebarLayout{ 
+                Sidebar{ 
+                    SidebarCompact{
+                        SidebarCloseButton{}
+                    }
+                    ColorSchemeToggleButton{}
+                    Header{}
+                    UlV{
+                        Li{
+                            A{ href: '/' T`Home` classes: [page.active === '/' ? 'active' : '' ] }
+                        }
+                    }
+                    Collapsible{ extraClasses: ['show']
+                        CollapsibleToggle{ style = { margin: '0', padding: '0.5rem 0.5rem 0.5rem 0' }
+                            content: [
+                                Content{ style = { margin: '0', padding: 'inherit 0' }
+                                    H4`Components`
+                                }, 
+                                CollapsibleRotate{
+                                    Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                        Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                    }
+                                }
+                            ]
+                        }
+                        CollapsibleContent{
+                            UlV{ extraClasses: ['no-divide']
+                                children: page.data.componentLinks.map(l => {
+                                    return Li{
+                                        A{ classes: [page.active === l.url ? 'active' : '']
+                                            href: `/components${l.url}` 
+                                            T{ text: l.label }
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    }
+                }
+                Aside{
+                    SidebarCompact{
+                        SidebarToggleButton{}
+                    }
+                    SidebarLayout{ direction: SidebarLayout.Direction.Right
+                        Sidebar{ style = { marginTop: '1rem'}
+                            Content{
+                                H3`On This Page`
+                            }
+                            TableOfContents{
+                                id: toc
+                                links: TableOfContents.scan(page.document, elem => TableOfContents.isInstanceOf(elem, [H1S, H2S, H3S, H4S, H5S, H6S]))
+                            }
+                            ScrollHighlighter.(toc){
+                                query: '.toc-link'
+                            }
+                        }
+
+                        Aside{
+                            children: page.document ? page.document.children.map( c => {
+                                if ( c instanceof Content ){
+                                    return c
+                                } else if ( c instanceof Example ){
+                                    return ComponentUsage{ example: c }
+                                }
+                            }) : []
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+}

@@ -10,6 +10,10 @@
 }
 &Resizable&.resize-fill{
     @apply w-full h-full;
+    resize: none;
+}
+&Resizable& > *:first-child{
+    @apply w-full h-full;
 }
 &ResizableHandlePoint{
     @apply w-[7px] h-[7px] rounded-full bg-[#4466cc] absolute bottom-0 right-0;

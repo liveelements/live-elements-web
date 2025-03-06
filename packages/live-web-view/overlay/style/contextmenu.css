@@ -6,18 +6,18 @@
     display: block;
 }
 button{
+    @apply text-[#111] dark:text-[#d1d1d1];
     width: 100%;
     text-align: left;
     @apply block px-4 py-1;
     font-size: 16px;
-    color: #e1e1e1;
 }
 button:hover{
-    background-color: #414141;
+    @apply bg-[#d1d1d1] dark:bg-[#414141];
+
 }
 .menu-content{
-    background-color: #111111cc;
-    backdrop-filter: blur(1px);
-    color: #d1d1d1;
+    @apply bg-[#e1e1e1cc] dark:bg-[#111111cc] text-[#111] dark:text-[#d1d1d1];
     @apply w-48 rounded-md shadow-lg py-1 absolute mt-4 z-10;
+    backdrop-filter: blur(1px);
 }

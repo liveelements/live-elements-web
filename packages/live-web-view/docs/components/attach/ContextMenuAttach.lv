@@ -1,0 +1,90 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-web-view.content
+import live-web-view.overlay
+
+component ContextMenuWithActions < DOMBehavior{
+
+    static any[] use = [ContextMenu, PrimaryButton]
+
+    domReady: (d) => {
+        const content = Div{
+            ContextMenu{ id: contextMenu }
+            PrimaryButton{ 
+                T`Open Context Menu`
+                on click: (e) => {
+                    e.preventDefault()
+                    contextMenu.show(
+                        { x: e.clientX, y: e.clientY },
+                        ContextMenuActionsView.create([
+                            { label: 'Item 1', action: () => {}},
+                            { label: 'Item 2', action: () => {}},
+                            { label: 'Item 3', action: () => {}}
+                        ])
+                    )
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+component ContextMenuWithCustomContent < DOMBehavior{
+
+    static any[] use = [ContextMenu, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            ContextMenu{ id: contextMenu }
+            PrimaryButton{ 
+                T`Open Context Menu`
+                on click: (e) => {
+                    e.preventDefault()
+                    contextMenu.show(
+                        { x: e.clientX, y: e.clientY },
+                        Content{
+                            P`Context Menu Content`
+                        }
+                    )
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+
+component ContextMenuRightClick < DOMBehavior{
+
+    static any[] use = [ContextMenu, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            ContextMenu{ id: contextMenu }
+            Content{
+                P{ 
+                    T`Right click `
+                    A{
+                        T`here`
+                        on contextmenu: (e) => {
+                            e.preventDefault()
+                            contextMenu.show(
+                                { x: e.clientX, y: e.clientY },
+                                ContextMenuActionsView.create([
+                                    { label: 'Item 1', action: () => {}},
+                                    { label: 'Item 2', action: () => {}},
+                                    { label: 'Item 3', action: () => {}}
+                                ])
+                            )
+                        }
+                    }
+                    T` to open context menu.`
+                }
+            }
+        }
+        content.expandTo(d)
+    }
+}

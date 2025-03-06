@@ -1,0 +1,79 @@
+import live-web.dom
+import live-web.behavior
+
+component ScrollHighlighter < Div{
+    id: scrollHighlighter
+    DOMElement target
+    string query: 'a'
+    on queryChanged: () => {
+        if ( this.target )
+            if ( this.target.props ){
+                if ( this.target.props.data ){
+                    this.target.props = { ...this.target.props, data: { ...this.target.props.data, highlightquery: this.query} }
+                } else {
+                    this.target.props = { ...this.target.props, data: { highlightquery: this.query} }
+                }
+            } else {
+                this.target.props = { data : { highlightquery: this.query } }
+            }
+    }
+
+    constructor(target:DOMElement){
+        super()
+        this{ target = target }
+    }
+
+    DOMBehavior{
+        target: scrollHighlighter.target
+        domReady: (d) => {
+            const query = d.dataset.highlightquery
+            const links = d.querySelectorAll(query)
+            for ( let i = 0; i < links.length; ++i ){
+                const link = links[i]
+                link.onclick = () => {
+                    updateActiveLink(link)
+                }
+            }
+
+            function updateActiveLink(activeLink){
+                if ( !activeLink )
+                    return
+                    
+                for ( let i = 0; i < links.length; ++i ){
+                    const link = links[i]
+                    if ( link === activeLink ){
+                        link.classList.add('active')
+                    } else {
+                        link.classList.remove('active')
+                    }
+                }
+            }
+
+            // Function to handle scroll events
+            function handleScroll() {
+                const placeholderOffset = d.getBoundingClientRect().top + window.scrollY
+
+                let activeLink = null
+                
+                for ( let i = 0; i < links.length; ++i ){
+                    const link = links[i]
+                    const href = link.getAttribute('href')
+                    if ( href.startsWith('#') ){
+                        const dom = document.getElementById(href.substring(1))
+                        if ( dom ){
+                            const domRect = dom.getBoundingClientRect()
+                            if ( domRect.bottom > 20 && domRect.top < window.innerHeight ){
+                                activeLink = link
+                                break
+                            }
+                        }
+                    }
+                }
+
+                updateActiveLink(activeLink)
+            }
+            window.addEventListener('load', handleScroll)
+            window.addEventListener('scroll', handleScroll)
+        }
+    }
+}

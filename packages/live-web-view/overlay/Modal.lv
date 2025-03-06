@@ -1,5 +1,6 @@
 import live-web.dom
 import live-web.model
+import live-web.behavior
 import live-elements-web-server.style
 
 component ModalBox < Div{}
@@ -27,10 +28,27 @@ component Modal < Div{
     }
 
     Div{ classes: ['modal-backdrop'] 
-        
     }
     Div{ classes: ['modal-content']
-        children: modal.box ? [modal.box] : []
+        children: modal.box ? [
+            modal.box,
+            
+        ] : []
+    }
+
+    DOMBehavior{
+        domEvents = {
+            click: (e) => {
+                if ( e.target.classList.contains('modal-content') ){
+                    if (typeof modal !== 'undefined'){
+                        modal.hide()
+                    } else {
+                        e.target.parentNode.classList.remove('visible')
+                    }
+                }
+        
+            }
+        }
     }
 }
 

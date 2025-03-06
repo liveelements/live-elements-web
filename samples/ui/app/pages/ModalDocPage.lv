@@ -1,0 +1,31 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.color
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.overlay
+
+import live-web-view.docs.internal
+import live-web-view.docs.components
+import .samples.ui.app.components
+
+component ModalDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Modal,
+        ModalConfirmBox,
+        Float,
+        IconButton,
+        ScopedStyle{ src: '../../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv' },
+    ])
+    active: '/modal'
+    document: ModalDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

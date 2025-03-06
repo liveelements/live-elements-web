@@ -1,0 +1,64 @@
+import live-web.behavior
+
+component HighlightLoader < DOMBehavior{
+    Object languages: {
+        'javascript' : import('highlight.js/lib/languages/javascript'),
+        'css' : import('highlight.js/lib/languages/css')
+    }
+
+    static fn loadHighlightJs(){
+        if ( !window._loader_highlightjs ){
+            window._loader_highlightjs = new Promise(async (resolve, reject) => {
+                try{
+                    const hljs = (await import('highlight.js/lib/core')).default
+                    resolve(hljs)
+                } catch ( e ){
+                    reject(e)
+                }
+            })
+        }
+        return window._loader_highlightjs
+    }
+
+    static async fn loadHighlightJsLanguages(languages:string[]){
+        const hljs = await HighlightLoader.loadHighlightJs()
+        hljs.configure({ ignoreUnescapedHTML: true })
+
+        for ( const [languageName, languageLoader] of Object.entries(languages)){
+            const language = (await languageLoader).default
+            hljs.registerLanguage(languageName, language)
+        }
+        return hljs
+    }
+
+    domReady: async (d) => {
+        if ( d.dataset.hasOwnProperty('darkclass') && d.dataset.hasOwnProperty('lightclass') ){
+            if ( document.documentElement.classList.contains('dark') ){
+                d.classList.add(d.dataset.darkclass)
+            } else {
+                d.classList.add(d.dataset.lightclass)
+            }
+
+            if ( !this._colorSchemeListener ){
+                this._colorSchemeListener = window.addEventListener("colorscheme", event => {
+                    if ( event.detail === 'dark' ){
+                        d.classList.remove(d.dataset.lightclass)
+                        d.classList.add(d.dataset.darkclass)
+                    } else {
+                        d.classList.remove(d.dataset.darkclass)
+                        d.classList.add(d.dataset.lightclass)
+                    }
+                })
+            }
+        }
+
+        const hljs = await HighlightLoader.loadHighlightJsLanguages(this.languages)
+        const language = d.dataset.hllanguage
+        if ( language ){
+            d.classList.add(`language-${language}`)
+            hljs.highlightElement(d)
+        } else {
+            hljs.highlightElement(d)
+        }
+    }
+}

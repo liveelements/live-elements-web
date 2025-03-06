@@ -1,0 +1,15 @@
+component Example{
+    static Object RenderType = {
+        CSR: 0,
+        CSRSSR: 1
+    }
+
+    default children
+
+    RenderType render
+    DOMElement element
+
+    fn importsSource(){ return this.children.find(c => c instanceof ImportsSource )}
+    fn useSource(){ return this.children.find(c => c instanceof UseSource )}
+    fn contentSource(){ return this.children.find(c => c instanceof ContentSource )}
+}

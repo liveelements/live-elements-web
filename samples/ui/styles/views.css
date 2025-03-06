@@ -1,0 +1,25 @@
+html{
+    @apply w-full h-full;
+}
+body{
+    @apply w-full h-full;
+}
+section.main{
+    @apply max-w-[90rem] mx-auto;
+}
+&Content{
+    @apply mx-4 lg:mx-6;
+}
+section.main &SidebarLayout &Aside{
+    @apply px-0;
+}
+&SidebarLayout &Sidebar .active{
+    @apply text-[#919191] dark:text-[#717171];
+}
+&SidebarLayout &Aside > &Content{
+    @apply px-4 lg:px-6;
+}
+&HighlightSection{
+    @apply text-sm rounded p-2;
+    font-family: monospace;
+}

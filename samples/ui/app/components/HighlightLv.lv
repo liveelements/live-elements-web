@@ -1,0 +1,20 @@
+import live-elements-web-server.style
+
+component HighlightLv < HighlightSection{
+    static any[] use = [
+        HighlightSectionDark,
+        HighlightSectionLight,
+    ]
+
+    darkScheme: ScopedStyle.className(HighlightSectionDark)
+    lightScheme: ScopedStyle.className(HighlightSectionLight)
+
+    language: 'javascript'
+    loader: HighlightUiLoader
+
+    constructor(code:string){
+        super()
+        this{}
+        this.code = code
+    }
+}

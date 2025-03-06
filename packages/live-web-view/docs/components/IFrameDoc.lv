@@ -1,0 +1,56 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.button
+import live-web-view.navigation
+import live-web-view.layout
+import live-web-view.iframe
+import .docs.internal
+import .docs.components.attach
+
+component IFrameDoc{
+    default children
+
+    Content{
+        H1S`IFrame`
+        P`This section contains controls for an iframe component.`
+        H2S`Basic controls`
+        P{
+            T`The controls are defined inside a `Code`TopNav`T` component.`
+        }
+    }
+
+
+    Example{
+        render: Example.RenderType.CSR
+        element: IFrameBasicControls
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.navigation
+            import live-web-view.layout
+            import live-web-view.iframe
+        ```
+        UseSource```
+            static any[] use = [TopNav, IconButton, Resizable]
+        ```
+        ContentSource```
+            TopNav{ 
+                position = 'static'
+
+                NavContent{
+                    ZoomInButton{ target: frame }
+                    ZoomOutButton{ target: frame }
+                    RefreshButton{ target: frame }
+                    ResizableFillButton{ target: resizable isFilled: true }
+                }
+            }
+            Resizable{ id: resizable fill: true border: true
+                IFrame{ id: frame src: '/' }
+                ResizableHandlePoint{}
+            }
+        ```
+    }
+
+}

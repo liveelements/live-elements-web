@@ -1,0 +1,40 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import .docs.internal
+import .docs.components.attach
+
+component SortableDoc{
+    default children
+
+    Content{
+        H1S`Sortable List`
+        P{
+            T`The `Code`UlVSort`T` component is used to create a sortable list.`
+        }
+        H2S`Basic usage`
+    }
+
+    Example{
+        render: Example.RenderType.CSR
+        element: BasicSortable
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [UlVSort, Content]
+        ```
+        ContentSource```
+            UlVSort{ 
+                LiSort{ key: '1'  T\`Item 1\` }
+                LiSort{ key: '2'  T\`Item 2\` }
+                LiSort{ key: '3'  T\`Item 3\` }
+                LiSort{ key: '4'  T\`Item 4\` }
+                LiSort{ key: '5'  T\`Item 5\` }
+            }
+        ```
+    }
+
+}

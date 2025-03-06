@@ -6,13 +6,15 @@
 &Modal&.visible{
     display: block;
 }
-  
 .modal-backdrop {
     background-color: #131313aa;
     @apply fixed inset-0  transition-opacity;
 }
-
 .modal-content{
     height: 100%;
     @apply relative flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 z-[100001];
+}
+.modal-box{
+    @apply relative px-6 py-2 text-[#111111] dark:text-[#f1f1f1] bg-white dark:bg-[#111111];
+    @apply border border-[#c1c1c1] dark:border-[#313131];
 }

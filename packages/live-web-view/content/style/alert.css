@@ -16,6 +16,9 @@ figure{
     @apply p-1 pr-4;
     flex-shrink: 0;
 }
+figure.close-figure{
+    @apply pl-4 pr-0;
+}
 &Alert&.type-error figure svg{
     @apply text-[rgb(162,32,40)];
 }

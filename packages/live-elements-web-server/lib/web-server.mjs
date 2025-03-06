@@ -193,8 +193,11 @@ export default class WebServer extends EventEmitter{
     static async loadBundle(bundle, config){
         WebServer.assertInit()
 
-        if ( bundle.bundle.load )
-            bundle.bundle.load(config.runMode)
+        if ( bundle.bundle.load ){
+            const loadResult = bundle.bundle.load(config.runMode)
+            if ( loadResult instanceof Promise )
+                await loadResult
+        }
 
         const webServer = new WebServer(config, bundle)
         if ( webServer._watcher ){
@@ -506,7 +509,8 @@ export default class WebServer extends EventEmitter{
             this.config.baseUrl, 
             this.bundleLookupPath, 
             this._distPath,
-            scopedStyleLinks
+            scopedStyleLinks, 
+            viewStyles
         )
         const render = renderResult.unwrapAnd(
             errors => errors.forEach(WebServer.logError), 

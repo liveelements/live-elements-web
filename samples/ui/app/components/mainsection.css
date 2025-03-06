@@ -1,0 +1,16 @@
+@initialize html{
+    scroll-behavior: smooth;
+}
+&MainSection{
+    @apply max-w-[1400px] mx-auto;
+}
+&SidebarLayout &Aside{
+    @apply px-0;
+}
+&Sidebar &UlV li a{
+    @apply block;
+    transition: color 0.4s;
+}
+&Sidebar &UlV li a:hover{
+    @apply text-black dark:text-[#b1b1b1];
+}

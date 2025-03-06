@@ -1,0 +1,132 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.button
+import .docs.internal
+
+component AlertDoc{
+    default children
+
+    Content{
+        H1S`Alert Component`
+        P{
+            Code`Alert`T` component is used to display messages to the user.`
+        }
+        H2S`Alert message`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Alert{ type: 'info'
+            Figure{
+                T`i`
+            }
+            AlertContent{
+                Heading{
+                    H4`Info`
+                }
+                P`Information you should know about.`
+            }
+            Figure{ classes: ['close-figure']
+                IconButton{ extraClasses: ['close']
+                    Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                        Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})
+                        }
+                        Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.button
+        ```
+        UseSource```
+            static any[] use = [Alert, IconButton]
+        ```
+        ContentSource```
+            Alert{ type: 'info'
+                Figure{
+                    T\`i\`
+                }
+                AlertContent{
+                    Heading{
+                        H4\`Info\`
+                    }
+                    P\`Information you should know about.\`
+                }
+                Figure{ classes: ['close-figure']
+                    IconButton{ extraClasses: ['close']
+                        Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                            Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})}
+                            Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})}
+                        }
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Dropdown with list`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: Alert{ type: 'error'
+            Figure{
+                T`!`
+            }
+            AlertContent{
+                Heading{
+                    H4`Error`
+                }
+                P`Alert with error message.`
+            }
+            Figure{ classes: ['close-figure']
+                IconButton{ extraClasses: ['close']
+                    Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                        Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})
+                        }
+                        Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.button
+        ```
+        UseSource```
+            static any[] use = [Alert, IconButton]
+        ```
+        ContentSource```
+            Alert{ type: 'error'
+                Figure{
+                    T\`!\`
+                }
+                AlertContent{
+                    Heading{
+                        H4\`Error\`
+                    }
+                    P\`Alert with error message.\`
+                }
+                Figure{ classes: ['close-figure']
+                    IconButton{ extraClasses: ['close']
+                        Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                            Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})}
+                            Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})}
+                        }
+                    }
+                }
+            }
+        ```
+    }
+}

@@ -1,0 +1,37 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component HighlightSection < Pre{
+    id: highlightSection
+
+    static any[] use = [
+        ScopedStyle{ src: './highlightsection.css' process: 'live-web-view/style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' } 
+    ]
+
+    string language: ''
+    string code: ''
+    Object darkScheme: null
+    Object lightScheme: null
+    Object loader: HighlightLoader
+
+    props: { 
+        data: { 
+            hllanguage: this.language,
+            darkClass: this.darkScheme ? this.darkScheme : undefined,
+            lightClass: this.lightScheme ? this.lightScheme : undefined
+        } 
+    }
+
+    Array extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(HighlightSection)])
+
+    constructor(){
+        super()
+        this{}
+    }
+
+    Code{ T{ text: highlightSection.code } }
+    DOMAttach{ c: highlightSection.loader }
+}

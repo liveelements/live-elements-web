@@ -1,0 +1,112 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.form
+import .docs.internal
+
+component FormContainerDoc{
+    default children
+
+    Content{
+        H1S`Forms`
+        P{
+            T`Forms are wrapped in the `Code`FormContainer`T` component, which styles form elements within.`
+        }
+        H2S`Input and labels`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                Label{ T`Email` }
+                TextInput{ type='email' placeholder="Email Address" name="email" }
+            }
+            FormGroup{
+                Label{ T`Password` }
+                TextInput{ type='password' placeholder="Password" name="password" }
+            }
+            FormGroup{
+                SubmitButton{ T`Submit` }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{
+                    Label{ T\`Email\` }
+                    TextInput{ type='email' placeholder='Email Address' name='email' }
+                }
+                FormGroup{
+                    Label{ T\`Password\` }
+                    TextInput{ type='password' placeholder='Password' name='password' }
+                }
+                FormGroup{
+                    SubmitButton{ T\`Submit\` }
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Messages`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                TextInput{ type='email' placeholder="Email Address" name="email" }
+            }
+            FormMessage{ visible: true type: 'error'
+                T`Error: Email address is invalid.`
+            }
+            FormGroup{
+                TextInput{ type='password' placeholder="Password" name="password" }
+            }
+            FormMessage{ visible: true type: 'info'
+                T`Info: Password should be at least 10 characters.`
+            }
+
+            FormGroup{
+                SubmitButton{ T`Submit` }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{
+                    TextInput{ type='email' placeholder='Email Address' name='email' }
+                }
+                FormMessage{ visible: true type: 'error'
+                    T\`Error: Email address is invalid.\`
+                }
+                FormGroup{
+                    TextInput{ type='password' placeholder='Password' name='password' }
+                }
+                FormMessage{ visible: true type: 'info'
+                    T\`Info: Password should be at least 10 characters.\`
+                }
+                FormGroup{
+                    SubmitButton{ T\`Submit\` }
+                }
+            }
+        ```
+    }
+}

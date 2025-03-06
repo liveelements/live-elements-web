@@ -7,7 +7,7 @@ h1 {
 }
 
 h2 {
-  @apply text-2xl font-semibold py-2 border-b border-[#c1c1c1] dark:border-[#414141] my-3;
+  @apply text-2xl font-medium py-2 border-b border-[#c1c1c1] dark:border-[#313131] mb-3 mt-7;
 }
 
 h3 {
@@ -27,10 +27,10 @@ h6 {
 }
 
 p {
-  @apply text-base leading-relaxed my-4;
+  @apply text-base text-[#414141] dark:text-[#b1b1b1] leading-relaxed my-4;
 }
 a {
-  @apply text-blue-500 hover:text-blue-700 underline;
+  @apply text-[#212121] dark:text-[#e1e1e1] underline;
 }
 
 ul {
@@ -46,11 +46,11 @@ li {
 }
 
 code {
-  @apply bg-[#e1e1e1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] rounded-md p-1 text-sm;
+  @apply bg-[#f1f1f1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] rounded-md p-1 text-sm;
 }
 
 pre {
-  @apply bg-[#e1e1e1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] p-4 rounded-lg overflow-x-auto;
+  @apply bg-[#f1f1f1] dark:bg-[#212121] text-[#111] dark:text-[#f1f1f1] p-4 rounded-lg overflow-x-auto;
 }
 
 pre code{

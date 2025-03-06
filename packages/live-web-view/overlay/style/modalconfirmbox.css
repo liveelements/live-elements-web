@@ -2,6 +2,7 @@
 &ModalConfirmBox {
     @apply inline-block align-bottom rounded-[3px] px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6;
     @apply text-[#111111] dark:text-[#f1f1f1] bg-white dark:bg-[#111111];
+    @apply border border-[#c1c1c1] dark:border-[#313131];
 }
   
 .modal-title {

@@ -1,0 +1,62 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-elements-web-server.style.processors
+import live-web-view.docs
+
+import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
+import lvimport from 'live-elements-core/lvimport.mjs'
+import path from 'path'
+import fs from 'fs'
+import url from 'url'
+
+import .samples.ui.app.pages
+
+instance bundle Bundle{
+
+    load: async (_mode) => {
+
+        const packagePath = path.dirname(PackagePath.findPackageJson(url.fileURLToPath(import.meta.url)))
+        
+        const pagesPath = path.join(packagePath, 'samples', 'ui', 'app', 'pages')
+        const componentLinks = components.list.map(c => { return { url: c.url, label: c.label }})
+        const routes = []
+
+        for ( let i = 0; i < components.list.length; ++i ){
+            const l = components.list[i]
+            const page = path.join(pagesPath, l.c.name + 'Page.lv')
+            if ( !fs.existsSync(page) ){
+                throw new Error(`Missing page '${page}'' for ${l.c.name}`)
+            }
+            const module = await lvimport(page)
+            const Page = module[l.c.name + 'Page']
+            routes.push(ViewRoute{
+                url: l.url
+                c: Page
+                render: ViewRoute.SSR
+                data: () => {
+                    return { componentLinks: componentLinks }
+                }
+            })
+        }
+
+        bundle.ids.componentsDoc.children = routes
+        bundle.ids.homeRoute.data = () => {
+            return { componentLinks: componentLinks }
+        }
+
+        return true
+    }
+
+    Route{
+        id: componentsDoc
+        url: '/components'
+    }
+
+    ViewRoute{
+        id: homeRoute
+        url: '/'
+        c: HomePage
+        render: ViewRoute.SSR
+    }
+}

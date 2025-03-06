@@ -1,0 +1,128 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-web-view.content
+import live-web-view.overlay
+import live-elements-web-server.style
+import .docs.internal
+import .docs.components.attach
+
+component ContextMenuDoc{
+    default children
+
+    Content{
+        H1S`Creating a context menu`
+        P{
+            T`The `Code`ContextMenu`T` component is used to create a context menu.`
+        }
+        H2S`Context Menu with actions`
+    }
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ContextMenuWithActions
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.overlay
+        ```
+        UseSource```
+            static any[] use = [PrimaryButton, ContextMenu]
+        ```
+        ContentSource```
+            ContextMenu{ id: contextMenu }
+            PrimaryButton{ 
+                T\`Open Context Menu\`
+                on click: (e) => {
+                    e.preventDefault()
+                    contextMenu.show(
+                        { x: e.clientX, y: e.clientY },
+                        ContextMenuActionsView.create([
+                            { label: 'Item 1', action: () => {}},
+                            { label: 'Item 2', action: () => {}},
+                            { label: 'Item 3', action: () => {}}
+                        ])
+                    )
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Context Menu with custom content`
+    }
+
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ContextMenuWithCustomContent
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.overlay
+        ```
+        UseSource```
+            static any[] use = [PrimaryButton, ContextMenu, Content]
+        ```
+        ContentSource```
+            ContextMenu{ id: contextMenu }
+            PrimaryButton{ 
+                T\`Open Context Menu\`
+                on click: (e) => {
+                    e.preventDefault()
+                    contextMenu.show(
+                        { x: e.clientX, y: e.clientY },
+                        Content{
+                            P\`Context Menu Content\`
+                        }
+                    )
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Right click context menu`
+    }
+
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ContextMenuRightClick
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.overlay
+        ```
+        UseSource```
+            static any[] use = [PrimaryButton, ContextMenu, Content]
+        ```
+        ContentSource```
+            ContextMenu{ id: contextMenu }
+            Content{
+                P{ 
+                    T\`Right click \`
+                    A{
+                        T\`here\`
+                        on contextmenu: (e) => {
+                            e.preventDefault()
+                            contextMenu.show(
+                                { x: e.clientX, y: e.clientY },
+                                ContextMenuActionsView.create([
+                                    { label: 'Item 1', action: () => {}},
+                                    { label: 'Item 2', action: () => {}},
+                                    { label: 'Item 3', action: () => {}}
+                                ])
+                            )
+                        }
+                    }
+                    T\` to open context menu.\`
+                }
+            }
+        ```
+    }
+
+}

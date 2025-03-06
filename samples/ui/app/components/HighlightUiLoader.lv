@@ -1,0 +1,8 @@
+import live-web.behavior
+
+component HighlightUiLoader < HighlightLoader{
+    languages: {
+        'javascript' : import('highlight.js/lib/languages/javascript'),
+        'css' : import('highlight.js/lib/languages/css')
+    }
+}

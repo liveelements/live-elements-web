@@ -1,0 +1,143 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.layout
+import .docs.internal
+
+component TabLayoutDoc{
+    default children
+
+    Content{
+        H1S`Tabs`
+        P{
+            Code`TabLayout`T` organizes content into multiple sections and allow users to navigate between them.`
+        }
+        H2S`Basic TabLayout`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: TabLayout{
+            TabHeader{
+                TabButton{ content: [T`Tab 1`] }
+                TabButton{ content: [T`Tab 2`] }
+                TabButton{ content: [T`Tab 3`] }
+            }
+            TabContent{
+                TabPane{ 
+                    Content{
+                        H1`This is tab 1`
+                    }
+                }
+                TabPane{ 
+                    Content{
+                        H1`This is tab 2`
+                    }
+                }
+                TabPane{ 
+                    Content{
+                        H1`This is tab 3`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [TabLayout]
+        ```
+        ContentSource```
+            TabLayout{
+                TabHeader{
+                    TabButton{ content: [T\`Tab 1\`] }
+                    TabButton{ content: [T\`Tab 2\`] }
+                    TabButton{ content: [T\`Tab 3\`] }
+                }
+                TabContent{
+                    TabPane{ 
+                        Content{
+                            H1\`This is tab 1\`
+                        }
+                    }
+                    TabPane{ 
+                        Content{
+                            H1\`This is tab 2\`
+                        }
+                    }
+                    TabPane{ 
+                        Content{
+                            H1\`This is tab 3\`
+                        }
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`TabLayout from data`
+        P{
+            T`You can create tabs from a data objects:`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: TabLayout{
+            id: tabLayout
+            Array data = [1, 2, 3]
+            TabHeader{
+                children: tabLayout.data.map(d => {
+                    return TabButton{
+                        content: [T.(`Tab ${d}`){}]
+                    }
+                })
+            }
+            TabContent{
+                children: tabLayout.data.map(d => {
+                    return TabPane{ 
+                        Content{
+                            H1.(`Heading ${d}`){}
+                        }
+                    }
+                })
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            TabLayout{
+                id: tabLayout
+                Array data = [1, 2, 3]
+                TabHeader{
+                    children: tabLayout.data.map(d => {
+                        return TabButton{
+                            content: [T.(\`Tab ${d}\`){}]
+                        }
+                    })
+                }
+                TabContent{
+                    children: tabLayout.data.map(d => {
+                        return TabPane{ 
+                            Content{
+                                H1.(\`Heading ${d}\`){}
+                            }
+                        }
+                    })
+                }
+            }
+        ```
+    }
+}

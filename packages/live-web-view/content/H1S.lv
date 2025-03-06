@@ -1,0 +1,22 @@
+import live-web.dom
+
+component H1S < H1{
+
+    constructor(text:string){
+        super()
+        this{}
+        if ( text ){
+            this.glid = H1S.slugify(text)
+            this.children = [new T(text)]
+        }
+    }
+    
+    static fn slugify(title:string){
+        return title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+    }
+
+}

@@ -1,15 +1,12 @@
 &Dropdown{
     @apply relative;
 }
-
 &DropdownContent{
-    @apply absolute w-52 hidden;
+    @apply absolute w-52 hidden border border-[#b1b1b1] dark:border-[#414141] z-[10000] rounded;
 }
 &DropdownContent&.show{
-    @apply block;
+    @apply block bg-white dark:bg-[#111111];
 }
-
 &DropdownToggleButton{
-    @apply text-lg px-4 py-2 text-[#111111] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1] dark:border-[#414141] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#414141] text-lg;
+    @apply bg-white dark:bg-[#111] text-base px-4 py-2 text-[#111111] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1] dark:border-[#414141] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#414141];
 }
-

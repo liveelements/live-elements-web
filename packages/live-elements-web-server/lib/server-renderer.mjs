@@ -1,4 +1,5 @@
 import ComponentRegistry from "./component-registry.mjs"
+import ScopedAssignmentControl from './scoped-assignment-control.mjs'
 import path from 'path'
 
 class BehaviorReport{
@@ -27,11 +28,11 @@ class BehaviorReport{
 
 export default class ServerRenderer{
 
-    static scanBehaviors(document, element, behaviorPath, behaviorPackage){
+    static scanBehaviors(document, element, behaviorPath, behaviorPackage, scopedStyles){
         let behaviors = new BehaviorReport()
         if ( element.children ){
             for ( let i = 0; i < element.children.length; ++i ){
-                behaviors = behaviors.join(ServerRenderer.scanBehaviors(document, element.children[i], behaviorPath, behaviorPackage))
+                behaviors = behaviors.join(ServerRenderer.scanBehaviors(document, element.children[i], behaviorPath, behaviorPackage, scopedStyles))
             }
         } else if ( element.constructor.name === 'DOMBehavior' ){
             let behaviorEvents = {}
@@ -60,6 +61,17 @@ export default class ServerRenderer{
         } else if ( element.constructor.name === 'DOMAttach' ){
             const attachmentPackage = element.c.Meta.module.substr(0, element.c.Meta.module.indexOf('.'))
             let attachImport = null
+            let scopedAssignment = []
+            if ( element.c.use ){
+                const assignmentMap = ScopedAssignmentControl.extractAssignmentMap(scopedStyles)
+                for ( let i = 0; i < element.c.use.length; ++i ){
+                    const use = element.c.use[i]
+                    const viewsc = scopedStyles.findScopedComponent(use)
+                    const result = ScopedAssignmentControl.__toViewUsageAssignmentStructure(assignmentMap, viewsc)
+                    scopedAssignment.push(result)
+                }
+
+            }
             if ( attachmentPackage === behaviorPackage ){
                 const attachmentPath = ComponentRegistry.findComponentPath(element.c, path.dirname(behaviorPath))
                 attachImport = path.relative(path.dirname(behaviorPath), attachmentPath)
@@ -69,7 +81,7 @@ export default class ServerRenderer{
             
             const ready = `function (d){\n` +
                 `import('live-elements-web-server/client/client-behavior-attach.mjs').then( attach => {\n` + 
-                    `attach.default(import('${attachImport}'), '${element.c.name}', d) \n` + 
+                    `attach.default(import('${attachImport}'), '${element.c.name}', d, ${JSON.stringify(scopedAssignment)}) \n` + 
                 `})\n` + 
             `}\n` 
             let behavior = {

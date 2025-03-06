@@ -1,0 +1,34 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.content
+import live-web-view.button
+import live-web-view.navigation
+import live-web-view.layout
+import live-web-view.iframe
+import .docs.internal
+
+component IFrameBasicControls < DOMBehavior{
+
+    static any[] use = [TopNav, IconButton, Resizable, CardDisplay]
+
+    domReady: (d) => {
+        const content = CardDisplay{
+            TopNav{ 
+                position = 'static'
+
+                NavContent{
+                    ZoomInButton{ target: frame }
+                    ZoomOutButton{ target: frame }
+                    RefreshButton{ target: frame }
+                    ResizableFillButton{ target: resizable isFilled: true }
+                }
+            }
+            Resizable{ id: resizable fill: true border: true
+                IFrame{ id: frame src: '/' }
+                ResizableHandlePoint{}
+            }
+        }
+        content.expandTo(d)
+    }
+}
+

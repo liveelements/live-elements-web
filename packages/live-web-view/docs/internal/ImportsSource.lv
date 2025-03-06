@@ -1,0 +1,9 @@
+
+component ImportsSource{
+    string source
+    
+    constructor(text:string){
+        super()
+        this{ source = ContentSource.trimLines(text) }
+    }
+}

@@ -1,0 +1,205 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.button
+import live-web-view.layout
+import .docs.internal
+
+component LayoutDoc{
+    default children
+
+    Content{
+        H1S`Layout components`
+        P{
+            T`This page describes components in `Code`live-web-view`T` used to manage the layout of a page.`
+        }
+        H2S`Centered Layout`
+        P{
+            T`The `Code`CenterLayout`T` component centers it's content both vertically and horizontally.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{ style = { height: '100px' }
+            CenterLayout{
+                P`Centered text.`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [CenterLayout]
+        ```
+        ContentSource```
+            CenterLayout{ 
+                P\`Centered text.\`
+            }
+        ```
+    }
+
+    Content{
+        H2S`Column layout`
+        P{
+            Code`ColLayout`T` is used to split it's content into two columns. The content automatically collapses on `Code`md`T` breakpoint.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: CardDisplay{
+            ColLayout{
+                Col{
+                    Content{
+                        P`Left column content.`
+                    }
+                }
+                Col{
+                    Content{
+                        P`Right column content.`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [ColLayout]
+        ```
+        ContentSource```
+            ColLayout{
+                Col{
+                    Content{
+                        P\`Left column content.\`
+                    }
+                }
+                Col{
+                    Content{
+                        P\`Right column content.\`
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H3S`Column Layout breakpoint`
+        P{
+            Code`ColLayout`T` breakpoint can be configured to `Code`none/sm/md/lg`T` using the `Code`breakPoint`T` property. The following
+             example breaks the layout at `Code`lg`T` screen size:`
+        }
+    }
+
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: CardDisplay{ 
+            ColLayout{ breakPoint: 'lg'
+                Col{
+                    Content{
+                        P`Left column content.`
+                    }
+                }
+                Col{
+                    Content{
+                        P`Right column content.`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [ColLayout]
+        ```
+        ContentSource```
+            ColLayout{
+                Col{
+                    Content{
+                        P\`Left column content.\`
+                    }
+                }
+                Col{
+                    Content{
+                        P\`Right column content.\`
+                    }
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Float layout`
+        P{
+            Code`Float`T` positions it's content inside it's relative parent in a corner. The content is positioned as `Code`absolute`T` and doesn't interfere with
+            the current layout. The `Code`position`T` property is used to control the location of the content:`
+        }
+
+        H3S`Float Top Left`
+    }
+
+    
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: CardDisplay{ style = { height: '100px', position: 'relative' }
+            Float{ position: 'TL'
+
+                P`Top Left`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [Float]
+        ```
+        ContentSource```
+            Float{ position: 'TL'
+                P\`Top Left\`
+            }
+        ```
+    }
+
+    Content{
+        H3S`Float bottom right`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: CardDisplay{ style = { height: '100px', position: 'relative' }
+            Float{ position: 'BR'
+                P`Bottom Right`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [Float]
+        ```
+        ContentSource```
+            Float{ position: 'BR'
+                P\`Bottom Right\`
+            }
+        ```
+    }
+
+}

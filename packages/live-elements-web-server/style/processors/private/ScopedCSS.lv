@@ -12,6 +12,56 @@ component ScopedCSS{
         return scopedcss
     }
 
+    static fn prefixRuleSelector(selector:string, prefix:string):string{
+        if ( selector.includes(',') ){
+            let newSelector = '';
+            let insideParentheses = 0;
+            let insideQuotes = false;
+            let currentSelector = '';
+
+            for (let i = 0; i < selector.length; i++) {
+                let char = selector[i]
+
+                if (char === '(') insideParentheses++
+                if (char === ')') insideParentheses--
+
+                if (char === '"' || char === "'") {
+                    if (insideQuotes === char) 
+                        insideQuotes = false // Close quote
+                    else 
+                        if (!insideQuotes) insideQuotes = char // Open quote
+                }
+
+                // Handle comma separation (only at top level)
+                if (char === ',' && insideParentheses === 0 && !insideQuotes) {
+                    // Process the current selector
+                    currentSelector = currentSelector.trim()
+                    if (currentSelector && !currentSelector.startsWith(prefix)) {
+                        newSelector += `${prefix} ${currentSelector}, `
+                    } else {
+                        newSelector += `${currentSelector}, `
+                    }
+                    currentSelector = ''
+                } else {
+                    currentSelector += char;
+                }
+            }
+
+            currentSelector = currentSelector.trim()
+            if (currentSelector && !currentSelector.startsWith(prefix)) {
+                newSelector += `${prefix} ${currentSelector}`
+            } else {
+                newSelector += currentSelector
+            }
+
+            return newSelector
+
+        } else if ( !selector.startsWith(prefix)){
+            return `${prefix} ${selector}`
+        }
+        return selector
+    }
+
     fn process(file:string, content:string, destination:string){
         const plugin = () => {
             const df = this.defaultPrefix ? `.${this.defaultPrefix}` : ''
@@ -24,12 +74,11 @@ component ScopedCSS{
                             return
                         }
 
-                        
                         rule.selector = rule.selector.replace(/&([A-Za-z0-9_.-]+)\&?/g, (match, componentName) => {
                             return this.lookups[componentName] ? `.${this.lookups[componentName]}` : match
                         })
-                        if ( df && !rule.selector.startsWith(df) )
-                            rule.selector = `${df} ${rule.selector}`;
+                        if (df)
+                            rule.selector = ScopedCSS.prefixRuleSelector(rule.selector, df);
                     })
 
                     root.walkAtRules(rule => {

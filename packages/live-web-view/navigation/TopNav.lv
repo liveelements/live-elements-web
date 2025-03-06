@@ -9,11 +9,17 @@ component TopNav < Nav{
     Object brand: T`Brand`
     Object links: ['Home', 'About', 'Services', 'Contact']
 
+    string position
+
     static any[] use = [ 
         ScopedStyle{ src: './style/topnav.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]
 
     string[] extraClasses: []
-    classes: ['navbar', ScopedStyle.className(TopNav)].concat(this.extraClasses)
+    classes: this.extraClasses.concat([
+        'navbar', 
+        ScopedStyle.className(TopNav),
+        menu.position ? `position-${menu.position}` : ''
+    ])
 }
