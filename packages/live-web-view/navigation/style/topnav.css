@@ -9,7 +9,7 @@
     @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
 }
 &TopNav .nav-brand {
-    @apply text-lg font-semibold;
+    @apply text-base font-semibold;
 }
 &TopNav .nav-content-toggle {
     @apply flex hidden w-full items-center;
@@ -24,7 +24,8 @@
     @apply list-none;
 }
 &TopNav ul li a {
-    @apply text-[#111111] dark:text-white py-1 my-2 px-2 dark:hover:bg-[#414141] hover:bg-[#e1e1e1] no-underline w-full inline-block rounded-sm;
+    transition: background-color 0.4s;
+    @apply text-base text-[#111111] dark:text-white py-1 my-2 px-2 dark:hover:bg-[#313131] hover:bg-[#e1e1e1] no-underline w-full inline-block rounded-sm;
 }
 &TopNav ul li button{
     @apply my-2;

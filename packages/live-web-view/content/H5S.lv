@@ -1,0 +1,13 @@
+import live-web.dom
+
+component H5S < H5{
+
+    constructor(text:string){
+        super()
+        this{}
+        if ( text ){
+            this.glid = H1S.slugify(text)
+            this.children = [new T(text)]
+        }
+    }
+}

@@ -44,7 +44,7 @@ component Index < PageView{
             on click: (e) => {
               e.preventDefault()
               contextMenu.show(
-                { x: e.pageX, y: e.pageY },
+                { x: e.clientX, y: e.clientY },
                 ContextMenuActionsView.create([
                   { label: 'Item 1', action: () => {}},
                   { label: 'Item 2', action: () => {}},

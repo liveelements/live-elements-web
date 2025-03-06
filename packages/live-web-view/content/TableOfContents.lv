@@ -1,0 +1,98 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component TableOfContents < Div{
+    id: tableOfContents
+
+    static any[] use = [
+        UlV,
+        ScopedStyle{ src: './style/tableofcontents.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(TableOfContents)])
+
+    Object[] links: []
+
+    static fn isInstanceOf(elem:DOMElement, types:component[] ){
+        return types.find(T => elem instanceof T)
+    }
+
+    static fn scan(elem:DOMElement, check:Function){
+        if ( !elem )
+            return []
+        if ( !elem.children )
+            return []
+        let links = []
+        for ( let i = 0; i < elem.children.length; ++i ){
+            const child = elem.children[i]
+            const isValid = check 
+                ? check(child) && child.glid
+                : child.glid ? true : false
+            if ( isValid ){
+                const label = child.children.filter(c => c instanceof T).map(t => t.text).join(' ')
+                links.push({ type: child.tag, label: label, ref: child.glid })
+            }
+            if ( child.children ){
+                links = links.concat(TableOfContents.scan(child, check))
+            }
+        }
+
+        return links
+    }
+
+    static fn generateTOC(items:Object[]){
+        const toc = []
+        const stack = []
+        
+        items.forEach(item => {
+            const listItem = {
+                type: item.type,
+                label: item.label,
+                ref: item.ref,
+                children: []
+            };
+            
+            while (stack.length > 0 && stack[stack.length - 1].type >= item.type) {
+                stack.pop()
+            }
+            
+            if (stack.length === 0) {
+                toc.push(listItem)
+            } else {
+                stack[stack.length - 1].children.push(listItem)
+            }
+            
+            stack.push(listItem)
+        })
+
+        return toc
+    }
+
+    static fn renderTOC(items:Object){
+        const ul = UlV{ extraClasses: ['no-divide'] }
+        items.forEach(item => {
+            ul.children.push(
+                Li{
+                    A{ classes: ['toc-link'] props = { data: { type: item.type } } href = '#' + item.ref T{ text: item.label } }
+                }
+            )
+            if (ul.children.length > 0){
+                ul.children.push(TableOfContents.renderTOC(item.children))
+            }
+        })
+        return ul
+    }
+
+    Div{
+        children: {
+            const toc = TableOfContents.generateTOC(tableOfContents.links)
+            if ( !toc.length )
+                return []
+
+            const tocRender = TableOfContents.renderTOC(toc[0].children)
+            return [tocRender]
+        }
+    }
+}

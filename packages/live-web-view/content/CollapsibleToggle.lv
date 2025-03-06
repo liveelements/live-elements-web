@@ -1,0 +1,32 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component CollapsibleToggle < Div{
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(CollapsibleToggle)])
+
+    Array<DOMElement> content: []
+    
+    Object __behavior = DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                e.preventDefault()
+                let collapsible = e.currentTarget
+                while ( collapsible ){
+                    if ( 'toggle' in collapsible.dataset ){
+                        const toggleClass = collapsible.dataset.toggle
+                        const toggleElem = collapsible.classList.contains(toggleClass)
+                            ? collapsible
+                            : collapsible.querySelector(`.${toggleClass}`)
+                        toggleElem.classList.toggle('show')
+                        break
+                    }
+                    collapsible = collapsible.parentNode
+                }
+            }
+        }
+    }
+
+    children: this.content.concat(this.__behavior)
+}

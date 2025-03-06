@@ -2,7 +2,7 @@
 &TooltipArea {
     position: relative;
     display: inline-block;
-  }
+}
   
 &TooltipArea &Tooltip {
     @apply p-2 px-4 rounded text-xs text-[#111111] dark:text-white bg-white dark:bg-[#111111] border border-[#c1c1c1] dark:border-[#414141];
@@ -15,7 +15,7 @@
     transition: opacity 0.3s;
 }
 
-&TooltipArea &Tooltip&.position-left{
+&TooltipArea &Tooltip&.position-left, &TooltipArea&.position-left &Tooltip{
     right: 0%;
 }
   

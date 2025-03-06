@@ -3,6 +3,12 @@ import live-web
 import live-elements-web-server.style
 
 component SidebarLayout < Div{
+
+    static Object Direction = {
+        Left: 0,
+        Right: 1
+    }
+    
     static any[] use = [ 
         Sidebar, 
         SidebarCompact,
@@ -12,8 +18,10 @@ component SidebarLayout < Div{
     ]
     
     string[] extraClasses: []
+    string direction: SidebarLayout.Direction.Left
 
     classes: this.extraClasses.concat([
-        ScopedStyle.className(SidebarLayout)
+        ScopedStyle.className(SidebarLayout),
+        this.direction === SidebarLayout.Direction.Left ? '' : 'd-right'
     ])
 }

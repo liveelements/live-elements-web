@@ -6,7 +6,7 @@
 }
 
 &TableView thead th{
-    @apply text-sm px-4 py-2 text-left font-bold dark:text-[#c1c1c1];
+    @apply text-sm px-4 py-3 text-left font-medium text-[#616161] dark:text-[#818181];
 }
 
 &TableView tbody{
