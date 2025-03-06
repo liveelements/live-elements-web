@@ -1,0 +1,160 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.color
+import live-web-view.layout
+import live-web-view.button
+import live-web-view.overlay
+import live-web-view.docs.internal
+
+component ComponentUsage < Div{
+    id: componentUsage
+
+    static any[] use = [
+        Dropdown,
+        UlV,
+        IconButton,
+        PrimaryButton,
+        Content,
+        CardDisplay,
+        TooltipArea,
+        ScopedStyle{ src: './componentusage.css' process: 'live-web-view/style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: 'live-web-view/style/global.css' process: 'live-web-view/style/CSSProcessor.lv' } 
+    ]
+
+    classes: [ScopedStyle.className(ComponentUsage)]
+
+    DOMElement example
+
+    Div{ classes: ['grid']
+        id: grid
+        children: componentUsage.example && componentUsage.example.element 
+            ? componentUsage.example.element.hasOwnProperty('Meta')
+                ? [
+                    DOMAttach{
+                        c: componentUsage.example.element 
+                        target: grid 
+                    }
+                ]
+                : [componentUsage.example.element] 
+            : []
+    }
+    Div{ classes: ['toolbar']
+        Div{ classes: ['toolbar-left']
+            TooltipArea{
+                IconButton{ props: { data: { rootclass: ScopedStyle.className(ComponentUsage) } }
+                    Span`Code`
+                    Svg{ classes: ['code-expand-icon'] props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'})
+                        Path{ props: ({fill: 'none', stroke: {'': 'currentColor',linecap: 'round',linejoin: 'round',width: '2'}, d: 'M5 14l6-6-6-6'}) }
+                    }
+                    DOMBehavior{
+                        domEvents: {
+                            click: (e) => {
+                                const rootclass = e.currentTarget.dataset.rootclass
+                                let current = e.currentTarget
+                                while ( current && !current.classList.contains(rootclass)){
+                                    current = current.parentNode
+                                }
+                                if ( current ){
+                                    current.classList.toggle('expanded')
+                                }
+                            }
+                        }
+                    }
+                }
+                Tooltip`Expand/Collapse source code`
+            }
+        }
+        Div{ classes: ['toolbar-right']
+            TooltipArea{ extraClasses: ['position-left']
+                IconButton{
+                    Svg{ 
+                        props = {width: '15', height: '15', viewBox: '0 0 15 15', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', stroke: {'': 'currentColor',width: '1.25',linecap: 'round',linejoin: 'round'}}
+                        Path{ 
+                            props = {d: 'M9 11.8462V12.2308C9 12.4348 8.87033 12.6304 8.63952 12.7747C8.4087 12.919 8.09565 13 7.76923 13H2.23077C1.90435 13 1.5913 12.919 1.36048 12.7747C1.12967 12.6304 1 12.4348 1 12.2308V8.76923C1 8.56522 1.12967 8.36956 1.36048 8.2253C1.5913 8.08104 1.90435 8 2.23077 8H3.84615'}
+                        }
+                        Path{ 
+                            props = {d: 'M9 2.15385V1.76923C9 1.56522 8.87033 1.36956 8.63952 1.2253C8.4087 1.08104 8.09565 1 7.76923 1H2.23077C1.90435 1 1.5913 1.08104 1.36048 1.2253C1.12967 1.36956 1 1.56522 1 1.76923V5.23077C1 5.43478 1.12967 5.63044 1.36048 5.7747C1.5913 5.91896 1.90435 6 2.23077 6H4'}
+                        }
+                        Path{ 
+                            props = {d: 'M12.7692 4H7.23077C6.55103 4 6 4.41328 6 4.92308V9.07692C6 9.58672 6.55103 10 7.23077 10H12.7692C13.449 10 14 9.58672 14 9.07692V4.92308C14 4.41328 13.449 4 12.7692 4Z'}
+                        }
+                    }
+                }
+                Tooltip`Copy source sections`
+            }
+            TooltipArea{ extraClasses: ['position-left']
+                IconButton{
+                    Svg{ 
+                        props = {xmlns: 'http://www.w3.org/2000/svg', width: '15', height: '15', viewBox: '0 0 24 24', fill: 'none', stroke: {'': 'currentColor',width: '2',linecap: 'round',linejoin: 'round'}}
+                        // Path{ 
+                        //     props = {transform: 'translate(0,-4)', d: 'M5 15H4 a2 2 0 0 1-2-2V4 a2 2 0 0 1 2-2h9 a2 2 0 0 1 2 2v1'}
+                        // }
+                        Path{ 
+                            props = {transform: 'translate(2,10)', d: 'M13 10L13 11A2 2 0 0 1 11 13L2 13A2 2 0 0 1 0 11L0 2A2 2 0 0 1 2 0L3 0'}
+                        }
+                        Rect{ props = {x: '9', y: '4', width: '13', height: '13', rx: '2', ry: '2'}
+                        }
+                    }
+                }
+                Tooltip`Copy source as is`
+            }
+
+            TooltipArea{ extraClasses: ['position-left']
+                children: {
+                    if ( !componentUsage.example )
+                        return []
+                    
+                    if ( componentUsage.example.render === Example.RenderType.CSR )
+                        return [
+                            Div{ classes: ['toolbar-label']
+                                T`CSR`        
+                            },
+                            Tooltip`Can be used on the client side or with DOMAttach.`
+                        ]
+                    else if ( componentUsage.example.render === Example.RenderType.CSRSSR )
+                        return [
+                            Div{ classes: ['toolbar-label']
+                                T`SSR/CSR`
+                            },
+                            Tooltip`Can be used both on the server and on the client side.`
+                        ]
+                    return []
+                }
+                
+            }
+        }
+    }
+    Div{ classes: ['source-code']
+        children: [].concat(
+            componentUsage.example && componentUsage.example.importsSource()
+                ? [
+                    Div{ classes: ['segment']
+                        Span`Imports`
+                        HighlightLv.(componentUsage.example.importsSource().source){}
+                    }
+                ]
+                : []
+        ).concat(
+            componentUsage.example && componentUsage.example.useSource()
+                ? [
+                    Div{ classes: ['segment']
+                        Span`Styles`
+                        HighlightLv.(componentUsage.example.useSource().source){}
+                    }
+                ]
+                : []
+        ).concat(
+            componentUsage.example && componentUsage.example.contentSource()
+                ? [
+                    Div{ classes: ['segment']
+                        Span`Content`
+                        HighlightLv.(componentUsage.example.contentSource().source){}
+                    }
+                ]
+                : []
+        )
+    }
+}

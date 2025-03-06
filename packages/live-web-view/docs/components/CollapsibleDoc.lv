@@ -1,0 +1,66 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.button
+import .docs.internal
+
+component CollapsibleDoc{
+    default children
+
+    Content{
+        H1S`Collapsible`
+        P{
+            T`The `Code`Collapsible`T` component expands or collapses content.`
+        }
+        H2S`Basic Usage`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            Collapsible{
+                CollapsibleToggle{
+                    content: [
+                        T`Click to collapse`, 
+                        CollapsibleRotate{
+                            Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                            }
+                        }
+                    ]
+                }
+                CollapsibleContent{
+                    Content{
+                        P`Content inside Collapsible.`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Collapsible]
+        ```
+        ContentSource```
+            Collapsible{
+                CollapsibleToggle{
+                    content: [
+                        T\`Click to collapse\`, 
+                        CollapsibleRotate{
+                            Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                            }
+                        }
+                    ]
+                }
+                CollapsibleContent{
+                    Content{
+                        P\`Content inside Collapsible.\`
+                    }
+                }
+            }
+        ```
+    }
+}

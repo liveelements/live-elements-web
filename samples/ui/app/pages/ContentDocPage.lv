@@ -1,0 +1,21 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.docs.components
+import .samples.ui.app.components
+
+component ContentDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Content
+    ])
+    active: '/text-formatting'
+    document: ContentDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

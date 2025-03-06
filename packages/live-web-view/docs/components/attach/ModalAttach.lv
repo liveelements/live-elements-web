@@ -1,0 +1,92 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.layout
+
+component ModalWithCustomContent < DOMBehavior{
+
+    static any[] use = [Modal, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            Modal{ id: modal }
+            PrimaryButton{
+                T`Open Modal.`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(Content{ extraClasses: ['modal-box']
+                        H1`Modal Title`
+                        P`Click outside this box to close.`
+                    })
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+
+component ModalWithCloseButton < DOMBehavior{
+
+    static any[] use = [Modal, PrimaryButton, Content, IconButton, Float]
+
+    domReady: (d) => {
+        const content = Div{
+            Modal{ id: modal }
+            PrimaryButton{
+                T`Modal with close button.`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(Content{ extraClasses: ['modal-box']
+                        Float.('TR'){
+                            IconButton{
+                                Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                                    Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})
+                                    }
+                                    Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})
+                                    }
+                                }
+                                on click: () => { modal.hide() }
+                            }
+                        }
+                        H1`Modal Title`
+                        P`Click outside this box or on the 'x' button to close.`
+                    })
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+component ModalWithConfirmBox < DOMBehavior{
+
+    static any[] use = [Modal, PrimaryButton, ModalConfirmBox]
+
+    domReady: (d) => {
+        const content = Div{
+            Modal{ id: modal }
+
+            PrimaryButton{
+                T`Confirm Message box.`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(
+                        ModalConfirmBox{
+                            title: 'Confirm'
+                            message: 'Confirm this message'
+                            yes: () => { console.log("Confirmed"); modal.hide(); }
+                            no: () => { console.log("Not Confirmed"); modal.hide(); }
+                        }
+                    )
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}

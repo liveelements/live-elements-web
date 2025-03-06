@@ -1,0 +1,22 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.content
+
+component BasicSortable < DOMBehavior{
+
+    static any[] use = [UlVSort, Content]
+
+    domReady: (d) => {
+        const content = Div{    
+            UlVSort{ 
+                LiSort{ key: '1'  T`Item 1` }
+                LiSort{ key: '2'  T`Item 2` }
+                LiSort{ key: '3'  T`Item 3` }
+                LiSort{ key: '4'  T`Item 4` }
+                LiSort{ key: '5'  T`Item 5` }
+            }
+        }
+        content.expandTo(d)
+    }
+}
+

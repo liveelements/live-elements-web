@@ -1,0 +1,34 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.docs.components
+import .samples.ui.app.components
+
+component HomePage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Content
+    ])
+    active: '/'
+    document: BaseElement{
+        default children
+
+        Content{
+            H1`UI Components Documentation`
+
+            P{
+                T`This is the generated documentation for the `Code`live-web-view`T` UI components module.`
+            }
+            P{
+                T`The sidebar on the left contains all the available components.`
+            }
+        }
+    }
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

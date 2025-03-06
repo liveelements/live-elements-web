@@ -1,0 +1,10 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.style
+
+component CardDisplay < Div{
+    static any[] use = []
+
+    classes: this.extraClasses.concat([ScopedStyle.className(CardDisplay)])
+    string[] extraClasses: []
+}

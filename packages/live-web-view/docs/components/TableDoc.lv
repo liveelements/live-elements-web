@@ -1,0 +1,110 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.layout
+import live-web-view.button
+import .docs.internal
+
+component TableDoc{
+    default children
+
+    Content{
+        H1S`Table component`
+        P{
+            T`The `Code`TableView`T` component provides advanced styling for tables.`
+        }
+        H2S`TableView`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TableView{
+                THead{
+                    Th`User`
+                    Th`Status`
+                    Th`Actions`
+                }
+                TBody{
+                    Tr{
+                        Td`User #1`
+                        Td`Pending`
+                        Td{
+                            PrimaryButton{ T`Edit` }
+                        }
+                    }
+                    Tr{
+                        Td`User #2`
+                        Td`Ready`
+                        Td{
+                            PrimaryButton{ T`Edit` }
+                        }
+                    }
+                    Tr{
+                        Td`User #3`
+                        Td`Pending`
+                        Td{
+                            PrimaryButton{ T`Edit` }
+                        }
+                    }
+                    Tr{
+                        Td`User #2`
+                        Td`Ready`
+                        Td{
+                            PrimaryButton{ T`Edit` }
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [TableView]
+        ```
+        ContentSource```
+            TableView{
+                THead{
+                    Th\`User\`
+                    Th\`Status\`
+                    Th\`Actions\`
+                }
+                TBody{
+                    Tr{
+                        Td\`User #1\`
+                        Td\`Pending\`
+                        Td{
+                            PrimaryButton{ T\`Edit\` }
+                        }
+                    }
+                    Tr{
+                        Td\`User #2\`
+                        Td\`Ready\`
+                        Td{
+                            PrimaryButton{ T\`Edit\` }
+                        }
+                    }
+                    Tr{
+                        Td\`User #3\`
+                        Td\`Pending\`
+                        Td{
+                            PrimaryButton{ T\`Edit\` }
+                        }
+                    }
+                    Tr{
+                        Td\`User #2\`
+                        Td\`Ready\`
+                        Td{
+                            PrimaryButton{ T\`Edit\` }
+                        }
+                    }
+                }
+            }
+        ```
+    }
+
+
+}

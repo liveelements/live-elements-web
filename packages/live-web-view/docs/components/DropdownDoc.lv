@@ -1,0 +1,88 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import .docs.internal
+
+component DropdownDoc{
+    default children
+
+    Content{
+        H1S`Dropdown Component`
+        P`A button to trigger an overlay box that can display custom content.`
+        H2S`Basic Dropdown`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Dropdown{
+            DropdownToggleButton{
+                T`Dropdown`
+            }
+            DropdownContent{
+                Content{
+                    P`Content inside Dropdown.`
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            Dropdown{
+                Content{
+                    P\`Content inside Dropdown.\`
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Dropdown with list`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+            
+        element: Dropdown{
+            DropdownToggleButton{
+                T`Dropdown`
+            }
+            DropdownContent{
+                UlV{ 
+                    Li`Item 1`
+                    Li`Item 2`
+                    Li`Item 3`
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            Dropdown{
+                DropdownToggleButton{
+                    T\`Dropdown\`
+                }
+                DropdownContent{
+                    UlV{ 
+                        Li\`Item 1\`
+                        Li\`Item 2\`
+                        Li\`Item 3\`
+                    }
+                }
+            }
+        ```
+    }
+}

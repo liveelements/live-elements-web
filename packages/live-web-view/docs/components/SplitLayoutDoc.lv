@@ -1,0 +1,173 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.overlay
+import .docs.internal
+
+component SplitLayoutDoc{
+    default children
+
+    Content{
+        H1S`Split Layout`
+        P{
+            T`The `Code`SplitLayout`T` component divides a container into two resizable sections, separated by a draggable handlebar. Users can adjust the width of the left and right sections dynamically by dragging the handlebar.`
+        }
+        H2S`SplitLayout with breakpoint`
+        P{
+            Code`SplitLayout`T` with breakpoint will break the horizontal layout into a vertical layout when the screen is too small.`
+        }
+        P{
+            T`By default, the `Code`SplitLayout`T` will take the height full screen, this examples sets this manually using the `Code`style`T` property.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            SplitLayout{ style = { height: '15rem' }
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T`Left Content`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T`Right Content`
+                        }
+                    }
+                ]
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [SplitLayout]
+        ```
+        ContentSource```
+            SplitLayout{ style = { height: '15rem' }
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T\`Left Content\`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T\`Right Content\`
+                        }
+                    }
+                ]
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Horizontal SplitLayout`
+        P{
+            T`By setting `Code`breakPoint`T` to `Code`false`T`, we disable the breakpoint behavior, and keep the horizontal layout:`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            SplitLayout{ style = { height: '15rem' } breakPoint: false
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T`Left Content`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T`Right Content`
+                        }
+                    }
+                ]
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [SplitLayout]
+        ```
+        ContentSource```
+            SplitLayout{ style = { height: '15rem' } breakPoint: false
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T\`Left Content\`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T\`Right Content\`
+                        }
+                    }
+                ]
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Vertical SplitLayout`
+        P{
+            T`We can also set `Code`vertical`T` to `Code`true`T` to set the layout to vertical always:`
+        }
+    }
+
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            SplitLayout{ style = { height: '15rem' } vertical: true
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T`Left Content`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T`Right Content`
+                        }
+                    }
+                ]
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [SplitLayout]
+        ```
+        ContentSource```
+            SplitLayout{ style = { height: '15rem' } vertical: true
+                panes: [
+                    SplitPane{
+                        CenterLayout{
+                            T\`Left Content\`
+                        }
+                    },
+                    SplitPane{
+                        CenterLayout{
+                            T\`Right Content\`
+                        }
+                    }
+                ]
+            }
+        ```
+    }
+
+}

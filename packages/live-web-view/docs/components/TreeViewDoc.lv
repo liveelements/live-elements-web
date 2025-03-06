@@ -1,0 +1,106 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.content.data
+import live-web-view.layout
+import live-web-view.overlay
+import .docs.internal
+
+component TreeViewDoc{
+    default children
+
+    Content{
+        H1S`TreeView`
+        P{
+            T`The `Code`TreeView`T` component displays hierarchical data in an expandable and collapsible format. 
+            It uses the `Code`TreeNode`T` component to define the data.`
+        }
+        H2S`Basic TreeView`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: TreeView{
+            data: TreeNode{
+                TreeNode`Item 1`
+                TreeNode{
+                    label: 'Item 2'
+
+                    TreeNode`Item 2.1`
+                    TreeNode`Item 2.2`
+
+                    TreeNode{
+                        label: 'Item 2.3'
+                        TreeNode`Item 2.3.1`
+                        TreeNode`Item 2.3.2`
+                    }
+                }
+                TreeNode`Item 3`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.content.data
+        ```
+        UseSource```
+            static any[] use = [TreeView]
+        ```
+        ContentSource```
+            TreeView{
+                data: TreeNode{
+                    TreeNode\`Item 1\`
+                    TreeNode{
+                        label: \'Item 2\'
+
+                        TreeNode\`Item 2.1\`
+                        TreeNode\`Item 2.2\`
+
+                        TreeNode{
+                            label: \'Item 2.3\'
+                            TreeNode\`Item 2.3.1\`
+                            TreeNode\`Item 2.3.2\`
+                        }
+                    }
+                    TreeNode\`Item 3\`
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`TreeView with root node`
+    }
+
+     Example{
+        render: Example.RenderType.CSRSSR
+        element: TreeView{
+            data: TreeNode{
+                label: 'Root'
+                TreeNode`Item 1`
+                TreeNode`Item 2`
+                TreeNode`Item 3`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.content.data
+        ```
+        UseSource```
+            static any[] use = [TreeView]
+        ```
+        ContentSource```
+            TreeView{
+                data: TreeNode{
+                    label: 'Root'
+                    TreeNode\`Item 1\`
+                    TreeNode\`Item 2\`
+                    TreeNode\`Item 3\`
+                }
+            }
+        ```
+    }
+}

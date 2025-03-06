@@ -1,0 +1,198 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.button
+import .docs.internal
+import .docs.components.attach
+
+component ModalDoc{
+    default children
+
+    Content{
+        H1S`Modal Component`
+        P{
+            T`The `Code`modal`T` component is overlays a box on top of the main content, with a semi-transparent background that dims the rest of the interface.`
+        }
+        H2S`Modal with custom content`
+        P{
+            Code`modal.show`T` opens the modal and displays it with a custom `Code`DOMElement`T` received as an argument.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ModalWithCustomContent
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.overlay
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [PrimaryButton, Modal, Content]
+        ```
+        ContentSource```
+            Modal{ id: modal }
+            PrimaryButton{
+                T\`Open Modal.\`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(Content{ extraClasses: ['modal-box']
+                        H1\`Modal Title\`
+                        P\`Click outside this box to close.\`
+                    })
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Modal with close button`
+    }
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ModalWithCloseButton
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.button
+            import live-web-view.overlay
+            import live-web-view.content
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [Modal, PrimaryButton, Content, IconButton, Float]
+        ```
+        ContentSource```
+           Modal{ id: modal }
+            PrimaryButton{
+                T\`Modal with close button.\`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(Content{ extraClasses: ['modal-box']
+                        Float.('TR'){
+                            IconButton{
+                                Svg{ props: ({width: '15', height: '15', viewBox: '0 0 15 15', xmlns: 'http://www.w3.org/2000/svg'})
+                                    Line{ props: ({x1: '0', y1: '0', x2: '15', y2: '15', stroke: 'currentColor'})
+                                    }
+                                    Line{ props: ({x1: '15', y1: '0', x2: '0', y2: '15', stroke: 'currentColor'})
+                                    }
+                                }
+                                on click: () => { modal.hide() }
+                            }
+                        }
+                        H1\`Modal Title\`
+                        P\`Click outside this box or on the 'x' button to close.\`
+                    })
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Modal with confirm message box`
+    }
+
+    Example{
+        render: Example.RenderType.CSR
+        element: ModalWithConfirmBox
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.overlay
+            import live-web-view.content
+            import live-web-view.button
+        ```
+        UseSource```
+            static any[] use = [Modal, PrimaryButton, ModalConfirmBox]
+        ```
+        ContentSource```
+            Modal{ id: modal }
+            PrimaryButton{
+                T\`Confirm Message box.\`
+                on click: (e) => {
+                    e.preventDefault()
+                    modal.show(
+                        ModalConfirmBox{
+                            title: 'Confirm'
+                            message: 'Confirm this message'
+                            yes: () => { console.log('Confirmed'); modal.hide(); }
+                            no: () => { console.log('Not Confirmed'); modal.hide(); }
+                        }
+                    )
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Modal with SSR`
+        P{
+            T`The following example is a starting point for a modal rendered on the server side or in a static website without`
+            T` using `Code`DOMAttach`T` element.`
+        }
+        P{
+            T`The `Code`box`T` property is already defined, and inside `Code`DOMBehavior`T` we only trigger the `Code`visible`T` property.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Div{
+            Modal{ 
+                id: modal 
+                extraClasses: ['my-modal']
+                box: Content{ extraClasses: ['modal-box']
+                    H1`Modal Title`
+                    P`Click outside this box to close.`
+                }
+            }
+            PrimaryButton{
+                T`Open Modal.`
+                DOMBehavior{ 
+                    domEvents = {
+                        click: (e) => {
+                            const myModal = e.target.parentNode.querySelector('.my-modal')
+                            myModal.classList.add('visible')
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web.behavior
+            import live-web-view.overlay
+            import live-web-view.content
+            import live-web-view.button
+        ```
+        UseSource```
+            static any[] use = [Modal, PrimaryButton]
+        ```
+        ContentSource```
+            Modal{ 
+                id: modal 
+                extraClasses: ['my-modal']
+                box: Content{ extraClasses: ['modal-box']
+                    H1\`Modal Title\`
+                    P\`Click outside this box to close.\`
+                }
+            }
+            PrimaryButton{
+                T\`Open Modal.\`
+                DOMBehavior{ 
+                    domEvents = {
+                        click: (e) => {
+                            const myModal = e.target.parentNode.querySelector('.my-modal')
+                            myModal.classList.add('visible')
+                        }
+                    }
+                }
+            }
+        ```
+    }
+}

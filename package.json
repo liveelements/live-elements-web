@@ -30,6 +30,8 @@
         "live-testspec": "file:packages/live-testspec",
         "live-web": "file:packages/live-web",
         "live-web-view": "file:packages/live-web-view",
-        "live-web-edit": "file:packages/live-web-edit"
+        "live-web-edit": "file:packages/live-web-edit",
+        "highlight.js": "^11.9.0",
+        "highlightjs-line-numbers.js": "^2.8.0"
     }
 }

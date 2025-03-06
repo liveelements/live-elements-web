@@ -1,0 +1,22 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.docs.components
+import .samples.ui.app.components
+
+component CollapsibleDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Collapsible,
+        Content
+    ])
+    active: '/collapsible'
+    document: CollapsibleDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

@@ -1,0 +1,250 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import .docs.internal
+
+component ContentDoc{
+    default children
+
+    Content{
+        H1S`Formatting Text`
+        P{
+            T`Text is formatted inside the `Code`Content`T` component.`
+        }
+        H2S`Headings`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            H1`Heading 1`
+            H2`Heading 2`
+            H3`Heading 3`
+            H4`Heading 4`
+            H5`Heading 5`
+            H6`Heading 6`
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Dropdown]
+        ```
+        ContentSource```
+            Content{
+                H1\`Heading 1\`
+                H2\`Heading 2\`
+                H3\`Heading 3\`
+                H4\`Heading 4\`
+                H5\`Heading 5\`
+                H6\`Heading 6\`
+            }
+        ```
+    }
+
+    Content{
+        H2S`Paragraph`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            P`This is a paragraph.`
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                P\`This is a paragraph.\`
+            }
+        ```
+    }
+
+    Content{
+        H2S`Link`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            A{ T`This is a link` }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                A{ T\`This is a link\` }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Inline Code`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            P{
+                T`This is `Code`InlineCode{}`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                P{
+                    T\`This is \`Code\`InlineCode{}\`
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Block Code`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            Pre{
+                Code```
+Code{}
+On{}
+Multiple{}
+Lines{}
+                ```
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+Content{
+    Pre{
+        Code\`\`\`
+Code{}
+On{}
+Multiple{}
+Lines{}
+        \`\`\`
+    }
+}
+        ```
+    }
+
+    Content{
+        H2S`Unordered List`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            Ul{
+                Li`List item 1`
+                Li`List item 2`
+                Li`List item 3`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                Ul{
+                    Li\`List item 1\`
+                    Li\`List item 2\`
+                    Li\`List item 3\`
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Ordered List`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            Ol{
+                Li`List item 1`
+                Li`List item 2`
+                Li`List item 3`
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                Ol{
+                    Li\`List item 1\`
+                    Li\`List item 2\`
+                    Li\`List item 3\`
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Small`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Content{
+            Small`Small text`
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Content]
+        ```
+        ContentSource```
+            Content{
+                Small\`Small text\`
+            }
+        ```
+    }
+}

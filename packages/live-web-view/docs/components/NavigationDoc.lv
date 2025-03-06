@@ -1,0 +1,121 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.navigation
+import .docs.internal
+
+component NavigationDoc{
+    default children
+
+    Content{
+        H1S`Navigation`
+        P{
+            T`The `Code`TopNav`T` component is used to create a top navigation.`
+        }
+        H2S`Basic Collapsible Navigation`
+        P{
+            T`Items inside the `Code`NavContentToggle`T` will be availble inside the collapsible menu on smaller screens. `
+            T`Items inside `Code`NavContent`T` will be visible on smaller screens as well.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TopNav{ position: 'static'
+                NavContent{
+                    NavBrand{ A{ href: `#` T`Brand` } }
+                    NavToggleButton{}
+                }
+                NavContentToggle{ 
+                    Ul{ 
+                        Li{ A{ href: `#` T`Home` } }
+                        Li{ A{ href: `#` T`Install` } }
+                        Li{ A{ href: `#` T`Documentation` } }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [TopNav]
+        ```
+        ContentSource```
+            TopNav{ position: 'static'
+                NavContent{
+                    NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                    NavToggleButton{}
+                }
+                NavContentToggle{ 
+                    Ul{ 
+                        Li{ A{ href: \`#\` T\`Home\` } }
+                        Li{ A{ href: \`#\` T\`Install\` } }
+                        Li{ A{ href: \`#\` T\`Documentation\` } }
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Wide Content`
+        P{
+            T`Items inside the `Code`NavContentWide`T` will be invisible on smaller screens.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TopNav{ position: 'static'
+                NavContent{
+                    NavBrand{ A{ href: `#` T`Brand` } }
+                    NavToggleButton{}
+                }
+                NavContentWide{
+                    Ul{
+                        Li{ A{ href: '#' T`Wide Screen Link` }}
+                    }
+                }
+                NavContentToggle{ 
+                    Ul{ 
+                        Li{ A{ href: `#` T`Home` } }
+                        Li{ A{ href: `#` T`Documentation` } }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [TopNav]
+        ```
+        ContentSource```
+            TopNav{ position: 'static'
+                NavContent{
+                    NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                    NavToggleButton{}
+                }
+                NavContentWide{
+                    Ul{
+                        Li{ A{ href: \'#\' T\`Wide Screen Link\` }}
+                    }
+                }
+                NavContentToggle{ 
+                    Ul{ 
+                        Li{ A{ href: \`#\` T\`Home\` } }
+                        Li{ A{ href: \`#\` T\`Documentation\` } }
+                    }
+                }
+            }
+        ```
+    }
+
+}

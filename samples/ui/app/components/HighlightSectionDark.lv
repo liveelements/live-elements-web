@@ -1,0 +1,6 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component HighlightSectionDark < Div{
+    static any[] use = [ScopedStyle{ src: 'highlight.js/styles/atom-one-dark.min.css' }]
+}
