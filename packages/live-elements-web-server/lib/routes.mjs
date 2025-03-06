@@ -98,7 +98,7 @@ export class ServerViewRoute extends ServerRoute{
         return filename
     }
 
-    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, distPath, scopedStyleLinks){
+    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, distPath, scopedStyleLinks, viewStyles){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -156,7 +156,8 @@ export class ServerViewRoute extends ServerRoute{
             pageDOM.window.document, 
             pagePlacements.length ? pagePlacements[0] : v, 
             viewBehaviorBundlePath,
-            viewPackage
+            viewPackage,
+            viewStyles
         )
         const behaviorReport = behaviorResult.hasReport ? behaviorResult.report : null
         const behaviors = behaviorResult.behaviors
