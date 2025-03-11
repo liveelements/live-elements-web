@@ -11,7 +11,7 @@ component CollapsibleDoc{
         P{
             T`The `Code`Collapsible`T` component expands or collapses content.`
         }
-        H2S`Basic Usage`
+        H2S`Collapsible with Rotation Icon`
     }
 
     Example{
@@ -21,7 +21,7 @@ component CollapsibleDoc{
                 CollapsibleToggle{
                     content: [
                         T`Click to collapse`, 
-                        CollapsibleRotate{
+                        IconRotate{
                             Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
                                 Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
                             }
@@ -41,17 +41,67 @@ component CollapsibleDoc{
             import live-web-view.content
         ```
         UseSource```
-            static any[] use = [Collapsible]
+            static any[] use = [Collapsible, Content]
         ```
         ContentSource```
             Collapsible{
                 CollapsibleToggle{
                     content: [
                         T\`Click to collapse\`, 
-                        CollapsibleRotate{
+                        IconRotate{
                             Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
                                 Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
                             }
+                        }
+                    ]
+                }
+                CollapsibleContent{
+                    Content{
+                        P\`Content inside Collapsible.\`
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Collapsible with Swappable Icon`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            Collapsible{
+                CollapsibleToggle{
+                    content: [
+                        T`Click to collapse`, 
+                        IconSwap{
+                            Span`+` Span`-`
+                        }
+                    ]
+                }
+                CollapsibleContent{
+                    Content{
+                        P`Content inside Collapsible.`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Collapsible, Content]
+        ```
+        ContentSource```
+            Collapsible{
+                CollapsibleToggle{
+                    content: [
+                        T\`Click to collapse\`, 
+                        IconSwap{
+                            Span\`+\` Span\`-\`
                         }
                     ]
                 }

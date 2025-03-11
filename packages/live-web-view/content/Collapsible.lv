@@ -5,7 +5,8 @@ component Collapsible < Div{
     
     static any[] use = [ 
         CollapsibleToggle,
-        CollapsibleRotate,
+        IconRotate,
+        IconSwap,
         CollapsibleContent,
         ScopedStyle{ src: './style/collapsible.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]

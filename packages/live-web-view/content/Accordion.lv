@@ -1,0 +1,19 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component Accordion < Ul{
+    
+    static any[] use = [ 
+        AccordionSection,
+        AccordionToggle,
+        AccordionContent,
+        IconRotate,
+        IconSwap,
+        ScopedStyle{ src: './style/accordion.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    props : { data: { accordion: ScopedStyle.className(Accordion), toggle: ScopedStyle.className(AccordionSection), content: ScopedStyle.className(AccordionContent) } }
+    
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Accordion)])
+}

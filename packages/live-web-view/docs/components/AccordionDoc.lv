@@ -1,0 +1,241 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.button
+import .docs.internal
+
+component AccordionDoc{
+    default children
+
+    Content{
+        H1S`Accordion`
+        P{
+            T`The `Code`Accordion`T` component allows users to expand and collapse sections of content. 
+            It's commonly used for FAQs, menus, or any scenario where space efficiency and progressive disclosure are important.`
+        }
+        H2S`Accordion with Rotating Icon`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            Accordion{
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Accordion, Content]
+        ```
+        ContentSource```
+            Accordion{
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconRotate{
+                                Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                    Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                                }
+                            }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Accordion with Swappable Icon`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            Accordion{
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconSwap{ Span`+` Span`-` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconSwap{ Span`+` Span`-` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T`Click to collapse`, 
+                            IconSwap{ Span`+` Span`-` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P`Content inside Accordion.`
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Accordion, Content]
+        ```
+        ContentSource```
+            Accordion{
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconSwap{ Span\`+\` Span\`-\` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconSwap{ Span\`+\` Span\`-\` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+                AccordionSection{
+                    AccordionToggle{
+                        content: [
+                            T\`Click to collapse\`, 
+                            IconSwap{ Span\`+\` Span\`-\` }
+                        ]
+                    }
+                    AccordionContent{
+                        Content{
+                            P\`Content inside Accordion.\`
+                        }
+                    }
+                }
+            }
+        ```
+    }
+}

@@ -7,6 +7,9 @@
 &SidebarLayout &Aside{
     @apply px-0;
 }
+&Sidebar &UlV li{
+    @apply px-0;
+}
 &Sidebar &UlV li a{
     @apply block;
     transition: color 0.4s;

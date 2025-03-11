@@ -65,7 +65,7 @@ component DocPageView < PageView{
                                 Content{ style = { margin: '0', padding: 'inherit 0' }
                                     H4`Components`
                                 }, 
-                                CollapsibleRotate{
+                                IconRotate{
                                     Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
                                         Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
                                     }

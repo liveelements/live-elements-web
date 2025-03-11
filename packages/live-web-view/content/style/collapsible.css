@@ -2,7 +2,7 @@
     @apply w-full cursor-default;
 }
 &CollapsibleContent{
-    @apply hidden px-2;
+    @apply hidden px-4;
 }
 &Collapsible&.show &CollapsibleContent{
     @apply block bg-white dark:bg-[#111111];
@@ -10,9 +10,24 @@
 &CollapsibleToggle{
     @apply flex flex-row items-center justify-between text-base px-4 py-2 text-[#111111] dark:text-[#f1f1f1] border-b border-[#c1c1c1] dark:border-[#414141] hover:border-[#b1b1b1] dark:hover:border-[#515151];
 }
-&CollapsibleRotate > *:first-child{
+&Collapsible &IconRotate > *:first-child{
     transition: transform 0.5s;
 }
-&Collapsible&.show &CollapsibleRotate > *:first-child{
+&Collapsible&.show &IconRotate > *:first-child{
     transform: rotate(180deg);
+}
+&Collapsible &IconSwap{
+    @apply select-none;
+}
+&Collapsible &IconSwap > *:first-child{
+    @apply block;
+}
+&Collapsible &IconSwap > *:last-child{
+    @apply hidden;
+}
+&Collapsible&.show &IconSwap > *:first-child{
+    @apply hidden;
+}
+&Collapsible&.show &IconSwap > *:last-child{
+    @apply block;
 }

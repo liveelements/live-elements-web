@@ -1,0 +1,53 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component AccordionToggle < Div{
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(AccordionToggle)])
+
+    Array<DOMElement> content: []
+    
+    Object __behavior = DOMBehavior{
+        domEvents: {
+            click: (e) => {
+                e.preventDefault()
+                let collapsible = e.currentTarget
+                const path = [collapsible]
+                while ( collapsible ){
+                    if ( 'accordion' in collapsible.dataset && 'toggle' in collapsible.dataset && 'content' in collapsible.dataset ){
+                        const accordion = collapsible
+                        const toggleClass = collapsible.dataset.toggle
+                        const contentClass = collapsible.dataset.content
+                        const toggleElem = path.find(te => te.classList.contains(toggleClass))
+                        if ( toggleElem ){
+                            const toggleElemContent = toggleElem.querySelector(`.${contentClass}`)
+                            if ( toggleElem.classList.contains('show') ){
+                                toggleElem.classList.remove('show')
+                                toggleElemContent.style.maxHeight = '0'
+                            } else {
+                                const allToggleElem = accordion.querySelectorAll(`.${toggleClass}`)
+                                allToggleElem.forEach(te => {
+                                    if ( te.classList.contains('show') ){
+                                        const content = te.querySelector(`.${contentClass}`)
+                                        content.style.maxHeight = content.scrollHeight + "px"
+                                        window.requestAnimationFrame(() => { content.style.maxHeight = "0" })
+                                        te.classList.remove('show')
+                                    }
+                                })
+                                toggleElemContent.style.maxHeight = toggleElemContent.scrollHeight + "px"
+                                setTimeout(() => { toggleElemContent.style.maxHeight = 'none' }, 400)
+                                toggleElem.classList.add('show')
+                            }
+                        }
+                        break
+                    }
+                    collapsible = collapsible.parentNode
+                    path.push(collapsible)
+                }
+            }
+        }
+    }
+
+    children: this.content.concat(this.__behavior)
+}

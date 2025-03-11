@@ -2,6 +2,7 @@ import .docs.components
 
 instance components BaseElement{
     Object[] list: [
+        { label: 'Accordion', url: '/accordion', c: AccordionDoc },
         { label: 'Alert', url: '/alert', c: AlertDoc },
         { label: 'Collapsible', url: '/collapsible', c: CollapsibleDoc },
         { label: 'Context Menu', url: '/context-menu', c: ContextMenuDoc },

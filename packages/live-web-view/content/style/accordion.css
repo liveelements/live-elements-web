@@ -1,0 +1,31 @@
+&Accordion{
+    @apply w-full cursor-default;
+}
+&AccordionContent{
+    @apply relative max-h-0 px-4 overflow-hidden;
+    transition: max-height 0.5s;
+}
+&AccordionSection&.show &AccordionContent{
+    @apply bg-white dark:bg-[#111111];
+}
+&AccordionToggle{
+    @apply flex flex-row items-center justify-between text-base px-4 py-2 text-[#111111] dark:text-[#f1f1f1] border-b border-[#c1c1c1] dark:border-[#414141] hover:border-[#b1b1b1] dark:hover:border-[#515151];
+}
+&Accordion &IconRotate > *:first-child{
+    transition: transform 0.5s;
+}
+&AccordionSection&.show &IconRotate > *:first-child{
+    transform: rotate(180deg);
+}
+&Accordion &IconSwap > *:first-child{
+    @apply block;
+}
+&Accordion &IconSwap > *:last-child{
+    @apply hidden;
+}
+&AccordionSection&.show &IconSwap > *:first-child{
+    @apply hidden;
+}
+&AccordionSection&.show &IconSwap > *:last-child{
+    @apply block;
+}
