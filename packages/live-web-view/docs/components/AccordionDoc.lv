@@ -10,7 +10,7 @@ component AccordionDoc{
         H1S`Accordion`
         P{
             T`The `Code`Accordion`T` component allows users to expand and collapse sections of content. 
-            It's commonly used for FAQs, menus, or any scenario where space efficiency and progressive disclosure are important.`
+            It's commonly used for FAQs, menus, or any scenario where space efficiency is important.`
         }
         H2S`Accordion with Rotating Icon`
     }

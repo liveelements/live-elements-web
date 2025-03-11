@@ -1,7 +1,7 @@
 import live-web.dom
 import live-elements-web-server.style
 
-component AccordionSection < Div{
+component AccordionSection < Li{
     string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(AccordionSection)])
 }

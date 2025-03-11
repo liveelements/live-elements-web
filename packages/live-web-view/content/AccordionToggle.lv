@@ -23,8 +23,9 @@ component AccordionToggle < Div{
                         if ( toggleElem ){
                             const toggleElemContent = toggleElem.querySelector(`.${contentClass}`)
                             if ( toggleElem.classList.contains('show') ){
+                                toggleElemContent.style.maxHeight = toggleElemContent.scrollHeight + "px"
+                                window.requestAnimationFrame(() => { toggleElemContent.style.maxHeight = "0" })
                                 toggleElem.classList.remove('show')
-                                toggleElemContent.style.maxHeight = '0'
                             } else {
                                 const allToggleElem = accordion.querySelectorAll(`.${toggleClass}`)
                                 allToggleElem.forEach(te => {
