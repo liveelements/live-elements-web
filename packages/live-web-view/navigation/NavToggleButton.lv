@@ -3,11 +3,12 @@ import live-web.behavior
 import live-elements-web-server.view
 import live-elements-web-server.style
 
-component NavToggleButton < A{
+component NavToggleButton < Button{
     classes: ['nav-toggle-button']
 
     props = {
-        data : { toggle: ScopedStyle.className(TopNav) }
+        data: { toggle: ScopedStyle.className(TopNav) },
+        aria: { label: 'Navigation Toggle' }
     }
 
     Span{ classes: ['bar'] }
