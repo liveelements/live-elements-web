@@ -37,13 +37,22 @@ component ContextMenu < Div{
         }
         this.visible = true
         this.classes = this.classes.concat(['visible'])
-
         const menuContent = this.children[0]
-        menuContent.style = {
-            left: position.x + 'px',
-            top:  (position.y - 30) + 'px'
-        }
         menuContent.children = [view]
+
+        const menuWidth = menuContent.dom.offsetWidth
+        const menuHeight = menuContent.dom.offsetHeight
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+
+        const leftPosition = position.x + menuWidth > viewportWidth
+            ? position.x - menuWidth
+            : position.x
+        const topPosition = position.y - 20 + menuHeight > viewportHeight
+            ? position.y - menuHeight
+            : position.y - 20
+
+        menuContent.style = { left: leftPosition + 'px', top: topPosition + 'px' }
         if ( view.whenInit ){
             view.whenInit()
         }
