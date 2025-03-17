@@ -1,6 +1,9 @@
 
-&FullScreen {
-    @apply overflow-hidden relative w-full h-screen flex items-center justify-center;
+&FullScreen{
+    @apply overflow-hidden relative w-full h-screen flex;
+}
+&FullScreen&.vh-center{
+    @apply items-center justify-center;
 }
 
 &FullScreen&.pad-topnav{

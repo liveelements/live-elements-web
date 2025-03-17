@@ -13,7 +13,7 @@
     @apply text-lg divide-y divide-[#d1d1d1] dark:divide-[#414141];
 }
 &TableView tbody td{
-    @apply text-sm px-4 py-2;
+    @apply text-sm px-4 py-2 text-left;
 }
 &TableView tbody td button{
     @apply text-sm px-2 py-2;
