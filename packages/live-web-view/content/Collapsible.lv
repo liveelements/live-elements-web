@@ -2,6 +2,12 @@ import live-web.dom
 import live-elements-web-server.style
 
 component Collapsible < Div{
+
+    constructor(){
+        super()
+        this{}
+        this.setOwnAttribute('data', { toggle: ScopedStyle.className(Collapsible) })
+    }
     
     static any[] use = [ 
         CollapsibleToggle,
@@ -10,8 +16,6 @@ component Collapsible < Div{
         CollapsibleContent,
         ScopedStyle{ src: './style/collapsible.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
-
-    props : { data: { toggle: ScopedStyle.className(Collapsible) } }
     
     string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(Collapsible)])
