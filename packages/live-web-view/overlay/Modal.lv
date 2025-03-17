@@ -3,7 +3,10 @@ import live-web.model
 import live-web.behavior
 import live-elements-web-server.style
 
-component ModalBox < Div{}
+component ModalBox < Div{ 
+    string[] extraClasses: []
+    classes: this.extraClasses.concat(['modal-box'])
+}
 
 component Modal < Div{
     id: modal

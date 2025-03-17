@@ -11,7 +11,6 @@ component ModalConfirmBox < ModalBox{
         ScopedStyle{ src: './style/modalconfirmbox.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
-    string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(ModalConfirmBox)])
 
     string title: ''
