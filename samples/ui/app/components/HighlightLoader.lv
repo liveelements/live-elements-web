@@ -5,6 +5,7 @@ component HighlightLoader < DOMBehavior{
         'javascript' : import('highlight.js/lib/languages/javascript'),
         'css' : import('highlight.js/lib/languages/css')
     }
+    Object hooks = ({})
 
     static fn loadHighlightJs(){
         if ( !window._loader_highlightjs ){
@@ -54,6 +55,9 @@ component HighlightLoader < DOMBehavior{
 
         const hljs = await HighlightLoader.loadHighlightJsLanguages(this.languages)
         const language = d.dataset.hllanguage
+        if ( this.hooks.beforeHighlight ){
+            this.hooks.beforeHighlight(d, hljs)
+        }
         if ( language ){
             d.classList.add(`language-${language}`)
             hljs.highlightElement(d)

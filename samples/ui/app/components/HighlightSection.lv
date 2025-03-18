@@ -14,7 +14,11 @@ component HighlightSection < Pre{
     string code: ''
     Object darkScheme: null
     Object lightScheme: null
-    Object loader: HighlightLoader
+    Object loader
+    on loaderChanged: () => {
+        domAttach.c = this.loader
+        domAttach.__initAttachment()
+    }
 
     props: { 
         data: { 
@@ -33,5 +37,5 @@ component HighlightSection < Pre{
     }
 
     Code{ T{ text: highlightSection.code } }
-    DOMAttach{ c: highlightSection.loader }
+    DOMAttach{ id: domAttach }
 }

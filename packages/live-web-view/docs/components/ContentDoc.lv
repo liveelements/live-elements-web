@@ -30,7 +30,7 @@ component ContentDoc{
             import live-web-view.content
         ```
         UseSource```
-            static any[] use = [Dropdown]
+            static any[] use = [Content]
         ```
         ContentSource```
             Content{

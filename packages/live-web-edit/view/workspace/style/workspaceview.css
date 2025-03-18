@@ -6,6 +6,10 @@
     @apply flex flex-row;
 }
 
+&FullScreen&.pad-topnav{
+    @apply pt-[0rem] h-[calc(100vh-3rem-1px)];
+}
+
 &SplitLayout{
     @apply h-[calc(100vh-3rem)];
 }

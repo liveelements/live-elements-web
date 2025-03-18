@@ -2,22 +2,35 @@
     @apply relative mb-16 border-[#d1d1d1] dark:border-[#212121] border-b;
 }
 .grid{
-    @apply py-8 flex w-full border-[#d1d1d1] dark:border-[#212121] border-b mt-8 items-center justify-center;
+    @apply py-16 flex w-full border-[#d1d1d1] dark:border-[#212121] border-b mt-8 items-center justify-center;
+
+   --cell-size: 18px;
+   --large-cell-size: calc(var(--cell-size) * 10);
+   --large-x-offset: calc(var(--cell-size) + 0px);
+   --large-y-offset: calc(var(--cell-size) + 0px);
+
     background-image: 
         linear-gradient(to left, #e1e1e1 1px, transparent 1px), 
-        linear-gradient(to bottom, #e1e1e1 1px, transparent 1px);
-    background-size: 20px 20px;
+        linear-gradient(to bottom, #e1e1e1 1px, transparent 1px),
+        linear-gradient(to left, #d1d1d1 1px, transparent 2px),
+        linear-gradient(to bottom, #d1d1d1 1px, transparent 2px);
+
+    background-size: var(--cell-size) var(--cell-size), var(--cell-size) var(--cell-size), var(--large-cell-size) var(--large-cell-size), var(--large-cell-size) var(--large-cell-size);
+    background-position: 0px 0px, 0px 0px, var(--large-x-offset) 0px, 0px var(--large-y-offset);
 }
 .grid:is(.dark *){
-    background-image: 
-        linear-gradient(to right, #212121 1px, transparent 1px), 
-        linear-gradient(to bottom, #212121 1px, transparent 1px);
+   background-image: 
+       linear-gradient(to left, #212121 1px, transparent 1px), 
+       linear-gradient(to bottom, #212121 1px, transparent 1px),
+       linear-gradient(to left, #313131 1px, transparent 2px),
+       linear-gradient(to bottom, #313131 1px, transparent 2px);
+
 }
 .toolbar{
     @apply flex justify-between mx-4 lg:mx-6 pt-1 pb-0;
 }
 .toolbar .toolbar-right{
-    @apply flex flex-row gap-x-1;
+    @apply relative flex flex-row gap-x-1;
 }
 &IconButton{
     @apply border-0 rounded;

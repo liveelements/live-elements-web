@@ -32,11 +32,11 @@ component FormContainerDoc{
 
         ImportsSource```
             import live-web.dom
-            import live-web-view.overlay
+            import live-web-view.form
             import live-web-view.content
         ```
         UseSource```
-            static any[] use = [Dropdown]
+            static any[] use = [FormContainer]
         ```
         ContentSource```
             FormContainer{
@@ -83,11 +83,11 @@ component FormContainerDoc{
 
         ImportsSource```
             import live-web.dom
-            import live-web-view.overlay
+            import live-web-view.form
             import live-web-view.content
         ```
         UseSource```
-            static any[] use = [Dropdown]
+            static any[] use = [FormContainer]
         ```
         ContentSource```
             FormContainer{
