@@ -2,6 +2,8 @@ import live-web.dom
 import live-web.behavior
 import live-elements-web-server.style
 
+import .view.lib
+
 import {EditorView, basicSetup} from 'codemirror'
 import {indentUnit} from '@codemirror/language'
 import {keymap} from '@codemirror/view'
@@ -125,6 +127,90 @@ component CodeEditorView < Div{
         if ( this.config && this.config.readOnly ){
             extensions.push(EditorState.readOnly.of(true))
         }
+
+        extensions.push(
+            EditorView.domEventHandlers({
+                paste: (event, view) => {
+                    const clipboardData = event.clipboardData || window.clipboardData
+                    if (!clipboardData) 
+                        return false
+
+                    const pastedText = clipboardData.getData("text")
+                    
+                    if ( pastedText.startsWith("//>@") ){
+                        event.preventDefault()
+                        
+                        const pastedTextSections = LvFragmentEditor.parseClipboardFragment(pastedText)
+                        const importsText = pastedTextSections.filter(s => s.type === 'imports').map(s => s.source).join('\n')
+                        const useText = pastedTextSections.filter(s => s.type === 'use').map(s => s.source).join('\n')
+                        const content = pastedTextSections.filter(s => s.type === '').map(s => s.source).join('\n')
+
+                        let fullText = null
+
+                        // Insert in reverse order to not affect other insertions
+
+                        if ( content ){
+                            const cursorPos = view.state.selection.main.from
+                            const line = view.state.doc.lineAt(cursorPos)
+                            const currentIndentation = line.text.match(/^\s*/)?.[0] || ""
+
+                            const indentedContent = LvFragmentEditor.indentFragment(content, currentIndentation)
+
+                            view.dispatch({
+                                changes: { from: view.state.selection.main.from, to: view.state.selection.main.to, insert: indentedContent },
+                                selection: {
+                                    anchor: view.state.selection.main.from + indentedContent.length
+                                }
+                            })
+                        }
+
+                        if ( useText ){
+                            if ( fullText === null )
+                                fullText = view.state.doc.toString()
+
+                            const existingUseFragment = LvFragmentEditor.findUse(fullText, view.state.selection.main.from)
+                            const existingUseSegments = existingUseFragment.source.split(',').map(i => i.trim()).filter(i => i.length > 0)
+
+                            const newUseFragment = LvFragmentEditor.findUse(useText, useText.length - 1)
+                            const newUseSegments = newUseFragment.source.split(',').map(i => i.trim()).filter(i => i.length > 0)
+
+                            console.log("COMPARIGIN:", newUseSegments, existingUseSegments)
+
+                            const uniqueUseSegments = newUseSegments.filter(newImp => 
+                                !existingUseSegments.some(existing => existing === newImp)
+                            );
+                            if ( uniqueUseSegments.length ){
+                                const toInsert = uniqueUseSegments.join(', ') + ', '
+                                view.dispatch({ changes: { from: existingUseFragment.contentStart, insert: toInsert } })
+                            }
+                        }
+
+                        if ( importsText ){
+                            const newImports = LvFragmentEditor.extractImports(importsText)
+                            if ( fullText === null )
+                                fullText = view.state.doc.toString()
+                            const existingImports = LvFragmentEditor.extractImports(fullText)
+                            
+                            const uniqueImports = newImports.filter(newImp => 
+                                !existingImports.some(existing => existing.name === newImp.name)
+                            );
+
+                            // insert position
+                            const lastImportLine = existingImports.length > 0 ? existingImports[existingImports.length - 1].line : -1
+                            const insertPos = lastImportLine >= 0 ? view.state.doc.line(lastImportLine + 2).from : 0
+
+                            const importsToInsert = uniqueImports.length 
+                                ? uniqueImports.map(imp => `import ${imp.name}${imp.as ? " as " + imp.as : ""}`).join("\n") + '\n'
+                                : ''
+
+                            view.dispatch({ changes: { from: insertPos, insert: importsToInsert } })
+                        }
+                        return true
+                    }
+                    return false
+                }
+            })
+        )
 
         const editorState = EditorState.create({
             doc: this.readContent ? this.readContent() : this.doc,

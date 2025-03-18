@@ -68,8 +68,17 @@ component ComponentUsage < Div{
             }
         }
         Div{ classes: ['toolbar-right']
+            Toaster{ 
+                id: toaster 
+                single: true
+                position: Toaster.Position.Parent
+
+                Toast{ extraClasses: ['toolbar-toast', 'transitions']
+                    T`Copied`
+                }
+            }
             TooltipArea{ extraClasses: ['position-left']
-                IconButton{
+                IconButton{ props = { data: { container: ScopedStyle.className(ComponentUsage) } }
                     Svg{ 
                         props = {width: '15', height: '15', viewBox: '0 0 15 15', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', stroke: {'': 'currentColor',width: '1.25',linecap: 'round',linejoin: 'round'}}
                         Path{ 
@@ -82,20 +91,94 @@ component ComponentUsage < Div{
                             props = {d: 'M12.7692 4H7.23077C6.55103 4 6 4.41328 6 4.92308V9.07692C6 9.58672 6.55103 10 7.23077 10H12.7692C13.449 10 14 9.58672 14 9.07692V4.92308C14 4.41328 13.449 4 12.7692 4Z'}
                         }
                     }
+                    DOMBehavior{
+                        domEvents = {
+                            click: (e) => {
+                                const containerClass = e.currentTarget.dataset.container
+                                let current = e.currentTarget
+                                while ( current ){
+                                    if ( current.classList.contains(containerClass) ){
+                                        break
+                                    }
+                                    current = current.parentNode
+                                }
+                                if ( current ){
+                                    const toast = current.querySelector('.toolbar-toast')
+                                    const sourceCode = current.querySelector('.source-code')
+                                    const sourceCodeData = sourceCode.__sourceAttach
+                                    let content = sourceCodeData.map(d => d.type === 'content' ? `//>@\n${d.source}` : `//>@${d.type}\n${d.source}`).join('\n')
+                                    window.navigator.clipboard.writeText(content)
+                                        .then(() => { 
+                                            toast.innerHTML = 'Copied'
+                                            toast.style.maxHeight = '80px'
+                                            toast.classList.add('visible')
+                                            setTimeout(() => { 
+                                                toast.style.maxHeight = '0px'
+                                                toast.classList.remove('visible')
+                                            }, 1000)
+                                        })
+                                        .catch(err => { 
+                                            toast.innerHTML = `Failed to copy text: ${err.message}`
+                                            toast.style.maxHeight = '80px'
+                                            toast.classList.add('visible')
+                                            setTimeout(() => { 
+                                                toast.style.maxHeight = '0px'
+                                                toast.classList.remove('visible')
+                                            }, 1000)
+                                        })
+                                }
+                            }
+                        }
+                    }
                 }
                 Tooltip`Copy source sections`
             }
             TooltipArea{ extraClasses: ['position-left']
-                IconButton{
+                IconButton{ props = { data: { container: ScopedStyle.className(ComponentUsage) } }
                     Svg{ 
                         props = {xmlns: 'http://www.w3.org/2000/svg', width: '15', height: '15', viewBox: '0 0 24 24', fill: 'none', stroke: {'': 'currentColor',width: '2',linecap: 'round',linejoin: 'round'}}
-                        // Path{ 
-                        //     props = {transform: 'translate(0,-4)', d: 'M5 15H4 a2 2 0 0 1-2-2V4 a2 2 0 0 1 2-2h9 a2 2 0 0 1 2 2v1'}
-                        // }
-                        Path{ 
-                            props = {transform: 'translate(2,10)', d: 'M13 10L13 11A2 2 0 0 1 11 13L2 13A2 2 0 0 1 0 11L0 2A2 2 0 0 1 2 0L3 0'}
-                        }
-                        Rect{ props = {x: '9', y: '4', width: '13', height: '13', rx: '2', ry: '2'}
+                        Path{ props = {transform: 'translate(2,10)', d: 'M13 10L13 11A2 2 0 0 1 11 13L2 13A2 2 0 0 1 0 11L0 2A2 2 0 0 1 2 0L3 0'} }
+                        Rect{ props = {x: '9', y: '4', width: '13', height: '13', rx: '2', ry: '2'} }
+                    }
+
+                    DOMBehavior{
+                        domEvents = {
+                            click: (e) => {
+                                e.preventDefault()
+                                const containerClass = e.currentTarget.dataset.container
+                                let current = e.currentTarget
+                                while ( current ){
+                                    if ( current.classList.contains(containerClass) ){
+                                        break
+                                    }
+                                    current = current.parentNode
+                                }
+                                if ( current ){
+                                    const toast = current.querySelector('.toolbar-toast')
+                                    const sourceCode = current.querySelector('.source-code')
+                                    const sourceCodeData = sourceCode.__sourceAttach
+                                    let content = sourceCodeData.map(d => d.source).join('\n')
+                                    window.navigator.clipboard.writeText(content)
+                                        .then(() => { 
+                                            toast.innerHTML = 'Copied'
+                                            toast.style.maxHeight = '80px'
+                                            toast.classList.add('visible')
+                                            setTimeout(() => { 
+                                                toast.style.maxHeight = '0px'
+                                                toast.classList.remove('visible')
+                                            }, 1000)
+                                        })
+                                        .catch(err => { 
+                                            toast.innerHTML = `Failed to copy text: ${err.message}`
+                                            toast.style.maxHeight = '80px'
+                                            toast.classList.add('visible')
+                                            setTimeout(() => { 
+                                                toast.style.maxHeight = '0px'
+                                                toast.classList.remove('visible')
+                                            }, 1000)
+                                        })
+                                }
+                            }
                         }
                     }
                 }
@@ -131,7 +214,7 @@ component ComponentUsage < Div{
         children: [].concat(
             componentUsage.example && componentUsage.example.importsSource()
                 ? [
-                    Div{ classes: ['segment']
+                    Div{ classes: ['segment'] props = { data: { source: { type: 'imports' } } }
                         Span`Imports`
                         HighlightLv.(componentUsage.example.importsSource().source){}
                     }
@@ -140,7 +223,7 @@ component ComponentUsage < Div{
         ).concat(
             componentUsage.example && componentUsage.example.useSource()
                 ? [
-                    Div{ classes: ['segment']
+                    Div{ classes: ['segment'] props = { data: { source: { type: 'use' } } }
                         Span`Styles`
                         HighlightLv.(componentUsage.example.useSource().source){}
                     }
@@ -149,7 +232,7 @@ component ComponentUsage < Div{
         ).concat(
             componentUsage.example && componentUsage.example.contentSource()
                 ? [
-                    Div{ classes: ['segment']
+                    Div{ classes: ['segment'] props = { data: { source: { type: 'content' } } }
                         Span`Content`
                         HighlightLv.(componentUsage.example.contentSource().source){}
                     }

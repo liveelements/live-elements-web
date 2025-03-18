@@ -6,13 +6,14 @@ component DOMAttach{
 
     constructor(){
         super()
+        this.__elem = null
         DOMAttach.prototype.__initialize.call(this)
     }
 
     fn __initAttachment(){
         const target = this.target
         const c = this.c
-        const elem = c{ target: target }
+        this.__elem = c{ target: target }
     }
 
     fn completed(){

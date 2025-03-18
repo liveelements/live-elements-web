@@ -25,6 +25,7 @@ component DocPageView < PageView{
         Content,
         HighlightSection,
         HighlightLv,
+        Toaster,
         TooltipArea,
         TableOfContents,
         SidebarLayout,

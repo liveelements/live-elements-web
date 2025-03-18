@@ -5,4 +5,24 @@ component HighlightUiLoader < HighlightLoader{
         'javascript' : import('highlight.js/lib/languages/javascript'),
         'css' : import('highlight.js/lib/languages/css')
     }
+    hooks = {
+        beforeHighlight: (d, hljs) => {
+            const source = d.textContent
+            let sourceNode = d
+            let segmentNode = d
+            let type = 'content'
+            while ( sourceNode ){
+                if ( sourceNode.classList.contains('segment') )
+                    type = sourceNode.dataset.sourceType
+                if ( sourceNode.classList.contains('source-code') )
+                    break
+                sourceNode = sourceNode.parentNode
+            }
+            if ( sourceNode ){
+                if (!sourceNode.__sourceAttach)
+                    sourceNode.__sourceAttach = []
+                sourceNode.__sourceAttach.push({ type, source })
+            }
+        }
+    }
 }

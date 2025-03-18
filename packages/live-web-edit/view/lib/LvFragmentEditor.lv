@@ -1,0 +1,78 @@
+component LvFragmentEditor{
+
+    static fn parseClipboardFragment(fragment:string):Object{
+        const regex = /\/\/>@(\w*)\n([\s\S]*?)(?=\/\/>@|$)/g
+        let matches
+        const parsedSections = []
+
+        while ((matches = regex.exec(fragment)) !== null) {
+            parsedSections.push({
+                type: matches[1] || "",
+                source: matches[2].trim()
+            })
+        }
+        return parsedSections
+    }
+
+    static fn indentFragment(fragment:string, indentation:string):string{
+        return fragment
+            .split("\n")
+            .map((line, index) => (index === 0 ? line : (line.trim() ? indentation + line : "")))
+            .join("\n")
+    }
+
+    static fn extractImports(text:string):Object[]{
+        const importRegex = /^import\s+([\w\-.]+)(?:\s+as\s+([\w]+))?/
+        const imports = []
+
+        const lines = text.split("\n")
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim()
+            const match = trimmedLine.match(importRegex)
+
+            if (match) {
+                imports.push({
+                    line: index,
+                    name: match[1],     
+                    as: match[2] || null
+                })
+            }
+        });
+
+        return imports;
+    }
+
+    static fn findUse(fullText:string, position:number){
+        const useRegex = /static\s+any\[\]\s+use\s*=\s*(\[)/gs
+        let match
+        let closestUse = null
+
+        while ((match = useRegex.exec(fullText)) !== null) {
+            const start = match.index
+            const contentStart = match.index + match[0].length
+            
+            let bracketCount = 1
+            let end = contentStart
+
+            while (end < fullText.length && bracketCount > 0) {
+                if ( fullText[end] === "[" )
+                    bracketCount++
+                if ( fullText[end] === "]" )
+                    bracketCount--
+                end++;
+            }
+
+            if (bracketCount === 0){
+                const content = fullText.slice(contentStart, end - 1).trim()
+
+                if (start < position){
+                    closestUse = { start, contentStart, end, source: content }
+                } else {
+                    break
+                }
+            }
+        }
+
+        return closestUse
+    }
+}
