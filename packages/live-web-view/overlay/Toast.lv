@@ -1,0 +1,13 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+
+component Toast < Div{
+    static any[] use = [ 
+        ToastTitle,
+        ScopedStyle{ src: './style/toast.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Toast)])
+}

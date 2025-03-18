@@ -1,0 +1,56 @@
+import live-web.dom
+import live-web.model
+import live-web.behavior
+import live-elements-web-server.style
+
+component Toaster < Div{
+    id: toaster
+
+    static number defaultTime = 4000
+    static Object Position = {
+        Screen: 'pos-fixed',
+        Parent: 'pos-absolute'
+    }
+
+    static any[] use = [ 
+        Toast,
+        ScopedStyle{ src: './style/toaster.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    string position
+    boolean single: false
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([
+        toaster.position ? toaster.position : '',
+        ScopedStyle.className(Toaster)
+    ])
+
+    fn add(item:Toast){
+        if ( this.single ){
+            this.children = [item]
+        } else {
+            this.children = this.children.concat([item])
+        }
+        
+        if ( item.dom ){
+            setTimeout(() => {
+                item.classes = item.classes.concat(['visible', 'transitions'])
+                item.style = { maxHeight: (item.dom.scrollHeight + 32) + "px" }
+            }, 10)
+            setTimeout(() => { 
+                item.style = { maxHeight: "none" }
+                item.classes = item.classes.filter(c => c !== 'transitions')
+            }, 410)
+        }
+        setTimeout(() => {
+            if ( this.children.find(c => c === item) ){
+                item.classes = item.classes.filter(c => c !== 'visible').concat(['transitions'])
+                setTimeout(() => { 
+                    this.children = this.children.filter(c => c !== item)
+                }, 400)
+            }
+        }, Toaster.defaultTime)
+    }
+}
+

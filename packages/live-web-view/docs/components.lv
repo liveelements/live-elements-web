@@ -17,6 +17,7 @@ instance components BaseElement{
         { label: 'Tabs', url: '/tabs', c: TabLayoutDoc },
         { label: 'Table', url: '/table', c: TableDoc },
         { label: 'Text Formatting', url: '/text-formatting', c: ContentDoc },
+        { label: 'Toast', url: '/toast', c: ToastDoc },
         { label: 'TreeView', url: '/treeview', c: TreeViewDoc },
     ]
 }

@@ -1,0 +1,100 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.layout
+import .docs.internal
+
+component ToastWithMessage < DOMBehavior{
+
+    static any[] use = [Toaster, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            Toaster{ 
+                id: toaster 
+            }
+            PrimaryButton{
+                T`Open message.`
+                on click: (e) => {
+                    e.preventDefault()
+                    toaster.add(
+                        Toast{
+                            ToastTitle`Toast Message`
+                            Content{
+                                T`Message displayed succesfully.`
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+
+component ToastWithSingleMessage < DOMBehavior{
+
+    static any[] use = [Toaster, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            Toaster{ 
+                id: toaster 
+                single: true
+            }
+            PrimaryButton{
+                T`Open message.`
+                on click: (e) => {
+                    e.preventDefault()
+                    toaster.add(
+                        Toast{
+                            ToastTitle`Toast Message`
+                            Content{
+                                T`Message displayed succesfully.`
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+component ToastParentPositioning < DOMBehavior{
+
+    static any[] use = [Toaster, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = CardDisplay{ 
+            Div{ style = { position: 'relative', padding: '10px' }
+                Toaster{ 
+                    id: toaster 
+                    single: true
+                    position: Toaster.Position.Parent
+                }
+                PrimaryButton{
+                    T`Open message.`
+                    on click: (e) => {
+                        e.preventDefault()
+                        toaster.add(
+                            Toast{
+                                ToastTitle`Toast Message`
+                                Content{
+                                    T`Message displayed succesfully.`
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}

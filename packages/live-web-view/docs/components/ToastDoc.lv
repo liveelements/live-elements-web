@@ -1,0 +1,144 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.button
+import .docs.internal
+import .docs.components.attach
+
+component ToastDoc{
+  default children
+
+  Content{
+    H1S`Toast Component`
+    P{
+      T`Toasts are messages that are displayed temporarily. Toast messages are wrapped inside a `Code`Toast`T` component, which
+      is created and managed by a `Code`Toaster`T` component.` 
+    }
+    H2S`Toast With Message`
+  }
+
+  Example{
+    render: Example.RenderType.CSR
+    element: ToastWithMessage
+
+    ImportsSource```
+      import live-web.dom
+      import live-web-view.button
+      import live-web-view.overlay
+      import live-web-view.content
+    ```
+    UseSource```
+      static any[] use = [PrimaryButton, Toaster, Content]
+    ```
+    ContentSource```
+      Toaster{ 
+          id: toaster 
+      }
+      PrimaryButton{
+          T\`Open message.\`
+          on click: (e) => {
+              e.preventDefault()
+              toaster.add(
+                  Toast{
+                      ToastTitle\`Toast Message\`
+                      Content{
+                          T\`Message displayed succesfully.\`
+                      }
+                  }
+              )
+          }
+      }
+    ```
+  }
+
+  Content{
+    H2S`Single Toast With Message`
+    P{
+      T`Toasts can either be overwritten by the next toast, or stacked on top of each other. The example above
+      stacks toasts on top of each other, while this one allows only a single toast to be displayed.`
+      T`This can e controlled by the `Code`Toaster.single`T` property.`
+    }
+  }
+
+  Example{
+    render: Example.RenderType.CSR
+    element: ToastWithSingleMessage
+
+    ImportsSource```
+      import live-web.dom
+      import live-web-view.button
+      import live-web-view.overlay
+      import live-web-view.content
+    ```
+    UseSource```
+      static any[] use = [PrimaryButton, Toaster, Content]
+    ```
+    ContentSource```
+      Toaster{ 
+          id: toaster 
+          single: true
+      }
+      PrimaryButton{
+          T\`Open message.\`
+          on click: (e) => {
+              e.preventDefault()
+              toaster.add(
+                  Toast{
+                      ToastTitle\`Toast Message\`
+                      Content{
+                          T\`Message displayed succesfully.\`
+                      }
+                  }
+              )
+          }
+      }
+    ```
+  }
+
+
+  Content{
+    H2S`Toast positioning in parent`
+    P{
+      T`By default, toasts are positioned relative to the screen, but they can be configured to 
+      be positioned in their parent by configuring the `Code`Toaster.position`T` property.`
+    }
+  }
+
+  Example{
+    render: Example.RenderType.CSR
+    element: ToastParentPositioning
+
+    ImportsSource```
+      import live-web.dom
+      import live-web-view.button
+      import live-web-view.overlay
+      import live-web-view.content
+    ```
+    UseSource```
+      static any[] use = [PrimaryButton, Toaster, Content]
+    ```
+    ContentSource```
+      Toaster{ 
+          id: toaster 
+          single: true
+          position: Toaster.Position.Parent
+      }
+      PrimaryButton{
+          T\`Open message.\`
+          on click: (e) => {
+              e.preventDefault()
+              toaster.add(
+                  Toast{
+                      ToastTitle\`Toast Message\`
+                      Content{
+                          T\`Message displayed succesfully.\`
+                      }
+                  }
+              )
+          }
+      }
+    ```
+  }
+
+}

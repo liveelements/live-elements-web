@@ -1,0 +1,16 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component ToastTitle < Header{
+
+    constructor(text:string){
+        super()
+        this{}
+        if ( text ){
+            this.children = [new T(text)]
+        }
+    }
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(ToastTitle)])
+}

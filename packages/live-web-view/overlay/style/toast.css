@@ -1,0 +1,13 @@
+&Toast{
+    @apply px-6 py-0 text-[#111111] dark:text-[#f1f1f1] bg-white dark:bg-[#111111];
+    @apply opacity-0 border border-[#c1c1c1] dark:border-[#313131] rounded-xl overflow-y-hidden max-h-0;
+}
+&Toast&.transitions{
+    transition: opacity 0.4s, max-height 0.4s, padding 0.4s, margin 0.4s;
+}
+&Toast&.visible{
+    @apply opacity-[1] py-[16px] mt-4;
+}
+&ToastTitle{
+    @apply text-lg font-medium;
+}
