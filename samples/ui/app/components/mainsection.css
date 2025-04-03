@@ -9,6 +9,11 @@
 }
 &Sidebar{
     @apply overflow-y-auto;
+    scrollbar-color: #c1c1c1 transparent;
+    scrollbar-width: auto;
+}
+&Sidebar&:is(.dark *){
+    scrollbar-color: #313131 transparent;
 }
 &Sidebar &UlV li{
     @apply px-0;

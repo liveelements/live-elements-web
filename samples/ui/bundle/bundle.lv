@@ -10,6 +10,7 @@ import path from 'path'
 import fs from 'fs'
 import url from 'url'
 
+import .samples.ui.app.components
 import .samples.ui.app.pages
 
 instance bundle Bundle{
@@ -20,7 +21,8 @@ instance bundle Bundle{
         
         const pagesPath = path.join(packagePath, 'samples', 'ui', 'app', 'pages')
         const componentLinks = components.list.map(c => { return { url: c.url, label: c.label }})
-        const routes = []
+        const articleLinks = articles.list.map(c => { return { url: c.url, label: c.label }} )
+        const componentRoutes = [], articleRoutes = []
 
         for ( let i = 0; i < components.list.length; ++i ){
             const l = components.list[i]
@@ -30,22 +32,46 @@ instance bundle Bundle{
             }
             const module = await lvimport(page)
             const Page = module[l.c.name + 'Page']
-            routes.push(ViewRoute{
+            componentRoutes.push(ViewRoute{
                 url: l.url
                 c: Page
                 render: ViewRoute.SSR
                 data: () => {
-                    return { componentLinks: componentLinks }
+                    return { componentLinks: componentLinks, articleLinks: articleLinks }
                 }
             })
         }
 
-        bundle.ids.componentsDoc.children = routes
+        for ( let i = 0; i < articles.list.length; ++i ){
+            const l = articles.list[i]
+            const page = path.join(pagesPath, l.c.name + 'Page.lv')
+            if ( !fs.existsSync(page) ){
+                throw new Error(`Missing page '${page}'' for ${l.c.name}`)
+            }
+            const module = await lvimport(page)
+            const Page = module[l.c.name + 'Page']
+            articleRoutes.push(ViewRoute{
+                url: l.url
+                c: Page
+                render: ViewRoute.SSR
+                data: () => {
+                    return { componentLinks: componentLinks, articleLinks: articleLinks }
+                }
+            })
+        }
+
+        bundle.ids.componentsDoc.children = componentRoutes
+        bundle.ids.articlesDoc.children = articleRoutes
         bundle.ids.homeRoute.data = () => {
-            return { componentLinks: componentLinks }
+            return { componentLinks: componentLinks, articleLinks: articleLinks }
         }
 
         return true
+    }
+
+    Route{
+        id: articlesDoc
+        url: '/articles'
     }
 
     Route{

@@ -1,0 +1,22 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.color
+import live-web-view.content
+import live-web-view.docs.articles
+import .samples.ui.app.components
+
+component DarkModeDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        ColorSchemeToggleButton
+    ])
+    active: '/dark-mode'
+    document: DarkModeDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}
