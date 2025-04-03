@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 
 export default class StyleCachedProcessor{
 
@@ -18,17 +19,21 @@ export default class StyleCachedProcessor{
 
         const processedFiles = {}
 
+        const mainPackage = path.dirname(PackagePath.findPackageJson(location))
+
         const cachePath = path.join(location, 'files.json')
         const cacheData = JSON.parse(fs.readFileSync(cachePath))
         cacheData.forEach(file => {
-            const filePath = path.join(location, file.name)
-            const content = fs.readFileSync(filePath)
-            processedFiles[file.file] = {
+            const filePackage = file.file.substr(0, file.file.indexOf('/'))
+            const filePathFromPackage = file.file.substr(file.file.indexOf('/') + 1)
+            const filePackagePath = PackagePath.find(filePackage, mainPackage)
+            const filePath = path.join(filePackagePath, filePathFromPackage)
+            const content = fs.readFileSync(path.join(location, file.name))
+            processedFiles[filePath] = {
                 content: content,
                 stamp: new Date(file.stamp)
             }
         })
-
         const result = new StyleCachedProcessor()
         result._processedFiles = processedFiles
         return result
@@ -42,9 +47,13 @@ export default class StyleCachedProcessor{
         for ( let [key, value] of Object.entries(this._processedFiles)){
             const name = path.basename(key)
             const saveLocation = path.join(location, name)
+
+            const packageJson = PackagePath.findPackageJson(key)
+            const packagePath = path.dirname(packageJson)
+            const packageName = JSON.parse(fs.readFileSync(packageJson)).name
             fs.writeFileSync(saveLocation, value.content)
             toSave.push({
-                file: key,
+                file: packageName + '/' + path.relative(packagePath, key),
                 name: name,
                 stamp: value.stamp.toISOString()
             })

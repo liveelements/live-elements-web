@@ -104,6 +104,10 @@ export default class StyleContainer extends EventEmitter {
         return style
     }
 
+    removeOutput(output){
+        this._outputs = this._outputs.filter(o => o !== output)
+    }
+
     saveCache(location){
         this._cachedStyleProcessor.saveCache(location)
     }
