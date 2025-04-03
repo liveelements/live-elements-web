@@ -1,0 +1,71 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.button
+import live-web-view.color
+import .docs.internal
+
+component DarkModeDoc{
+    default children
+
+    Content{
+        H1S`Dark Mode`
+        P`Live Elements handles light and dark modes. You can`
+        Ul{
+            Li{ T`Configure the page to dark or light mode.` }
+            Li{ T`Automatically match the user's system preference.` }
+            Li{ T`Add a toggle button to switch between modes.` }
+        }
+        H2S`Configuring light and dark modes`
+        P{
+            T`By default, Live Elements loads all components in light mode.`
+        }
+        P{
+            T`To enable dark mode, simply add the `Code`dark`T` class to the page `Code`Body`T`: `
+        }
+    }
+    Example{
+        ContentSource```
+            component MyPage < PageView {
+                Body { classes: ['dark'] }
+            }
+        ```
+    }
+    Content{
+        H2S`Matching System Preferences`
+        P{
+            T`To automatically adjust to the user's system color scheme, add `Code`ColorSchemeLoader`T` to the page head:`
+        }
+    }
+    Example{
+        ImportsSource```
+            import live-web-view.color
+        ```
+        ContentSource```
+            component Index < PageView {
+                head: PageProperties { ColorSchemeLoader {} }
+            }
+        ```
+    }
+    Content{
+        H2S`Toggle Button`
+        P{
+            T`The `Code`ColorSchemeToggleButton`T` lets users switch between dark and light modes.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: ColorSchemeToggleButton{}
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.color
+        ```
+        UseSource```
+            static any[] use = [ColorSchemeToggleButton]
+        ```
+        ContentSource```
+            ColorSchemeToggleButton{}
+        ```
+    }
+}

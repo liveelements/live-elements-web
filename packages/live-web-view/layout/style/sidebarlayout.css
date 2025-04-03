@@ -1,28 +1,38 @@
 &SidebarLayout{
-    @apply h-full w-full;
+    @apply h-full w-full flex relative;
 }
 &SidebarLayout&.d-right{
     @apply flex flex-row justify-end;
 }
 &SidebarLayout &Sidebar{
-    @apply py-4 px-4 left-[-100%] lg:left-[auto] z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#111111] block;
-    @apply w-64 lg:px-6  lg:border-r lg:border-[#c1c1c1] lg:dark:border-[#212121];
+    @apply py-4 px-4 z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#111111] block;
+    @apply w-64 lg:px-6 border-r border-[#b1b1b1] dark:border-[#313131] lg:border-[#c1c1c1] lg:dark:border-[#212121];
     transition: left 0.5s, right 0.5s;
 }
-&SidebarLayout&.d-right &Sidebar{
-    @apply left-auto right-[-100%] lg:right-auto lg:border-l lg:border-r-0;
+&SidebarLayout &Sidebar&.pos-absolute{
+    @apply absolute;
+}
+&SidebarLayout &Sidebar{
+    @apply left-[-16rem] lg:left-[auto];
 }
 &SidebarLayout &Sidebar&.show{
     @apply block left-[0];
 }
-&SidebarLayout&.d-right &Sidebar&.show{
-    @apply block left-auto right-[0];
+&SidebarLayout&.d-right > &Sidebar{
+    @apply left-auto hidden lg:block lg:right-auto border-l border-r-0;
 }
-
+&SidebarLayout&.d-right > &Sidebar&.show{
+    @apply block left-auto;
+    animation: slideAnimation 0.5s;
+}
+@keyframes slideAnimation {
+    0% {  right: 0; width: 16rem; overflow: hidden; transform: scaleX(0); transform-origin: right; }
+    100% {  overflow: auto; transform: scaleX(100%); transform-origin: right; }
+}
 &SidebarLayout .main-content, &SidebarLayout &Aside{
-    @apply lg:ml-64 min-h-full w-[100%] lg:w-[calc(100%-16rem)] px-4 py-2;
+    @apply lg:ml-64 min-h-full w-[100%] lg:w-[calc(100%-16rem)] px-4;
 }
-&SidebarLayout&.d-right .main-content, &SidebarLayout&.d-right &Aside{
+&SidebarLayout&.d-right > .main-content, &SidebarLayout&.d-right > &Aside{
     @apply ml-0 lg:mr-64;
 }
 

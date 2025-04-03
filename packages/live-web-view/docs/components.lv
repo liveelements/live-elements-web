@@ -13,6 +13,7 @@ instance components BaseElement{
         { label: 'Modal', url: '/modal', c: ModalDoc },
         { label: 'Navigation', url: '/navigation', c: NavigationDoc },
         { label: 'Sortable', url: '/sortable', c: SortableDoc },
+        { label: 'Sidebar', url: '/sidebar', c:SidebarDoc },
         { label: 'SplitLayout', url: '/splitlayout', c: SplitLayoutDoc },
         { label: 'Tabs', url: '/tabs', c: TabLayoutDoc },
         { label: 'Table', url: '/table', c: TableDoc },

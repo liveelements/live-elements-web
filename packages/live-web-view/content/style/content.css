@@ -58,7 +58,7 @@ pre code{
 }
 
 blockquote {
-  @apply border-l-4 border-gray-200 pl-4 py-2 italic;
+  @apply border-l-4 border-[#c1c1c1] dark:border-[#313131] pl-4 py-2 italic;
 }
 
 table {

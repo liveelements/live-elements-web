@@ -1,0 +1,7 @@
+import .docs.articles
+
+instance articles BaseElement{
+    Object[] list: [
+        { label: 'Dark Mode', url: '/dark-mode', c: DarkModeDoc },
+    ]
+}

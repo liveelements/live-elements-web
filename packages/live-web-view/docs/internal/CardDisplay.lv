@@ -3,7 +3,7 @@ import live-web
 import live-elements-web-server.style
 
 component CardDisplay < Div{
-    static any[] use = []
+    static string RelativePositioning = 'pos-relative'
 
     classes: this.extraClasses.concat([ScopedStyle.className(CardDisplay)])
     string[] extraClasses: []

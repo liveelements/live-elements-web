@@ -22,6 +22,6 @@ component SidebarLayout < Div{
 
     classes: this.extraClasses.concat([
         ScopedStyle.className(SidebarLayout),
-        this.direction === SidebarLayout.Direction.Left ? '' : 'd-right'
+        this.direction === SidebarLayout.Direction.Left ? 'd-left' : 'd-right'
     ])
 }

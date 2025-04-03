@@ -2,6 +2,16 @@ import live-web.dom
 import live-elements-web-server.style
 
 component Sidebar < Div{
+
+    static Object Position = {
+        Screen: 'pos-fixed',
+        Parent: 'pos-absolute'
+    }
+    string position
+
     string[] extraClasses: []
-    classes: this.extraClasses.concat([ScopedStyle.className(Sidebar)])
+    classes: this.extraClasses.concat([
+        this.position ? this.position : '',
+        ScopedStyle.className(Sidebar)
+    ])
 }

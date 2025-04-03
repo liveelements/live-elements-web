@@ -1,0 +1,136 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.overlay
+import live-web-view.layout
+import .docs.internal
+import .docs.components.attach
+
+component SidebarDoc{
+    // right sidebar
+    // left and right sidebar
+    default children
+
+    Content{
+        H1S`Sidebar`
+        P{
+            T`The `Code`SidebarLayout`T` component is used to create a responsive sidebar.`
+        }
+        H2S`Sidebar On The Left Side`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{ extraClasses: [CardDisplay.RelativePositioning]
+            SidebarLayout{ style = { minHeight: '14rem'}
+                Sidebar{ position: Sidebar.Position.Parent
+                    SidebarCompact{
+                        SidebarCloseButton{}
+                    }
+                    Header{
+                        H1`Sidebar Content`
+                    }
+                }
+                Aside{
+                    SidebarCompact{
+                        SidebarToggleButton{}
+                    }
+                    Content{
+                        H1`Main content`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [SidebarLayout, Content]
+        ```
+        ContentSource```
+            SidebarLayout{
+                Sidebar{
+                    SidebarCompact{
+                        SidebarCloseButton{}
+                    }
+                    Header{
+                        H1\`Sidebar Content\`
+                    }
+                }
+                Aside{
+                    SidebarCompact{
+                        SidebarToggleButton{}
+                    }
+                    Content{
+                        H1\`Main content\`
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Sidebar On The Right Left Side`
+        P{
+            T`Use the `Code`direction`T` property `Code`SidebarLayout.Direction.Left`T` or `Code`SidebarLayout.Direction.Right`
+            T` to position the layout left or right.`
+        }
+    }
+
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{ extraClasses: [CardDisplay.RelativePositioning] 
+            SidebarLayout{ direction: SidebarLayout.Direction.Right style = { minHeight: '14rem'}
+                Sidebar{ position: Sidebar.Position.Parent
+                    SidebarCompact{
+                        SidebarCloseButton{}
+                    }
+                    Header{
+                        H1`Sidebar Content`
+                    }
+                }
+                Aside{
+                    SidebarCompact{
+                        SidebarToggleButton{}
+                    }
+                    Content{
+                        H1`Main content`
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [SidebarLayout, Content]
+        ```
+        ContentSource```
+            SidebarLayout{ direction: SidebarLayout.Direction.Right
+                Sidebar{ position: Sidebar.Position.Parent
+                    SidebarCompact{
+                        SidebarCloseButton{}
+                    }
+                    Header{
+                        H1\`Sidebar Content\`
+                    }
+                }
+                Aside{
+                    SidebarCompact{
+                        SidebarToggleButton{}
+                    }
+                    Content{
+                        H1\`Main content\`
+                    }
+                }
+            }
+        ```
+    }
+
+}
