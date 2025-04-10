@@ -52,17 +52,21 @@ component PageProperties{
                 }
             } else if ( this.children[i] instanceof Link ){
                 
-                var link =  document.createElement("link")
-                var props = this.children[i].attributes
+                const link =  document.createElement("link")
+                const props = this.children[i].attributes
                 for (const [key, value] of Object.entries(props)) {
                     link.setAttribute(key, value)
                 }
                 document.head.appendChild(link)
             } else if ( this.children[i] instanceof StyleLink ){
-                var link =  document.createElement("link");
+                const link =  document.createElement("link");
                 link.rel = 'stylesheet'
                 link.href = this.children[i].href
                 document.head.appendChild(link)
+            } else if ( this.children[i] instanceof StyleInline ){
+                const style =  document.createElement("style");
+                style.innerHTML = this.children[i].content
+                document.head.appendChild(style)
             } else if ( this.children[i] instanceof Body ){
                 const body = this.children[i]
                 const attributes = body.attributes

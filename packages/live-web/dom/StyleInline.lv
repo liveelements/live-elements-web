@@ -1,0 +1,10 @@
+
+component StyleInline < DOMElement{
+
+    constructor(content:string){
+        super('style')
+        this{ content = content }
+    }
+
+    string content
+}
