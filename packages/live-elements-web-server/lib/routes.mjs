@@ -67,6 +67,7 @@ export class ServerViewRoute extends ServerRoute{
         this._page         = page
         this._renders      = []
         this._scripts      = []
+        this._styles       = []
         this._bundleScript = null
     }
 
@@ -76,8 +77,10 @@ export class ServerViewRoute extends ServerRoute{
     get data(){ return this._data }
     get page(){ return this._page }
     get scripts(){ return this._scripts }
+    get styles(){ return this._styles }
     get bundleScript(){ return this._bundleScript }
 
+    addStyle(style){ this._styles.push(style) }
     addScript(script){ this._scripts.push(script) }
     setBundleScript(script){ this._bundleScript = script }
 

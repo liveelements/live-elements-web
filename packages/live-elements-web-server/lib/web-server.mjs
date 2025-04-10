@@ -259,6 +259,7 @@ export default class WebServer extends EventEmitter{
         
         const placementSource = '[' + viewLoaderData.placements.map(p => `{ module: import("${p.url}"), name: "${p.name}" }`).join(',') + ']'
         const viewAssignmentsSource = JSON.stringify(viewLoaderData.assignments)
+        const viewAssignmentsStyles = viewLoaderData.assignments.scopedStyleLinks
 
         const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
         const moduleVirtualLoader = path.join(path.dirname(viewLoaderData.path), bundleName + '.loader.mjs')
@@ -453,7 +454,9 @@ export default class WebServer extends EventEmitter{
         if ( !route.pageDOM ){
             page.entryScript = '/scripts/' + route.bundleScript
             route.pageDOM = page.captureDOM(this._domEmulator)
+            route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
         }
+        let pageContent = route.pageContent
         if ( route.data ){
             let data = null
             if ( typeof route.data === 'function' ){
@@ -481,13 +484,15 @@ export default class WebServer extends EventEmitter{
                 scriptEl.text = scriptContent
                 route.pageDOM.window.document.head.appendChild(scriptEl)
             }
-            route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
-        } else {
-            if ( !route.pageContent )
-                route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
+            pageContent = this._domEmulator.serializeDOM(route.pageDOM)
+        }
+        if ( route.styles.length ){
+            const location = pageContent.indexOf('</head>')
+            const insertString = route.styles.map(s => `<link rel="stylesheet" data-purpose="scoped" type="text/css" href="${s}" />`)
+            pageContent = pageContent.slice(0, location) + insertString + pageContent.slice(location)
         }
 
-        res.send(route.pageContent)
+        res.send(pageContent)
         res.end()
     }
 
