@@ -1,0 +1,11 @@
+component Actions{
+    static fn bindFirst(arg:any, actionsObject:Actions){
+        const result = {}
+        for (const [name, val] of Object.entries(actionsObject)) {
+            if ( typeof val === 'function' ){
+                result[name] = val.bind(actionsObject, arg)
+            }
+        }
+        return result
+    }
+}

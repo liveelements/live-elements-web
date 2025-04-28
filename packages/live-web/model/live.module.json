@@ -1,6 +1,0 @@
-
-{
-    "name" : "model",
-    "package": "..",
-    "modules": ["ModelType", "StateType", "State"]
-}
