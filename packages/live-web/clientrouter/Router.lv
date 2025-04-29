@@ -7,7 +7,6 @@ component Router{
 
         this._internal = new Navigo(path ? path : '/')
         ClientNavigation.store(this._internal)
-        this._internal.notFound(this.handleNotFound.bind(this))
 
         Router.prototype.__initialize.call(this)
     }
@@ -23,8 +22,11 @@ component Router{
         return this._internal.root
     }
 
-    fn handleNotFound(match:string){
+    Function handleNotFound = (match) => {
         throw new Error("Route not found: " + match.url)
+    }
+    on handleNotFoundChanged: () => {
+        this._internal.notFound(this.handleNotFound.bind(this))
     }
 
     get visualChildren(){  return this.children  }
