@@ -1,2 +1,6 @@
 component State < BaseElement{
+
+    static fn applyPatch(data:State, patch:Object){
+        Object.assign(data, patch) 
+    }
 }
