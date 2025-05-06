@@ -26,6 +26,14 @@ export default class ValueOrError{
         return this._value
     }
 
+    match(valCb, errCb){
+        if ( this._value ){
+            return valCb(this._value)
+        } else if ( this._error ){
+            return errCb(this._error)
+        }
+    }
+
     toJSON(valueCb, errorCb){
         if ( this._value ){
             return valueCb 
