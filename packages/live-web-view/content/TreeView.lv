@@ -14,6 +14,10 @@ component TreeViewDefaultView < Div{
         this.classes = this.classes.concat(['expand'])
     }
 
+    fn collapse(){
+        this.classes = this.classes.filter(c => c !== 'expand')
+    }
+
     fn initData(data:Object){
         if ( data.children && data.children.length ){
             this.children = [
@@ -44,6 +48,9 @@ component TreeView < Ul{
 
     component c: TreeViewDefaultView
     on cChanged: () => { this.__create()}
+
+    event userExpanded(dataNode:TreeNode, dataView:DOMElement)
+    event userCollapsed(dataNode:TreeNode, dataView:DOMElement)
 
     fn __expand(currentElem:DOMElement, currentData:Object, searchData:Object){
         if ( currentData.children ){
@@ -84,6 +91,20 @@ component TreeView < Ul{
         }
     }
 
+    static fn __search(element:DOMElement, dom:Object){
+        if ( !element.children )
+            return null
+        for ( let i = 0; i < element.children.length; ++i ){
+            if ( element.children[i].dom === dom ){
+                return element.children[i]
+            }
+            const deep = TreeView.__search(element.children[i], dom)
+            if ( deep )
+                return deep
+        }
+        return null
+    }
+
     fn __create(){
         if ( !this.data || !this.c ){
             return
@@ -107,7 +128,34 @@ component TreeView < Ul{
                                     break
                                 p = p.parentNode
                             }
-                            if ( p ){
+                            if ( !p )
+                                return
+
+                            if ( that ){
+                                const expandElement = TreeView.__search(that, p)
+                                if ( !expandElement )
+                                    return 
+                                
+                                const expandable = expandElement.children.find(c => c.classes.includes('expandable'))
+                                const expander = expandElement.children.find(c => c.classes.includes('expander') && c.expand && c.collapse)
+
+                                if ( expandable ){
+                                    if ( expandable.classes.includes('expand') ){
+                                        expandable.classes = expandable.classes.filter(c => c !== 'expand')
+                                        if ( expander ){
+                                            expander.collapse()
+                                            that.userCollapsed.emit(expander.data, expander)
+                                        }
+                                    } else {
+                                        expandable.classes = expandable.classes.concat('expand')
+                                        if ( expander ){
+                                            expander.expand()
+                                            that.userExpanded.emit(expander.data, expander)
+                                        }
+                                    }
+                                }
+
+                            } else {
                                 for ( let j = 0; j < p.children.length; ++j ){
                                     if ( p.children[j].classList.contains('expandable') ){
                                         p.children[j].classList.toggle('expand')
@@ -115,6 +163,7 @@ component TreeView < Ul{
                                     }
                                 }
                             }
+                            
                         }
                     }
                 }
