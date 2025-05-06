@@ -11,7 +11,12 @@
     @apply overflow-auto w-auto h-1/2 md:w-1/2 md:h-auto;
 }
 &SplitLayout&.no-break &SplitPane{
-    @apply overflow-auto w-1/2 h-auto;
+    @apply overflow-auto w-1/2 h-auto ;
+    scrollbar-color: #a1a1a1 transparent;
+    scrollbar-width: auto;
+}
+&SplitLayout&.no-break &SplitPane&:is(.dark *){
+    scrollbar-color: #414141 transparent;
 }
 &SplitLayout&.vertical &SplitPane{
     @apply overflow-auto w-auto h-1/2;
