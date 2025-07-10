@@ -25,7 +25,7 @@
     @apply p-2;
 }
 .handle {
-    @apply relative w-full md:w-[1px] h-[1px] md:h-full bg-[#c1c1c1] dark:bg-[#414141];
+    @apply relative w-full md:w-[1px] h-[1px] md:h-full bg-mono-c dark:bg-mono-4;
 }
 &SplitLayout&.no-break .handle{
     @apply w-[1px] h-full;

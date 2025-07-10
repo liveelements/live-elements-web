@@ -1,8 +1,8 @@
 &ComponentUsage{
-    @apply relative mb-16 border-[#d1d1d1] dark:border-[#212121] border-b;
+    @apply relative mb-16 border-mono-d dark:border-mono-2 border-b;
 }
 .grid{
-    @apply py-16 flex w-full border-[#d1d1d1] dark:border-[#212121] border-b mt-8 items-center justify-center;
+    @apply py-16 flex w-full border-mono-d dark:border-mono-2 border-b mt-8 items-center justify-center;
 
    --cell-size: 18px;
    --large-cell-size: calc(var(--cell-size) * 10);

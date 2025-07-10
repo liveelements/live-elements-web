@@ -6,16 +6,16 @@
     display: block;
 }
 button{
-    @apply text-[#111] dark:text-[#d1d1d1] text-base;
+    @apply text-[#111] dark:text-mono-d text-base;
     width: 100%;
     text-align: left;
     @apply block px-4 py-1;
 }
 button:hover{
-    @apply bg-[#d1d1d1] dark:bg-[#414141];
+    @apply bg-mono-d dark:bg-mono-4;
 }
 .menu-content{
-    @apply bg-[#e1e1e1cc] dark:bg-[#111111cc] text-[#111] dark:text-[#d1d1d1] border border-[#313131];
+    @apply bg-[#e1e1e1cc] dark:bg-[#111111cc] text-[#111] dark:text-mono-d border border-mono-3;
     @apply w-48 rounded-md shadow-lg absolute mt-4 z-10;
     backdrop-filter: blur(1px);
 }

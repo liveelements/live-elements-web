@@ -23,5 +23,5 @@
     transition: color 0.4s;
 }
 &Sidebar &UlV li a:hover{
-    @apply text-black dark:text-[#b1b1b1];
+    @apply text-black dark:text-mono-b;
 }

@@ -1,16 +1,52 @@
 import tailwindcss from 'tailwindcss' 
+import .style
 import url from 'url'
 
 component TailwindCSS{
 
     static string classWarning = "text-center"
 
-    static fn createForPostCSS(config:Object){
+    static fn createForPostCSS(config:Object, theme:Object){
+        const style = theme ? theme.style : {}
+        const colors = Theme.select(style, 'color', {
+            "mono": {
+                "1":  "#111111",
+                "2":  "#212121",
+                "3":  "#313131",
+                "4":  "#414141",
+                "5":  "#515151",
+                "6":  "#616161",
+                "7":  "#717171",
+                "8":  "#818181",
+                "9":  "#919191",
+                "a":  "#A1A1A1",
+                "b":  "#B1B1B1",
+                "c":  "#C1C1C1",
+                "d":  "#D1D1D1",
+                "e":  "#E1E1E1",
+                "f":  "#F1F1F1"
+            }
+        })
+        const fontFamily = Theme.select(style, 'font.family', {
+            'sans' : ['sans-serif'],
+            'serif' : ['serif'],
+            'mono' : ['monospace']
+        })
+        const fontSizes = Theme.select(style, 'font.size', {})
+        const fontSize = {}
+        for (const [key, value] of Object.entries(fontSizes)){
+            fontSize[key] = [value[0], { lineHeight: value[1] }]
+        }
+
         const tailwindConfig = config ? config : {
             media: false, // or 'media' or 'class'
             darkMode: 'class',
             theme: {
-                extend: {},
+                extend: {
+                    colors : colors,
+                    fontFamily: fontFamily,
+                    fontSize: fontSize
+                },
             },
             content: [url.fileURLToPath(import.meta.url)],
             variants: {

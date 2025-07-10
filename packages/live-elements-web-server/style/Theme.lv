@@ -1,0 +1,86 @@
+
+component Theme{
+    string name = ''
+    Theme[] extend = []
+    Object style = ({})
+
+    fn ownStyle(){
+        return Theme.flattenStyles(this.style)
+    }
+
+    fn allStyles(){
+        const merged = {}
+        for (const parent of this.extend){
+            Object.assign(merged, parent.allStyles())
+        }
+        Object.assign(merged, this.ownStyle())
+        return merged
+    }
+
+    fn toJSON(){
+        return {
+            name: this.name,
+            style: this.allStyles()
+        }
+    }
+
+    static fn select(styles:Object, lookup:string, defaults:Object){
+        const result = defaults || {}
+        for (const [key, val] of Object.entries(styles)){
+            if ( key.startsWith(lookup + ".") ){
+                result[key.substring(lookup.length + 1)] = val
+            }
+        }
+        return Theme.nestStyles(result)
+    }
+
+    static fn flattenStyles(styles:Object){
+        const out = {}
+        for (const [key, val] of Object.entries(styles)){
+            if ( val !== null && typeof val === 'object' && !Array.isArray(val) ){
+                const nested = Theme.flattenStyles(val)
+                for (const [subKey, subVal] of Object.entries(nested)) {
+                    out[`${key}.${subKey}`] = subVal
+                }
+            } else {
+                out[key] = val
+            }
+        }
+        return out
+    }
+
+    static fn nestStyles(styles:Object){
+        const nested = {}
+
+        for (const [flatKey, value] of Object.entries(styles)){
+            const isAtomicObject = value !== null && typeof value === 'object' && !Array.isArray(value)
+
+            if (isAtomicObject) {
+                nested[flatKey] = value
+                continue
+            }
+
+            const parts = flatKey.split('.')
+            let cursor = nested
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i]
+                if (i === parts.length - 1) {
+                    cursor[part] = value
+                } else {
+                    if (
+                        !Object.prototype.hasOwnProperty.call(cursor, part) ||
+                        typeof cursor[part] !== 'object' ||
+                        Array.isArray(cursor[part])
+                    ){
+                        cursor[part] = {}
+                    }
+                    cursor = cursor[part]
+                }
+            }
+        }
+
+        return nested
+    }
+}
+

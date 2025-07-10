@@ -5,8 +5,8 @@
     @apply flex flex-row justify-end;
 }
 &SidebarLayout &Sidebar{
-    @apply py-4 px-4 z-[1000] border-0 fixed h-full box-border bg-white dark:bg-[#111111] block;
-    @apply w-64 lg:px-6 border-r border-[#b1b1b1] dark:border-[#313131] lg:border-[#c1c1c1] lg:dark:border-[#212121];
+    @apply py-4 px-4 z-[1000] border-0 fixed h-full box-border bg-white dark:bg-mono-1 block;
+    @apply w-64 lg:px-6 border-r border-mono-b dark:border-mono-3 lg:border-mono-c lg:dark:border-mono-2;
     transition: left 0.5s, right 0.5s;
 }
 &SidebarLayout &Sidebar&.pos-absolute{
@@ -52,5 +52,5 @@
 }
 
 &SidebarLayout &Sidebar hr{
-    @apply border-[#a1a1a1] dark:border-[#414141] py-2;
+    @apply border-mono-a dark:border-mono-4 py-2;
 }

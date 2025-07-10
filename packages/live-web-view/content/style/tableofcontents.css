@@ -6,9 +6,9 @@
     @apply py-0;
 }
 &UlV li a{
-    @apply block py-1 text-[#777777] dark:text-[#919191];
+    @apply block py-1 text-[#777777] dark:text-mono-9;
     transition: color 0.3s;
 }
 &UlV li a.active{
-    @apply text-black dark:text-[#e1e1e1];
+    @apply text-black dark:text-mono-e;
 }

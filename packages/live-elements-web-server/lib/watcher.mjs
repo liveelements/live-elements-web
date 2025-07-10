@@ -70,6 +70,10 @@ export class Watcher{
         return watcher
     }
 
+    close(){
+        this.watcher.close()
+    }
+
     unwatchFile(file) {
         this.watcher.unwatch(file);
         delete this.files[file];

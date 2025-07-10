@@ -1,9 +1,9 @@
 &UlV{
-    @apply divide-y divide-[#c1c1c1] dark:divide-[#414141];
+    @apply divide-y divide-mono-c dark:divide-mono-4;
 }
 
 &UlV&.round-border{
-    @apply rounded border border-[#c1c1c1] dark:border-[#414141];
+    @apply rounded border border-mono-c dark:border-mono-4;
 }
 
 li{
@@ -20,7 +20,7 @@ li:hover {
 }
 
 li.dragging {
-  @apply border border-[#c1c1c1] dark:border-[#616161] rounded;
+  @apply border border-mono-c dark:border-mono-6 rounded;
   transform: scale(1) translate(0, 0);
   z-index: 10;
 }

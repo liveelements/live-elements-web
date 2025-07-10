@@ -221,11 +221,11 @@ export default class StyleContainer extends EventEmitter {
         return styleOutputs
     }
 
-    async __addComponentScopedStyles(ct, scopedComponentCollection, rootViews, output) {
+    async __addComponentScopedStyles(ct, scopedComponentCollection, rootViews, output, theme){
         const isRoot = rootViews.includes(ct)
         const classNameWithPrefix = isRoot ? '' : ct.classNameWithPrefix
         if (ct.inherits) {
-            await this.__addComponentScopedStyles(ct.inherits, scopedComponentCollection, rootViews, output)
+            await this.__addComponentScopedStyles(ct.inherits, scopedComponentCollection, rootViews, output, theme)
         }
         
         const pathToScopedCSS = StyleContainer.scopedCSSPath()
@@ -240,20 +240,21 @@ export default class StyleContainer extends EventEmitter {
                 const selectors = ScopedComponentSelectors.fromStyle(scopedComponentCollection, sst)
 
                 const scopedProcessor = { file: pathToScopedCSS, args: { lookups: selectors, defaultPrefix: classNameWithPrefix } }
-                const sstProcessor = sst.resolved.process ? { file: sst.resolved.process, args: undefined } : null
+
+                const sstProcessor = sst.resolved.process ? { file: sst.resolved.process, args: undefined, theme: theme ? theme.toJSON() : null } : null
                 const processChain = sstProcessor ? [scopedProcessor, sstProcessor] : [scopedProcessor]
                 output.addInputUnique(sst.resolved.src, await StyleChainProcessor.create(processChain))
             }
         }
     }
 
-    async addScopedStyles(scopedComponentCollection, output) {
+    async addScopedStyles(scopedComponentCollection, output, themes){
         if (scopedComponentCollection.size()) {
             const scopedStylesOutput = output ? output : this.configureOutput('scoped.css')
             const rootViews = scopedComponentCollection.rootViews()
             for (let i = scopedComponentCollection.size() - 1; i >= 0; --i) {
                 const ct = scopedComponentCollection._components[i]
-                await this.__addComponentScopedStyles(ct, scopedComponentCollection, rootViews, scopedStylesOutput)
+                await this.__addComponentScopedStyles(ct, scopedComponentCollection, rootViews, scopedStylesOutput, themes && themes.length ? themes[0] : null)
             }
             await scopedStylesOutput.reload()
         }

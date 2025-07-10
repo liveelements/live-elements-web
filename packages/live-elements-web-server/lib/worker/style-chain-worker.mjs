@@ -27,12 +27,13 @@ parentPort.on('message', async ({ file, content, destination, chain }) => {
             const ci = chain[i]
             const ciFile = ci.path
             const ciArgs = ci.args
+            const ciTheme = ci.theme
             const ciComponent = await getComponent(ciFile)
         
             itemsChain.push({
                 path: ci.file,
                 args: ci.args,
-                processor: ciComponent.create(ciArgs)
+                processor: ciComponent.create(ciArgs, ciTheme)
             })
         }
 

@@ -2,11 +2,11 @@
     @apply relative;
 }
 &DropdownContent{
-    @apply absolute w-52 hidden border border-[#b1b1b1] dark:border-[#414141] z-[10000] rounded;
+    @apply absolute w-52 hidden border border-mono-b dark:border-mono-4 z-[10000] rounded;
 }
 &DropdownContent&.show{
-    @apply block bg-white dark:bg-[#111111];
+    @apply block bg-white dark:bg-mono-1;
 }
 &DropdownToggleButton{
-    @apply bg-white dark:bg-[#111] text-base px-4 py-2 text-[#111111] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1] dark:border-[#414141] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#414141];
+    @apply bg-white dark:bg-[#111] text-base px-4 py-2 text-mono-1 dark:text-mono-f transition-colors duration-300 transform border border-mono-b dark:border-mono-4 rounded hover:bg-mono-e dark:hover:bg-mono-4;
 }

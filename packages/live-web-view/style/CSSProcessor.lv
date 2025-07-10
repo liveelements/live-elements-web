@@ -2,7 +2,7 @@ import live-elements-web-server.style
 import live-elements-web-server.style.processors
 
 component CSSProcessor{
-    static fn create(){
-        return PostCSS.create([PostCSSImport.create(), TailwindCSS.createForPostCSS()])
+    static fn create(args:any[], theme:Object){
+        return PostCSS.create([PostCSSImport.create(args, theme), TailwindCSS.createForPostCSS(args, theme)])
     }
 }

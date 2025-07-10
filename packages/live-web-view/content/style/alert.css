@@ -1,6 +1,6 @@
 &Alert{
-    @apply flex flex-row items-start bg-white dark:bg-[#111] text-black dark:text-[#e1e1e1] rounded shadow-md max-w-sm overflow-hidden;
-    @apply border border-[#313131] p-4 px-4;
+    @apply flex flex-row items-start bg-white dark:bg-[#111] text-black dark:text-mono-e rounded shadow-md max-w-sm overflow-hidden;
+    @apply border border-mono-3 p-4 px-4;
 }
 &AlertContent{
     @apply text-left;

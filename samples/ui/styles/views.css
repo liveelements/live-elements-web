@@ -14,7 +14,7 @@ section.main &SidebarLayout &Aside{
     @apply px-0;
 }
 &SidebarLayout &Sidebar .active{
-    @apply text-[#919191] dark:text-[#717171];
+    @apply text-mono-9 dark:text-mono-7;
 }
 &SidebarLayout &Aside > &Content{
     @apply px-4 lg:px-6;

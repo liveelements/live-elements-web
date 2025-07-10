@@ -39,6 +39,7 @@ class WebServerInit{
             AssetProviderCollector: path.join(packageDir, 'bundle', 'collectors', 'AssetProviderCollector.lv'),
             PageCollector: path.join(packageDir, 'bundle', 'collectors', 'PageCollector.lv'),
             RouteCollector: path.join(packageDir, 'bundle', 'collectors', 'RouteCollector.lv'),
+            ThemeCollector: path.join(packageDir, 'bundle', 'collectors', 'ThemeCollector.lv'),
             StylesheetCollector: path.join(packageDir, 'bundle', 'collectors', 'StylesheetCollector.lv'),
             ScopedStyleCollector: path.join(packageDir, 'bundle', 'collectors', 'ScopedStyleCollector.lv'),
             PageView: path.join(packageDir, 'view', 'PageView.lv')
@@ -122,6 +123,7 @@ export default class WebServer extends EventEmitter{
         this._assets = null
         this._pages = []
         this._routes = []
+        this._themes = []
 
         this._distPath = path.join(this._bundleLookupPath, 'dist')
         this._cachePath = path.join(this._distPath, 'cache')
@@ -210,6 +212,7 @@ export default class WebServer extends EventEmitter{
             ComponentRegistry.Components.AssetProviderCollector.create(),
             ComponentRegistry.Components.ScopedStyleCollector.create(),
             ComponentRegistry.Components.StylesheetCollector.create(),
+            ComponentRegistry.Components.ThemeCollector.create(),
             ComponentRegistry.Components.PageCollector.create(webServer._domEmulator, webServer._config.entryScriptUrl)
         ])
 
@@ -218,8 +221,14 @@ export default class WebServer extends EventEmitter{
         webServer._scopedStyles = bundleScan.scopedStyles
         webServer._styles = await StyleContainer.load(bundle.file, bundleScan.styles, webServer.establishedCachePath())
         webServer._pages = bundleScan.pages
+        
+        webServer._themes = bundleScan.themes
+        if ( webServer._themes.length > 1 ){
+            webServer._watcher.close()
+            throw new Error(`Theme conflict: Multiple uncorrelated themes (${webServer._themes.length}) found accross the bundle. Create a single theme to extend all of them.`)
+        }
 
-        try{ await webServer._styles.addScopedStyles(webServer._scopedStyles) } catch ( e ) { throw new Error(e.message) }        
+        try{ await webServer._styles.addScopedStyles(webServer._scopedStyles, null, webServer._themes) } catch ( e ) { throw e }  
 
         webServer.addWebpack()
 

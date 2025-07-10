@@ -30,6 +30,7 @@ export default class StyleChainProcessor{
             const ci = chain[i]
             const ciFile = ci.file
             const ciArgs = ci.args
+            const ciTheme = ci.theme
 
             const ciComponent = StyleChainProcessor.Components.hasOwnProperty(ciFile)
                 ? StyleChainProcessor.Components[ciFile]
@@ -38,7 +39,8 @@ export default class StyleChainProcessor{
             itemsChain.push({
                 path: ci.file,
                 args: ci.args,
-                processor: ciComponent.create(ciArgs)
+                theme: ciTheme,
+                processor: ciComponent.create(ciArgs, ciTheme)
             })
         }
         return new StyleChainProcessor(itemsChain)
@@ -69,7 +71,7 @@ export default class StyleChainProcessor{
                 })
             }
             currentWorker.taskCount++
-            currentWorker.postMessage( { file, content, destination, chain: this._items.map(item => ({ path: item.path, args: item.args })) } )
+            currentWorker.postMessage( { file, content, destination, chain: this._items.map(item => ({ path: item.path, args: item.args, theme: item.theme })) } )
 
             const messageListener = (result) => { 
                 if (result.error) {

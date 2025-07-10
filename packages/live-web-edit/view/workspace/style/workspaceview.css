@@ -7,7 +7,7 @@
 }
 
 &FullScreen&.pad-topnav{
-    @apply pt-[0rem] h-[calc(100vh-3rem-1px)];
+    @apply pt-0 h-[calc(100vh-3rem-1px)];
 }
 
 &SplitLayout{
@@ -19,7 +19,7 @@
 }
 
 &SplitLayout &SplitPane .error-box.show{
-    @apply bg-[rgb(105,28,35)] p-1 border border-[#616161] text-[#e1e1e1];
+    @apply bg-[rgb(105,28,35)] p-1 border border-mono-6 text-mono-e;
 }
 &SplitLayout &SplitPane .error-box .error{
     @apply p-2;
@@ -47,11 +47,11 @@
 }
 
 &SplitLayout &SplitPane .log-view{
-    @apply w-full h-full dark:bg-[#111111] text-[14px];
+    @apply w-full h-full dark:bg-mono-1 text-[14px];
     
 }
 &SplitLayout &SplitPane .log-view h2{
-    @apply h-[36px] px-2 py-2 text-[#919191] border-b border-[#616161];
+    @apply h-[36px] px-2 py-2 text-mono-9 border-b border-mono-6;
 }
 &SplitLayout &SplitPane .log-view .log-messages{
     @apply overflow-auto p-2 text-[12px];
@@ -62,7 +62,7 @@
     @apply pt-0;
 }
 &SplitLayout &SplitPane .log-view .log-message{
-    @apply py-1 border-b border-[#414141];
+    @apply py-1 border-b border-mono-4;
 }
 &SplitLayout &SplitPane .log-view .log-message:last-child{
     @apply border-b-0;
@@ -89,11 +89,11 @@
 }
 
 .header{
-    @apply w-full h-[2.5rem] border-b border-[#a1a1a1] dark:border-[#414141];
+    @apply w-full h-[2.5rem] border-b border-mono-a dark:border-mono-4;
 }
 
 .loading{
-    @apply hidden items-center text-[#a1a1a1];
+    @apply hidden items-center text-mono-a;
 }
 .loading.show{
     @apply flex;

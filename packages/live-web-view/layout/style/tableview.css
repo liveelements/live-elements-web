@@ -1,16 +1,16 @@
 &TableView{
-    @apply min-w-full divide-y divide-[#d1d1d1] dark:divide-[#414141];
+    @apply min-w-full divide-y divide-mono-d dark:divide-mono-4;
 }
 &TableView&.border-around{
-    @apply border border-[#d1d1d1] dark:border-[#414141];
+    @apply border border-mono-d dark:border-mono-4;
 }
 
 &TableView thead th{
-    @apply text-sm px-4 py-3 text-left font-medium text-[#616161] dark:text-[#818181];
+    @apply text-sm px-4 py-3 text-left font-medium text-mono-6 dark:text-mono-8;
 }
 
 &TableView tbody{
-    @apply text-lg divide-y divide-[#d1d1d1] dark:divide-[#414141];
+    @apply text-lg divide-y divide-mono-d dark:divide-mono-4;
 }
 &TableView tbody td{
     @apply text-sm px-4 py-2 text-left;

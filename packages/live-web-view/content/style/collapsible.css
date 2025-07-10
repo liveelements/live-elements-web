@@ -5,10 +5,10 @@
     @apply hidden px-4;
 }
 &Collapsible&.show &CollapsibleContent{
-    @apply block bg-white dark:bg-[#111111];
+    @apply block bg-white dark:bg-mono-1;
 }
 &CollapsibleToggle{
-    @apply flex flex-row items-center justify-between text-base px-4 py-2 text-[#111111] dark:text-[#f1f1f1] border-b border-[#c1c1c1] dark:border-[#414141] hover:border-[#b1b1b1] dark:hover:border-[#515151];
+    @apply flex flex-row items-center justify-between text-base px-4 py-2 text-mono-1 dark:text-mono-f border-b border-mono-c dark:border-mono-4 hover:border-mono-b dark:hover:border-mono-5;
 }
 &Collapsible &IconRotate > *:first-child{
     transition: transform 0.5s;

@@ -43,7 +43,7 @@ component AssetProviderCollector < BundleDataCollector{
         let assets = []
         for ( let i = 0; i < assetProviders.length; ++i ){
             const assetProvider = assetProviders[i]
-            if ( assetProvider.src ){
+            if ( assetProvider.src && !path.isAbsolute(assetProvider.src) ){
                 let packageSeparator = assetProvider.src.indexOf('/');
                 if (packageSeparator === -1) {
                     throw new Error(`Cannot find asset location: ${assetProvider.src}`);

@@ -1,7 +1,7 @@
 &PrimaryButton{
-    @apply text-lg px-4 py-2 text-[#111111] dark:text-[#f1f1f1] transition-colors duration-300 transform border border-[#b1b1b1] dark:border-[#414141] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#414141] text-base;
+    @apply text-lg px-4 py-2 text-mono-1 dark:text-mono-f transition-colors duration-300 transform border border-mono-b dark:border-mono-4 rounded hover:bg-mono-e dark:hover:bg-mono-4 text-base;
 }
 
 &PrimaryButton&.text-color-button{
-    @apply text-[#212121] dark:text-white;
+    @apply text-mono-2 dark:text-white;
 }

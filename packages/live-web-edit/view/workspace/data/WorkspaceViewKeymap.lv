@@ -1,7 +1,7 @@
 import {indentWithTab} from "@codemirror/commands"
 
 component WorkspaceViewKeymap{
-    Object actions = {}
+    Object actions = ({})
     
     constructor(actions:Object){
         super()

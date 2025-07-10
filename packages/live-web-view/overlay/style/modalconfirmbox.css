@@ -1,8 +1,8 @@
 
 &ModalConfirmBox {
     @apply inline-block align-bottom rounded-[3px] px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6;
-    @apply text-[#111111] dark:text-[#f1f1f1] bg-white dark:bg-[#111111];
-    @apply border border-[#c1c1c1] dark:border-[#313131];
+    @apply text-mono-1 dark:text-mono-f bg-white dark:bg-mono-1;
+    @apply border border-mono-c dark:border-mono-3;
 }
   
 .modal-title {
@@ -14,7 +14,7 @@
 }
 
 .modal-message {
-    @apply text-[#414141] dark:text-[#f1f1f1];
+    @apply text-mono-4 dark:text-mono-f;
     @apply p-10 text-lg;
 }
   

@@ -8,7 +8,7 @@ component WorkspaceViewDataActions{
         lockWrite: '',
         fork: ''
     }
-    Object hooks = {}
+    Object hooks = ({})
 
     fn toError(data:Object){
         if ( data.error.messages && data.error.messages.length ){

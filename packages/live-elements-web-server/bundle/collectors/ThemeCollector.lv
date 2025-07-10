@@ -1,0 +1,72 @@
+import .bundle
+import .router
+import .style
+
+component ThemeCollector < BundleDataCollector{
+    constructor(){
+        super()
+        this._themes = new Set()
+        this._leaves = new Set() 
+        this{}
+    }
+
+    static fn create(){ return ThemeCollector{} }
+
+    fn _addTheme(theme:Theme){
+        if ( this._themes.has(theme) ){
+            return
+        }
+
+        const parents = Array.isArray(theme.extend) ? theme.extend : []
+        for (const parent of parents){
+            this._addTheme(parent)
+        }
+
+        for (const parent of parents){
+            if (this._hasPath(parent, theme, new Set())){
+                throw new Error(
+                    `Cycle detected: Adding ${theme} extends ${parent}, but ${parent} already (indirectly) extends ${theme}.`
+                )
+            }
+        }
+
+        this._themes.add(theme)
+        this._leaves.add(theme)
+
+        parents.forEach(p => {
+            this._leaves.delete(p)
+        })
+    }
+
+    fn _hasPath(start:Theme, target:Theme, seen:Set){
+        if ( start === target ) 
+            return true
+        if ( seen.has(start) )
+            return false
+
+        seen.add(start)
+
+        const parents = Array.isArray(start.extend) ? start.extend : []
+        parents.forEach(p => {
+            if (this._hasPath(p, target, seen)){
+                return true
+            }
+        })
+        return false
+    }
+
+
+    fn name(){ return 'themes' }
+    fn visit(node:BaseElement, _trail:Object, _control:Object){
+        if ( node instanceof Theme ){
+            this._addTheme(node)
+        }
+    }
+
+    fn end(_trail:Object):Object{
+        const s = Array.from(this._leaves)
+        this._themes = new Set()
+        this._leaves = new Set()
+        return s
+    }
+}

@@ -7,15 +7,15 @@
 }
 
 &FormContainer &TextInput, &FormContainer textarea{
-    @apply dark:text-[#f1f1f1] dark:placeholder-[#717171] text-base block bg-white dark:bg-[#212121] w-full px-4 py-1.5 mt-2 border border-[#d1d1d1] dark:border-[#313131] rounded focus:border-[#212121] dark:focus:border-[#919191] focus:outline-none;
+    @apply dark:text-mono-f dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 mt-2 border border-mono-d dark:border-mono-3 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
 }
 
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
-    @apply text-gray-900 dark:text-white;
+    @apply text-mono-9 dark:text-mono-f;
 }
 
 &FormContainer &FormMessage{
-    @apply border-2 rounded p-2 p-2 dark:border-[#414141] hidden;
+    @apply font-sans border-2 rounded p-2 p-2 dark:border-mono-4 hidden;
 }
 
 &FormContainer &FormMessage&.visible{
@@ -27,8 +27,8 @@
 }
 
 &FormContainer &SubmitButton{
-    @apply text-base px-4 py-1 text-black dark:text-[#f1f1f1] transition-colors duration-300 transform bg-[#d1d1d1] dark:bg-[#313131] border border-[#b1b1b1] dark:border-[#515151] rounded hover:bg-[#e1e1e1] dark:hover:bg-[#515151];
+    @apply text-base font-sans px-4 py-1 text-mono-1 dark:text-mono-f transition-colors duration-300 transform bg-mono-d dark:bg-mono-3 border border-mono-b dark:border-mono-5 rounded hover:bg-mono-e dark:hover:bg-mono-5;
 }
 &FormContainer .text-color-button{
-    @apply text-black dark:text-[#f1f1f1];
+    @apply text-mono-1 dark:text-mono-f;
 }
