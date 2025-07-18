@@ -1,0 +1,18 @@
+&Checkbox{
+    @apply relative flex items-center;
+}
+
+input[type="checkbox"]{
+    @apply opacity-[0] relative w-5 h-5 z-[100];
+}
+
+.checkbox-view{
+    @apply absolute inline-block rounded w-5 h-5 border bg-white dark:bg-mono-2 border-mono-d dark:border-mono-3 left-0;
+
+}
+input[type="checkbox"]:checked + .checkbox-view::after{  
+    @apply text-base font-mono w-full text-center text-mono-3 dark:text-mono-c;
+    content: "✔";
+    position: absolute;
+} 
+

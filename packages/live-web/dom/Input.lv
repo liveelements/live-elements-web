@@ -4,6 +4,8 @@ component Input < DOMElement{
         Input.prototype.__initialize.call(this)
     }
 
+    string name
+    on nameChanged: () => { this.setOwnAttributeAndUpdate('name', this.name) }
     string type
     on typeChanged: () => { this.setOwnAttributeAndUpdate('type', this.type) }
     string placeholder
@@ -14,6 +16,8 @@ component Input < DOMElement{
     on maxChanged: () => { if ( this.max !== undefined ) this.setOwnAttributeAndUpdate('max', this.max) }
     boolean autofocus
     on autofocusChanged: () => { if (this.autofocus) this.setOwnAttributeAndUpdate('autofocus', this.autofocus) }
+    boolean required
+    on requiredChanged: () => { if (this.required !== undefined ) this.setOwnAttributeAndUpdate('required', this.required) }
     any value
     on valueChanged: () => {
         if ( this.type === 'checkbox' ){
@@ -35,7 +39,7 @@ component Input < DOMElement{
         }
         this.currentValue = this.value
     }
-    any currentValue: 0
+    any currentValue
 
     fn resetValue(){
         if ( this.value !== '' ){

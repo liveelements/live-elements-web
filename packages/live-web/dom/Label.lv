@@ -5,4 +5,7 @@ component Label < DOMElement{
         super('label')
         Label.prototype.__initialize.call(this)
     }
+
+    string htmlFor
+    on htmlForChanged: () => { this.setOwnAttributeAndUpdate('for', this.htmlFor) }
 }

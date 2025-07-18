@@ -1,0 +1,26 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Checkbox < Span{
+    id: cbx
+
+    string indicatorId: null
+    string name
+    boolean required
+    DOMElement indicator: Input{ glid: cbx.indicatorId ? cbx.indicatorId : null type = 'checkbox' name: cbx.name required: cbx.required }
+
+    static any[] use = [
+        ScopedStyle{ src: './style/checkbox.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Checkbox)])
+
+    children: [
+        this.indicator,
+        Span{ classes: ['checkbox-view'] }
+    ]
+}

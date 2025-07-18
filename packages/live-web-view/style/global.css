@@ -10,5 +10,8 @@
 @initialize html.dark body{
     background-color: #111111;
     color: #e1e1e1;
-    border-color: red;
+}
+@initialize html body.dark{
+    background-color: #111111;
+    color: #e1e1e1;
 }

@@ -8,10 +8,16 @@ component TooltipArea < Div{
         ScopedStyle{ src: './style/tooltiparea.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]
+
+    static Object Timeout = {
+        None: -1,
+        Default: 2000
+    }
     
     string[] extraClasses: []
+    number timeout: TooltipArea.Timeout.Default
 
-    props = { data: { c: 'tooltiparea' } }
+    props : ({ data: { c: 'tooltiparea', timeout: this.timeout } })
 
     classes: this.extraClasses.concat([
         ScopedStyle.className(TooltipArea)

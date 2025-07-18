@@ -76,6 +76,7 @@ component Page{
         var scripts = []
         var styles = []
 
+
         if ( this.children.length > 0 ){
             var body = null
             for ( var i = 0; i < this.children.length; ++i ){

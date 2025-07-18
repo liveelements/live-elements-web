@@ -25,14 +25,42 @@ component Tooltip < Div{
                 current = current.parentNode
             }
             if ( current ){
+                let timeoutTime = parseInt(current.dataset.timeout)
                 let timeout = null
 
                 current.addEventListener('mouseenter', function () {
+                    const rect = d.getBoundingClientRect()
+                    const midX = rect.left + rect.width  / 2
+                    const midY = rect.top  + rect.height / 2
+                    const halfW = window.innerWidth  / 2
+                    const halfH = window.innerHeight / 2
+
+                    d.classList.remove(
+                        'position-left',
+                        'position-right',
+                        'position-top',
+                        'position-bottom'
+                    )
+
+                    if (midX > halfW) {
+                        d.classList.add('position-left');
+                    } else {
+                        d.classList.add('position-right');
+                    }
+
+                    
+                    if (midY > halfH) {
+                        d.classList.add('position-top');
+                    } else {
+                        d.classList.add('position-bottom');
+                    }
+
                     timeout = window.setTimeout(function () {
                         current.classList.add('active')
-                        setTimeout(() => {
-                            current.classList.remove('active')
-                        }, 2000)
+                        if ( timeoutTime > 0 )
+                            setTimeout(() => {
+                                current.classList.remove('active')
+                            }, timeoutTime)
                     }, 500)
                 })
 

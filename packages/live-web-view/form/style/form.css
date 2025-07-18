@@ -1,5 +1,5 @@
 &FormContainer{ 
-    @apply px-6 py-4;
+    @apply px-6 py-4 text-base;
 }
 
 &FormContainer &FormGroup{
@@ -15,7 +15,7 @@
 }
 
 &FormContainer &FormMessage{
-    @apply font-sans border-2 rounded p-2 p-2 dark:border-mono-4 hidden;
+    @apply font-sans text-base border-2 rounded p-2 p-2 dark:border-mono-4 hidden;
 }
 
 &FormContainer &FormMessage&.visible{

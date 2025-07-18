@@ -18,6 +18,9 @@
 &TooltipArea &Tooltip&.position-left, &TooltipArea&.position-left &Tooltip{
     right: 0%;
 }
+&TooltipArea &Tooltip&.position-top, &TooltipArea&.position-top &Tooltip{
+    @apply top-[auto] mt-0 mb-1 bottom-full;
+}
   
 &TooltipArea&.active &Tooltip {
     visibility: visible;

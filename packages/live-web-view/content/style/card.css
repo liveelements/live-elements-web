@@ -1,5 +1,5 @@
 &Card{
-    @apply relative flex-col flex bg-white dark:bg-mono-2 rounded-lg shadow-md max-w-sm overflow-hidden;
+    @apply relative flex-col flex bg-mono-f dark:bg-mono-2 rounded-lg shadow-md max-w-sm overflow-hidden;
 }
 &Card&.card-row{
     @apply flex-row;
@@ -25,7 +25,7 @@ section{
 section header{
     @apply mb-2;
 }
-section header h1{
+section header h1, section header h2{
     @apply text-mono-2 dark:text-mono-e text-2xl font-semibold mb-0;
 }
 section small{
