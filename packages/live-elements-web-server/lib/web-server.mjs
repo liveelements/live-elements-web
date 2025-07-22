@@ -474,7 +474,8 @@ export default class WebServer extends EventEmitter{
                     data = functionResult instanceof Promise ? await functionResult : functionResult
                 } catch ( e ) {
                     if ( e instanceof PageNotFoundError ){
-                        next()
+                        return res.redirect('/') //TEMP
+                        // next()
                         return
                     } else {
                         log.e(e)
