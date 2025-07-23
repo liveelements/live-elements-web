@@ -15,7 +15,7 @@
 
 .modal-message {
     @apply text-mono-4 dark:text-mono-f;
-    @apply p-10 text-lg;
+    @apply p-10 text-base;
 }
   
 .button-container {
