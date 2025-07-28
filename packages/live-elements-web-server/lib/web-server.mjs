@@ -2,6 +2,7 @@ import path from 'path'
 import url from 'url'
 import fs from 'fs'
 import express from 'express'
+import send from 'send'
 import { EventEmitter } from 'node:events'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
@@ -60,6 +61,7 @@ class WebServerConfiguration{
         this._scripstUrl = '/scripts'
         this._stylesUrl = '/styles'
         this._entryScriptName = 'main.bundle.js'
+        this._staticFileHeaders = config.staticFileHeaders ? config.staticFileHeaders : { etag: true, lastModified: true, maxAge: 86400 * 1000 }
     }
 
     get runMode(){ return this._runMode }
@@ -81,6 +83,8 @@ class WebServerConfiguration{
         const host = this.baseUrl === '/' ? 'localhost' : (new URL(this.baseUrl)).hostname
         return `ws://${host}:${this.port}`
     }
+
+    get staticFileHeaders(){ return this._staticFileHeaders }
 
     static renderModeFromString(mode){
         if ( mode === 'development' )
@@ -233,6 +237,16 @@ export default class WebServer extends EventEmitter{
         webServer.addWebpack()
 
         return webServer
+    }
+
+    sendDynamicFile(res, type, content){
+        const seconds = Math.floor(maxAgeMs / 1000)
+        res.setHeader('Cache-Control', `public, max-age=${seconds}`)
+        res.type(type).send(content)
+    }
+
+    sendFile(req, res, file){
+        return send(req, file, this.config.staticFileHeaders ).pipe(res)
     }
 
     viewLoaderData(view, placement){
@@ -699,9 +713,16 @@ export default class WebServer extends EventEmitter{
     async run(){
         const distPath = this.establishedDistPath()
 
-        this._app.use('/scripts', express.static(path.join(distPath, 'scripts')))
-        this._app.use('/styles', express.static(path.join(distPath, 'styles')))
-        this._app.use('/', express.static(path.join(distPath, 'assets'), { index: false }))
+        this._app.use('/scripts', express.static(path.join(distPath, 'scripts'), {
+            maxAge: this.config.staticFileHeaders.maxAge
+        }))
+        this._app.use('/styles', express.static(path.join(distPath, 'styles'),{
+            maxAge: this.config.staticFileHeaders.maxAge
+        }))
+        this._app.use('/', express.static(path.join(distPath, 'assets'), { 
+            maxAge: this.config.staticFileHeaders.maxAge,
+            index: false 
+        }))
 
         /// Handle routes
 
