@@ -8,7 +8,7 @@
     @apply p-2 px-4 rounded text-xs text-mono-1 dark:text-white bg-white dark:bg-mono-1 border border-mono-c dark:border-mono-4;
     visibility: hidden;
     opacity: 0;
-    position: absolute;
+    position: fixed;
     top: 100%;
     margin-top: 5px;
     z-index: 1000;
@@ -23,6 +23,8 @@
 }
   
 &TooltipArea&.active &Tooltip {
+    position: absolute;
+    display: block;
     visibility: visible;
     opacity: 0.9;
 }
