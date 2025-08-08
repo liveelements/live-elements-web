@@ -69,6 +69,7 @@ export class ServerViewRoute extends ServerRoute{
         this._scripts      = []
         this._styles       = []
         this._bundleScript = null
+        this._pageInfo     = null
     }
 
     get c(){ return this._c }
@@ -76,6 +77,7 @@ export class ServerViewRoute extends ServerRoute{
     get placement(){ return this._placement }
     get data(){ return this._data }
     get page(){ return this._page }
+    get pageInfo(){ return this._pageInfo }
     get scripts(){ return this._scripts }
     get styles(){ return this._styles }
     get bundleScript(){ return this._bundleScript }

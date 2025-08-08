@@ -3,6 +3,7 @@ import .bundle
 import .router
 import .page
 import .page.index
+import PreparedPageRender from '../../lib/prepared-page-render.mjs'
 
 component PageCollector < BundleDataCollector{
 
@@ -37,7 +38,18 @@ component PageCollector < BundleDataCollector{
     }
 
     static fn setupDOM(pages:Array, domInterface:Object){
-        return pages.map( page => { return { page: page, output: page.output, dom: page.captureDOM(domInterface) } } )
+        return pages.map( page => { 
+            const temp = page.entryScript
+            page.entryScript = null
+            const dom = page.captureDOM(domInterface)
+            page.entryScript = temp
+            return { 
+                page: page, 
+                output: page.output, 
+                dom: dom,
+                preparedRender: PreparedPageRender.create(domInterface.serializeDOM(dom))
+            } } 
+        )
     }
 
     static fn defaultPageSetup(domInterface:Object, entryScript:string){

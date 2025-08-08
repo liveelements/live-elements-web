@@ -225,6 +225,17 @@ export default class WebServer extends EventEmitter{
         webServer._scopedStyles = bundleScan.scopedStyles
         webServer._styles = await StyleContainer.load(bundle.file, bundleScan.styles, webServer.establishedCachePath())
         webServer._pages = bundleScan.pages
+
+        const viewRoutes = webServer._routes.viewRoutes()
+        for ( let i = 0; i < viewRoutes.length; ++i ){
+            const r = viewRoutes[i]
+            if ( r.page ){
+                const p = webServer._pages.find( page => page.page === r.page )
+                r._pageInfo = p
+            } else {
+                r._pageInfo = webServer.findPageByOutput('index.html')
+            }
+        }
         
         webServer._themes = bundleScan.themes
         if ( webServer._themes.length > 1 ){
@@ -473,13 +484,9 @@ export default class WebServer extends EventEmitter{
     }
 
     async renderRouteCSR(route, req, res, next){
-        const page = route.page ? route.page : this.findPageByOutput('index.html').page
-        if ( !route.pageDOM ){
-            page.entryScript = '/scripts/' + route.bundleScript
-            route.pageDOM = page.captureDOM(this._domEmulator)
-            route.pageContent = this._domEmulator.serializeDOM(route.pageDOM)
-        }
-        let pageContent = route.pageContent
+        let head = []
+        let body = [`<script src="/scripts/${route.bundleScript}"></script>`]
+
         if ( route.data ){
             let data = null
             if ( typeof route.data === 'function' ){
@@ -501,23 +508,13 @@ export default class WebServer extends EventEmitter{
             } else {
                 data = route.data
             }
-            const scriptContent = `window.__serverData__ = ${JSON.stringify(data)};`
-            const existingScript =  route.pageDOM.window.document.head.querySelector('script[data-purpose="page-load"]')
-            if ( existingScript ){
-                existingScript.text = scriptContent
-            } else {
-                const scriptEl = route.pageDOM.window.document.createElement('script')
-                scriptEl.dataset.purpose = 'page-load'
-                scriptEl.text = scriptContent
-                route.pageDOM.window.document.head.appendChild(scriptEl)
-            }
-            pageContent = this._domEmulator.serializeDOM(route.pageDOM)
+            const scriptContent = `<script data-purpose="page-load">window.__serverData__ = ${JSON.stringify(data)};</script>`
+            head.push(scriptContent)
         }
         if ( route.styles.length ){
-            const location = pageContent.indexOf('</head>')
-            const insertString = route.styles.map(s => `<link rel="stylesheet" data-purpose="scoped" type="text/css" href="${s}" />`)
-            pageContent = pageContent.slice(0, location) + insertString + pageContent.slice(location)
+            head = head.concat(route.styles.map(s => `<link rel="stylesheet" data-purpose="scoped" type="text/css" href="${s}" />`))
         }
+        const pageContent = route.pageInfo.preparedRender.render(head.join(''), '', body.join(''))
 
         res.send(pageContent)
         res.end()
