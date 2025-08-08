@@ -52,7 +52,7 @@ component Input < DOMElement{
     }
 
     on input: () => {
-        if ( this.type === 'checkbox' ){
+        if ( this.type === 'checkbox' || this.type === 'radio' ){
             this.currentValue = this.dom.checked
         } else {
             this.currentValue = this.dom.value
