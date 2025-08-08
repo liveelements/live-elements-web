@@ -6,7 +6,7 @@ export default class PageNotFoundError extends Error{
         this.name = this.constructor.name
         this._url = url
 
-        this.recommendedAction = {
+        this._recommendedAction = {
             type: recommendedAction.type || PageNotFoundError.Actions.Show404Page,
             to: recommendedAction.to || null
         };
