@@ -14,8 +14,8 @@ component H1S < H1{
     static fn slugify(title:string){
         return title
             .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
+            .replace(/[^\w\s.-]/g, '')
+            .replace(/[\s._-]+/g, '-')
             .replace(/^-+|-+$/g, '')
     }
 
