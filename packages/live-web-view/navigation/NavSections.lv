@@ -1,0 +1,73 @@
+import live-web.dom
+import .content
+import .overlay
+
+component NavSections < Div{
+    id: navSections
+
+    classes: ['nav-sections', 'cols-' + this.children.length]
+    Object data
+    string active: ''
+
+    static fn createFromLink(link:Object, active:string){
+        if ( link.type === 'brand' ){
+            return Li{
+                NavBrand{
+                    A{ href: link.href 
+                        children: link.image 
+                            ? [Span{ on domChanged: () => { this.dom.innerHTML = link.image } }]
+                            : [T{ text: link.label } ]
+                    }
+                }
+            }
+        } else if ( link.type === 'dropdown' ){
+            return Li{ classes: ['dropdown-item']
+                    Dropdown{
+                    DropdownToggleButton{
+                        children: link.image 
+                            ? [Span{ on domChanged: () => { this.dom.innerHTML = link.image } }]
+                            : [T{ text: link.label } ]
+                    }
+                    DropdownContent{ style = ({ right: 0 })
+                        Ul{ classes: ['secondary']
+                            children: link.children.map(l => {
+                                return Li{
+                                    A{ href: l.href T{ text: l.label }}
+                                }
+                            })
+                        }
+                    }
+                }
+            }
+        } else {
+            return Li{ 
+                A{ href: link.href classes: [active === link.href ? 'active' : ''] 
+                    T{ text: link.label }
+                }
+            }
+        }
+    }
+
+    static fn createFromData(data:Object, active:string){
+        return data.map(d => {
+            return NavContent{ 
+                Ul{
+                    children: d.links.map(link => {
+                        return NavSections.createFromLink(link, active)
+                    })
+                }
+            }
+        })
+    }
+
+    constructor(data:Object, active:string){
+        super()
+        this{ 
+            data = data ? data : [] 
+            active = active ? active : ''
+        }
+    }
+
+
+    children: NavSections.createFromData(navSections.data, this.active)
+}

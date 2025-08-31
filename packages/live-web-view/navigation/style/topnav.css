@@ -1,5 +1,5 @@
 &TopNav{
-    @apply fixed flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-mono-1 text-[#555] dark:text-mono-e z-[1001] md:items-center;
+    @apply flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-mono-1 text-[#555] dark:text-mono-e md:items-center;
     @apply border-b border-mono-c dark:border-mono-4;
 }
 &TopNav&.position-static{
@@ -9,26 +9,63 @@
     @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
 }
 &TopNav .nav-brand {
-    @apply text-base font-semibold;
+    @apply text-base font-semibold h-full flex flex-col justify-center;
+}
+&TopNav .nav-brand a{
+    @apply py-0 h-auto;
+}
+&TopNav .nav-brand a::before{
+    @apply hidden;
+}
+&TopNav .nav-brand svg{
+    @apply h-5;
 }
 &TopNav .nav-content-toggle {
     @apply flex hidden w-full items-center;
 }
+&TopNav .nav-sections{
+    @apply w-full grid;
+}
+&TopNav .nav-sections.cols-2{
+    @apply flex justify-between;
+}
+&TopNav .nav-sections.cols-3{
+    /* @apply grid grid-cols-3; */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;;
+}
+&TopNav .nav-sections.cols-3 .nav-content:last-child{
+    justify-self: end;
+}
+&TopNav .nav-sections.cols-3 .nav-content:nth-child(2){
+    justify-self: center;
+}
+&TopNav .nav-sections.cols-3 .nav-content:first-child{
+    justify-self: start;
+}
+
 &TopNav .nav-content-wide{
     @apply hidden md:flex items-center;
 }
-&TopNav ul {
-    @apply flex flex-col py-1 px-3;
+&TopNav ul{
+    @apply flex flex-col px-3 h-full;
 }
-&TopNav ul li {
-    @apply list-none;
+&TopNav ul li{
+    @apply list-none h-full;
 }
-&TopNav ul li a {
-    transition: background-color 0.4s;
-    @apply text-base text-mono-1 dark:text-white py-1 my-2 px-2 dark:hover:bg-mono-3 hover:bg-mono-e no-underline w-full inline-block rounded-sm;
+&TopNav ul li a{
+    @apply relative flex flex-col justify-center text-base font-sans text-mono-1 dark:text-mono-f px-2 no-underline w-full inline-block rounded-sm h-full;
 }
-&TopNav ul li button{
-    @apply my-2;
+&TopNav ul li a::before{
+    content: '';
+    @apply absolute w-full left-0 bottom-0 opacity-[0] bg-mono-a dark:bg-mono-c h-[1px];
+    transition: opacity 0.4s;
+}
+&TopNav ul li a:hover::before, &TopNav ul li a.active::before{
+    @apply opacity-[1];
+}
+&TopNav ul li.dropdown-item{
+    @apply flex flex-col justify-center;
 }
 &TopNav .nav-toggle-button {
     @apply block;
@@ -43,6 +80,18 @@
 
 &TopNav .md-hidden{
     @apply block md:hidden md:m-0;
+}
+&TopNav &DropdownContent{
+    @apply w-40;
+}
+&TopNav .nav-content ul.secondary{
+    @apply flex-col;
+}
+&TopNav .nav-content ul.secondary li{
+    @apply mx-0;
+}
+&TopNav .nav-content ul.secondary li a{
+    @apply py-2 px-0;
 }
 
 @screen md {
