@@ -20,6 +20,8 @@ component Modal < Div{
 
     DOMElement box
 
+    boolean interactive: true
+
     fn show(box:DOMElement){
         if ( box )
             this.box = box
@@ -44,7 +46,9 @@ component Modal < Div{
             click: (e) => {
                 if ( e.target.classList.contains('modal-content') ){
                     if (typeof modal !== 'undefined'){
-                        modal.hide()
+                        if ( modal.interactive ){
+                            modal.hide()
+                        }
                     } else {
                         e.target.parentNode.classList.remove('visible')
                     }
