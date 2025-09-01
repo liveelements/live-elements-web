@@ -4,6 +4,7 @@ instance components BaseElement{
     Object[] list: [
         { label: 'Accordion', url: '/accordion', c: AccordionDoc },
         { label: 'Alert', url: '/alert', c: AlertDoc },
+        { label: 'Card', url: '/card', c: CardDoc },
         { label: 'Collapsible', url: '/collapsible', c: CollapsibleDoc },
         { label: 'Context Menu', url: '/context-menu', c: ContextMenuDoc },
         { label: 'Dropdown', url: '/dropdown', c: DropdownDoc },

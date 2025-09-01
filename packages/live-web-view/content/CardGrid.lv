@@ -1,0 +1,15 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component CardGrid < Div{
+    id: grid
+
+    static any[] use = [ 
+        ScopedStyle{ src: './style/cardgrid.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    classes: this.extraClasses.concat([ScopedStyle.className(CardGrid)])
+    string[] extraClasses: []
+}

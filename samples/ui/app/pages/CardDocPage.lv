@@ -1,0 +1,23 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.docs.components
+import .samples.ui.app.components
+
+component CardDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Card,
+        CardGrid,
+        Content
+    ])
+    active: '/card'
+    document: CardDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

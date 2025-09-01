@@ -8,7 +8,7 @@
     @apply flex-col;
 }
 figure{
-    @apply bg-mono-d dark:bg-mono-4 flex items-center justify-center;
+    @apply bg-mono-d dark:bg-mono-3 flex items-center justify-center overflow-hidden;
 }
 &Card&.card-row figure{
     @apply w-48 h-auto;
@@ -26,7 +26,7 @@ section header{
     @apply mb-2;
 }
 section header h1, section header h2{
-    @apply text-mono-2 dark:text-mono-e text-2xl font-semibold mb-0;
+    @apply text-mono-2 dark:text-mono-e text-2xl font-bold mb-0;
 }
 section small{
     @apply text-xs;
