@@ -9,7 +9,7 @@ component DarkModeDoc{
 
     Content{
         H1S`Dark Mode`
-        P`Live Elements handles light and dark modes. You can`
+        P`Live Elements handles light and dark modes. You can:`
         Ul{
             Li{ T`Configure the page to dark or light mode.` }
             Li{ T`Automatically match the user's system preference.` }

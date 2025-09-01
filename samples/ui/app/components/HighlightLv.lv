@@ -10,11 +10,9 @@ component HighlightLv < HighlightSection{
     lightScheme: ScopedStyle.className(HighlightSectionLight)
 
     language: 'javascript'
-    loader: HighlightUiLoader
 
     constructor(code:string){
         super()
-        this{}
-        this.code = code
+        this{ loader = HighlightUiLoader }
     }
 }

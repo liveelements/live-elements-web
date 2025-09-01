@@ -71,7 +71,7 @@ component AlertDoc{
     }
 
     Content{
-        H2S`Dropdown with list`
+        H2S`Alert error message`
     }
 
     Example{
