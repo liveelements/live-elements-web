@@ -36,6 +36,35 @@ component ToastWithMessage < DOMBehavior{
 }
 
 
+component DataDrivenToast < DOMBehavior{
+
+    static any[] use = [Toaster, PrimaryButton, Content]
+
+    domReady: (d) => {
+        const content = Div{
+            Toaster{ 
+                id: toaster 
+            }
+            PrimaryButton{
+                T`Open message.`
+                on click: (e) => {
+                    e.preventDefault()
+                    toaster.data = {
+                        toasts: toaster.data.toasts.concat({
+                            id: Toaster.createToastId(),
+                            title: 'Toast Message',
+                            content: 'Message Displayed Successfully.' 
+                        })
+                    }
+                }
+            }
+        }
+
+        content.expandTo(d)
+    }
+}
+
+
 component ToastWithSingleMessage < DOMBehavior{
 
     static any[] use = [Toaster, PrimaryButton, Content]

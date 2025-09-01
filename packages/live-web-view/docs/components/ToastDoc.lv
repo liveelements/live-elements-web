@@ -53,6 +53,43 @@ component ToastDoc{
   }
 
   Content{
+    H2S`Data Driven Toast`
+    P{
+    }
+  }
+
+  Example{
+    render: Example.RenderType.CSR
+    element: DataDrivenToast
+
+    ImportsSource```
+      import live-web.dom
+      import live-web-view.button
+      import live-web-view.overlay
+      import live-web-view.content
+    ```
+    UseSource```
+      static any[] use = [PrimaryButton, Toaster, Content]
+    ```
+    ContentSource```
+      Toaster{ 
+          id: toaster 
+      }
+      PrimaryButton{
+          T\`Open message.\`
+          on click: (e) => {
+              e.preventDefault()
+              toaster.data = toaster.data.concat({
+                  id: Toaster.createToastId(),
+                  title: 'Toast Message',
+                  content: 'Message Displayed Successfully.' 
+              })
+          }
+      }
+    ```
+  }
+
+  Content{
     H2S`Single Toast With Message`
     P{
       T`Toasts can either be overwritten by the next toast, or stacked on top of each other. The example above

@@ -1,10 +1,76 @@
 import live-web.dom
 import live-web.model
 import live-web.behavior
+import .content
 import live-elements-web-server.style
+
+component ToastMessage < Toast{
+    id: toastMessage
+    Object data
+    constructor(data:Object){
+        super()
+        this{ data = data }
+    }
+    children: [
+        ToastTitle{ T{ text: toastMessage.data.title } },
+        Content{
+            T{ text: toastMessage.data.content }
+        }
+    ]
+}
 
 component Toaster < Div{
     id: toaster
+
+    Object c: ToastMessage
+
+    static fn createToastId(){
+        return Date.now()
+    }
+
+    Object data= ({ toasts: [] })
+    set data(value:Object[]){
+        for ( let i = 0; i < value.toasts.length; ++i ){
+            if ( !value.toasts[i].hasOwnProperty('id') ){
+                throw new Error(`Toast data item missing id: ${JSON.stringify(value.toasts[i])}`)
+            }
+            const item = value.toasts[i]
+
+            const itemHandlers = this.__dataHandlers.find(h => h.id === item.id)
+            if ( !itemHandlers ){
+                const handler = { id: item.id }
+                this.__dataHandlers.push(handler)
+
+                const ToastComponent = this.c
+                const toast = ToastComponent.(item){}
+
+                this.children = this.children.concat([toast])
+        
+                if ( toast.dom ){
+                    setTimeout(() => {
+                        toast.classes = toast.classes.concat(['visible', 'transitions'])
+                        toast.style = { maxHeight: (toast.dom.scrollHeight + 32) + "px" }
+                    }, 10)
+                    setTimeout(() => { 
+                        toast.style = { maxHeight: "none" }
+                        toast.classes = toast.classes.filter(c => c !== 'transitions')
+                    }, 410)
+                }
+
+                setTimeout(() => {
+                    this.data.toasts = this.data.toasts.filter(d => d.id !== item.id)
+                    this.__dataHandlers = this.__dataHandlers.filter(h => h.id === item.id)
+                    if ( this.children.find(c => c === toast) ){
+                        toast.classes = toast.classes.filter(c => c !== 'visible').concat(['transitions'])
+                        setTimeout(() => { 
+                            this.children = this.children.filter(c => c !== toast)
+                        }, 400)
+                    }
+                }, Toaster.defaultTime)
+            }
+        }
+        BaseElement.setProperty(this, 'data', value)
+    }
 
     static number defaultTime = 4000
     static Object Position = {
@@ -16,6 +82,12 @@ component Toaster < Div{
         Toast,
         ScopedStyle{ src: './style/toaster.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
+
+    constructor(){
+        super()
+        this.__dataHandlers = []
+        this{}
+    }
 
     string position
     boolean single: false
