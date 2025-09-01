@@ -210,7 +210,7 @@ component WorkspaceView < Div{
         }
     }
 
-    FullScreen{ extraClasses: ['pad-topnav']
+    FullScreen{
 
         SplitLayout{
             id: workspaceSplitLayout

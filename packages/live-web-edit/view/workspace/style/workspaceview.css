@@ -11,7 +11,7 @@
 }
 
 &SplitLayout{
-    @apply h-[calc(100vh-3rem)];
+    @apply h-[calc(100vh-6rem)];
 }
 
 &SplitLayout &SplitPane&.flex-content{
