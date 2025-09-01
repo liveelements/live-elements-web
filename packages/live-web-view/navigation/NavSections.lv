@@ -15,14 +15,16 @@ component NavSections < Div{
                 NavBrand{
                     A{ href: link.href 
                         children: link.image 
-                            ? [Span{ on domChanged: () => { this.dom.innerHTML = link.image } }]
+                            ? link.image.startsWith('<')
+                                ? [Span{ on domChanged: () => { this.dom.innerHTML = link.image } }]
+                                : [Img{ src: link.image alt: link.label}]
                             : [T{ text: link.label } ]
                     }
                 }
             }
         } else if ( link.type === 'dropdown' ){
             return Li{ classes: ['dropdown-item']
-                    Dropdown{
+                Dropdown{
                     DropdownToggleButton{
                         children: link.image 
                             ? [Span{ on domChanged: () => { this.dom.innerHTML = link.image } }]
