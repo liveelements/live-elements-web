@@ -1,0 +1,3 @@
+component NavFixed{
+    classes: ['nav-fixed']
+}

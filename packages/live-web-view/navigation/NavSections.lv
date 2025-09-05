@@ -5,7 +5,7 @@ import .overlay
 component NavSections < Div{
     id: navSections
 
-    classes: ['nav-sections', 'cols-' + this.children.length]
+    classes: ['nav-sections', 'cols-' + this.children.length, 'cols-toggle-' + this.children.filter(c => c.classes.includes('nav-content-toggle')).length]
     Object data
     string active: ''
 

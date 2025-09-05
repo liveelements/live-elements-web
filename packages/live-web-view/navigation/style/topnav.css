@@ -1,9 +1,12 @@
 &TopNav{
-    @apply flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-mono-1 text-[#555] dark:text-mono-e md:items-center;
+    @apply relative flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-mono-1 text-[#555] dark:text-mono-e md:items-center;
     @apply border-b border-mono-c dark:border-mono-4;
 }
 &TopNav&.position-static{
     @apply static;
+}
+&TopNav .nav-fixed{
+    @apply fixed w-full h-12;
 }
 &TopNav .nav-content{
     @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
@@ -27,12 +30,19 @@
     @apply w-full grid;
 }
 &TopNav .nav-sections.cols-2{
-    @apply flex justify-between;
+    @apply grid;
+    grid-template-columns: 1fr auto;
+}
+&TopNav .nav-sections.cols-2.cols-toggle-1{
+    @apply block md:grid;
 }
 &TopNav .nav-sections.cols-3{
     /* @apply grid grid-cols-3; */
     display: grid;
     grid-template-columns: 1fr auto 1fr;;
+}
+&TopNav .nav-sections.cols-3.cols-toggle-1{
+    @apply grid-cols-2 md:grid-cols-3;
 }
 &TopNav .nav-sections.cols-3 .nav-content:last-child{
     justify-self: end;
