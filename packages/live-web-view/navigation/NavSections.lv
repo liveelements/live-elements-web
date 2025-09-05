@@ -43,7 +43,7 @@ component NavSections < Div{
             }
         } else {
             return Li{ 
-                A{ href: link.href classes: [active === link.href ? 'active' : ''] 
+                A{ href: link.href classes: [active && link.href.endsWith(active) ? 'active' : ''] 
                     T{ text: link.label }
                 }
             }

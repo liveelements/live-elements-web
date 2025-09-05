@@ -5,9 +5,14 @@
 &FullScreen&.vh-center{
     @apply items-center justify-center;
 }
-
 &FullScreen&.pad-topnav{
     @apply pt-[3rem];
+}
+&FullScreen&.top-space-nav{
+    @apply h-[calc(100vh-3rem)];
+}
+&FullScreen&.top-space-10{
+    @apply h-[calc(100vh-2.5rem)];
 }
 
 &FullScreen .responsive {
