@@ -22,6 +22,10 @@ component NavSections < Div{
                     }
                 }
             }
+        } else if ( link.type === 'toggle' ){
+            return Li{
+                NavToggleButton{}
+            }
         } else if ( link.type === 'dropdown' ){
             return Li{ classes: ['dropdown-item']
                 Dropdown{
@@ -52,7 +56,8 @@ component NavSections < Div{
 
     static fn createFromData(data:Object, active:string){
         return data.map(d => {
-            return NavContent{ 
+            const C = d.toggle ? NavContentToggle : NavContent
+            return C{ 
                 Ul{
                     children: d.links.map(link => {
                         return NavSections.createFromLink(link, active)

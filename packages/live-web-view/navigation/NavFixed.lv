@@ -1,3 +1,5 @@
-component NavFixed{
+import live-web.dom
+
+component NavFixed < Div{
     classes: ['nav-fixed']
 }

@@ -1,5 +1,5 @@
 &Toaster{
-    @apply bottom-0 right-0 left-0 sm:left-auto  h-auto block fixed z-10 overflow-y-hidden z-[10004] mx-4 my-4;
+    @apply bottom-0 right-0 left-0 sm:left-auto h-auto block fixed z-10 overflow-y-hidden z-[10004] mx-4 my-4;
     @apply flex flex-col;
 }
 &Toaster&.pos-absolute{

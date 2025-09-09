@@ -28,7 +28,7 @@ component Tooltip < Div{
                 let timeoutTime = parseInt(current.dataset.timeout)
                 let timeout = null
 
-                current.addEventListener('mouseenter', function () {
+                current.addEventListener('pointerenter', function (e){
                     const rect = d.getBoundingClientRect()
                     const midX = rect.left + rect.width  / 2
                     const midY = rect.top  + rect.height / 2
@@ -64,7 +64,7 @@ component Tooltip < Div{
                     }, 500)
                 })
 
-                current.addEventListener('mouseleave', function () {
+                current.addEventListener('pointerleave', function () {
                     window.clearTimeout(timeout)
                     current.classList.remove('active')
                 })
