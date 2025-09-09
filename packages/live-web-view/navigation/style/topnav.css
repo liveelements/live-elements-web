@@ -2,6 +2,9 @@
     @apply relative flex flex-col justify-between w-full min-h-[3rem] bg-white dark:bg-mono-1 text-[#555] dark:text-mono-e md:items-center;
     @apply border-b border-mono-c dark:border-mono-4;
 }
+&TopNav&.transparent{
+    @apply bg-[transparent] border-0;
+}
 &TopNav&.position-static{
     @apply static;
 }
@@ -9,7 +12,7 @@
     @apply fixed w-full h-12;
 }
 &TopNav .nav-content{
-    @apply flex items-center h-full px-4 min-h-[3rem] space-x-1 justify-between md:justify-start;
+    @apply flex items-center h-full px-2 min-h-[3rem] space-x-1 justify-between md:justify-start;
 }
 &TopNav .nav-brand {
     @apply text-base font-semibold h-full flex flex-col justify-center;
@@ -58,7 +61,7 @@
     @apply hidden md:flex items-center;
 }
 &TopNav ul{
-    @apply flex flex-col px-3 h-full;
+    @apply flex flex-col px-3 h-[3rem];
 }
 &TopNav ul li{
     @apply list-none h-full;
