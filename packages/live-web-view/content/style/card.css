@@ -35,7 +35,7 @@ section p{
     @apply py-2;
 }
 button{
-    @apply text-lg px-4 py-2 text-mono-1 dark:text-mono-f transition-colors duration-300 transform border border-mono-b;
-    @apply dark:border-mono-4 rounded hover:bg-mono-e dark:hover:bg-mono-4 text-lg;
+    @apply px-4 py-2 text-mono-1 dark:text-mono-f transition-colors duration-300 transform border border-mono-b;
+    @apply dark:border-mono-4 rounded hover:bg-mono-e dark:hover:bg-mono-4 text-base;
     @apply dark:bg-mono-3 dark:hover:bg-mono-4;
 }

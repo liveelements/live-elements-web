@@ -22,16 +22,18 @@ component NavigationDoc{
     Example{
         render: Example.RenderType.CSRSSR
         element: CardDisplay{
-            TopNav{ position: 'static'
-                NavContent{
-                    NavBrand{ A{ href: `#` T`Brand` } }
-                    NavToggleButton{}
-                }
-                NavContentToggle{ 
-                    Ul{ 
-                        Li{ A{ href: `#` T`Home` } }
-                        Li{ A{ href: `#` T`Install` } }
-                        Li{ A{ href: `#` T`Documentation` } }
+            TopNav{ 
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: `#` T`Brand` } }
+                        NavToggleButton{}
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: `#` T`Home` } }
+                            Li{ A{ href: `#` T`Install` } }
+                            Li{ A{ href: `#` T`Documentation` } }
+                        }
                     }
                 }
             }
@@ -45,16 +47,80 @@ component NavigationDoc{
             static any[] use = [TopNav]
         ```
         ContentSource```
-            TopNav{ position: 'static'
-                NavContent{
-                    NavBrand{ A{ href: \`#\` T\`Brand\` } }
-                    NavToggleButton{}
+            TopNav{
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                        NavToggleButton{}
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: \`#\` T\`Home\` } }
+                            Li{ A{ href: \`#\` T\`Install\` } }
+                            Li{ A{ href: \`#\` T\`Documentation\` } }
+                        }
+                    }
                 }
-                NavContentToggle{ 
-                    Ul{ 
-                        Li{ A{ href: \`#\` T\`Home\` } }
-                        Li{ A{ href: \`#\` T\`Install\` } }
-                        Li{ A{ href: \`#\` T\`Documentation\` } }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Center Column`
+        P{
+            T`Navigation menu with 3 sections.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TopNav{
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: `#` T`Brand` } }
+                        NavToggleButton{}
+                    }
+                    NavContentToggle{
+                        Ul{
+                            Li{ A{ href: '#' T`Home` }}
+                            Li{ A{ href: '#' T`Documentation` }}
+                        }
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: `#` T`Source` } }
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [TopNav]
+        ```
+        ContentSource```
+            TopNav{ 
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                        NavToggleButton{}
+                    }
+                    NavContentWide{
+                        Ul{
+                            Li{ A{ href: \'#\' T\`Wide Link\` }}
+                        }
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: \`#\` T\`Home\` } }
+                            Li{ A{ href: \`#\` T\`Documentation\` } }
+                        }
                     }
                 }
             }
@@ -71,20 +137,22 @@ component NavigationDoc{
     Example{
         render: Example.RenderType.CSRSSR
         element: CardDisplay{
-            TopNav{ position: 'static'
-                NavContent{
-                    NavBrand{ A{ href: `#` T`Brand` } }
-                    NavToggleButton{}
-                }
-                NavContentWide{
-                    Ul{
-                        Li{ A{ href: '#' T`Wide Screen Link` }}
+            TopNav{
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: `#` T`Brand` } }
+                        NavToggleButton{}
                     }
-                }
-                NavContentToggle{ 
-                    Ul{ 
-                        Li{ A{ href: `#` T`Home` } }
-                        Li{ A{ href: `#` T`Documentation` } }
+                    NavContentWide{
+                        Ul{
+                            Li{ A{ href: '#' T`Wide` }}
+                        }
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: `#` T`Home` } }
+                            Li{ A{ href: `#` T`Documentation` } }
+                        }
                     }
                 }
             }
@@ -98,20 +166,169 @@ component NavigationDoc{
             static any[] use = [TopNav]
         ```
         ContentSource```
-            TopNav{ position: 'static'
-                NavContent{
-                    NavBrand{ A{ href: \`#\` T\`Brand\` } }
-                    NavToggleButton{}
-                }
-                NavContentWide{
-                    Ul{
-                        Li{ A{ href: \'#\' T\`Wide Screen Link\` }}
+            TopNav{ 
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                        NavToggleButton{}
+                    }
+                    NavContentWide{
+                        Ul{
+                            Li{ A{ href: \'#\' T\`Wide Link\` }}
+                        }
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: \`#\` T\`Home\` } }
+                            Li{ A{ href: \`#\` T\`Documentation\` } }
+                        }
                     }
                 }
-                NavContentToggle{ 
-                    Ul{ 
-                        Li{ A{ href: \`#\` T\`Home\` } }
-                        Li{ A{ href: \`#\` T\`Documentation\` } }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Navigation from data`
+        P{
+            Code`TopNav`T` can be created from data received on the server side.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TopNav{
+                NavSections{
+                    data: [
+                        {
+                            links: [
+                                { type: 'brand', href: '#', label: 'Brand' },
+                                { type: 'toggle' }
+                            ]
+                        },
+                        {
+                            toggle: true,
+                            links: [
+                                { href: '#', label: 'Home' },
+                                { href: '#', label: 'About' }
+                            ]
+                        },
+                        {
+                            toggle: true,
+                            links: [
+                                { href: '#', label: 'Source' }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [TopNav]
+        ```
+        ContentSource```
+            TopNav{ 
+                NavSections{
+                    data: [
+                        {
+                            links: [
+                                { type: 'brand', href: '#', label: 'Brand' },
+                                { type: 'toggle' }
+                            ]
+                        },
+                        {
+                            toggle: true,
+                            links: [
+                                { href: '#', label: 'Home' },
+                                { href: '#', label: 'About' }
+                            ]
+                        },
+                        {
+                            toggle: true,
+                            links: [
+                                { href: '#', label: 'Source' }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Navigation Fixed`
+        P{
+            T`You can create a navigation fixed on top of the screen using the `Code`NavFixed`T` component:`
+        }
+    }
+
+    Example{
+        ContentSource```
+            TopNav{ 
+              NavFixed{
+                NavSections{
+                    // ...
+                }
+              }
+            }    
+        ```
+    }
+
+
+    Content{
+        H2S`Navigation With Secondary Menu`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TopNav{ 
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: `#` T`Brand` } }
+                        NavToggleButton{}
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: `#` T`Home` } }
+                            Li{ A{ classes: ['dropdown'] href: '#' T`Install` } 
+                                Ul{ classes: ['secondary', 'right']
+                                    Li{ A{ href: '#' T`Link #1` }} 
+                                    Li{ A{ href: '#' T`Link #2` }}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [TopNav]
+        ```
+        ContentSource```
+            TopNav{
+                NavSections{
+                    NavContent{
+                        NavBrand{ A{ href: \`#\` T\`Brand\` } }
+                        NavToggleButton{}
+                    }
+                    NavContentToggle{ 
+                        Ul{ 
+                            Li{ A{ href: \`#\` T\`Home\` } }
+                            Li{ A{ href: \`#\` T\`Install\` } }
+                            Li{ A{ href: \`#\` T\`Documentation\` } }
+                        }
                     }
                 }
             }

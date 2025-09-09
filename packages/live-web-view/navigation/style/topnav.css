@@ -39,10 +39,13 @@
 &TopNav .nav-sections.cols-3{
     /* @apply grid grid-cols-3; */
     display: grid;
-    grid-template-columns: 1fr auto 1fr;;
+    grid-template-columns: 1fr auto 1fr;
 }
-&TopNav .nav-sections.cols-3.cols-toggle-1{
-    @apply grid-cols-2 md:grid-cols-3;
+&TopNav .nav-sections.cols-3.cols-toggle-1, &TopNav .nav-sections.cols-3.cols-toggle-2{
+    @apply block md:grid;
+}
+&TopNav .nav-sections.cols-3.cols-toggle-2 ul{
+    @apply w-full md:w-auto justify-between;
 }
 &TopNav .nav-sections.cols-3 .nav-content:last-child{
     justify-self: end;
@@ -51,20 +54,23 @@
     justify-self: center;
 }
 &TopNav .nav-sections.cols-3 .nav-content:first-child{
-    justify-self: start;
+    @apply md:justify-self-start;
 }
 
 &TopNav .nav-content-wide{
-    @apply hidden md:flex items-center;
+    @apply hidden md:flex justify-center items-center;
 }
 &TopNav ul{
-    @apply flex flex-col px-3 h-full;
+    @apply flex flex-row md:h-[3rem];
+}
+&TopNav .nav-content-toggle ul{
+    @apply flex-col md:flex-row;
 }
 &TopNav ul li{
-    @apply list-none h-full;
+    @apply relative list-none h-full;
 }
 &TopNav ul li a{
-    @apply relative flex flex-col justify-center text-base font-sans text-mono-1 dark:text-mono-f px-2 no-underline w-full inline-block rounded-sm h-full;
+    @apply relative flex flex-col justify-center text-base font-sans text-mono-1 dark:text-mono-f py-2 md:py-0 px-2 no-underline w-full inline-block rounded-sm h-full;
 }
 &TopNav ul li a::before{
     content: '';
@@ -95,13 +101,17 @@
     @apply w-40;
 }
 &TopNav .nav-content ul.secondary{
-    @apply flex-col;
+    pointer-events: auto;
+    @apply h-auto md:hidden md:opacity-0 md:absolute md:bg-mono-1 w-[220px] md:right-[-10px] md:rounded-b-[10px] pl-0 md:pl-0 md:border border-mono-4 py-1 z-[10000];
+}
+&TopNav .nav-content ul li:hover ul.secondary{
+  @apply md:block md:opacity-[1];
 }
 &TopNav .nav-content ul.secondary li{
     @apply mx-0;
 }
 &TopNav .nav-content ul.secondary li a{
-    @apply py-2 px-0;
+    @apply py-2 px-2;
 }
 
 @screen md {
@@ -110,6 +120,12 @@
     }
     &TopNav .navbar {
         @apply flex;
+    }
+    ul li a.dropdown{
+        @apply pr-4;
+        background-repeat: no-repeat;
+        background-position: right 55%;
+        background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2015%208%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M-3.02339e-08%201.19167C-2.25491e-08%201.01586%200.0769949%200.840052%200.241981%200.701255C0.560955%200.432914%201.08891%200.432914%201.40789%200.701255L7.50139%205.82749L13.5949%200.701256C13.9138%200.432915%2014.4418%200.432915%2014.7608%200.701256C15.0797%200.969597%2015.0797%201.41375%2014.7608%201.68209L8.08434%207.29874C7.76536%207.56709%207.23741%207.56709%206.91843%207.29874L0.241981%201.68209C0.0769949%201.54329%20-3.79188e-08%201.36748%20-3.02339e-08%201.19167Z%22%20fill%3D%22white%22/%3E%3C/svg%3E");
     }
     &TopNav .nav-toggle-button {
         @apply hidden;

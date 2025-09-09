@@ -1,12 +1,12 @@
 &Toast{
     @apply px-6 py-0 text-mono-1 dark:text-mono-f bg-white dark:bg-mono-1;
-    @apply opacity-0 border border-mono-c dark:border-mono-3 rounded-xl overflow-y-hidden max-h-0;
+    @apply opacity-0 border-0 border-mono-c dark:border-mono-3 rounded-xl overflow-y-hidden max-h-0;
 }
 &Toast&.transitions{
     transition: opacity 0.4s, max-height 0.4s, padding 0.4s, margin 0.4s;
 }
 &Toast&.visible{
-    @apply opacity-[1] py-[16px] mt-4;
+    @apply opacity-[1] py-[16px] mt-4 border;
 }
 &ToastTitle{
     @apply text-lg font-medium;
