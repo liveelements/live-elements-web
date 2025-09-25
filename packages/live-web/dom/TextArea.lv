@@ -19,7 +19,7 @@ component TextArea < DOMElement{
     }
     string value: ''
     on valueChanged: () => {
-        this.children = T.(this.value){}
+        this.children = [T.(this.value){}]
         if ( this.dom )
             this.dom.value = this.value
         this.currentValue = this.value
