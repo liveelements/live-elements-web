@@ -11,7 +11,8 @@ input[type="checkbox"]{
 
 }
 input[type="checkbox"]:checked + .checkbox-view::after{  
-    @apply text-base font-mono w-full text-center text-mono-3 dark:text-mono-c;
+    @apply text-base font-mono w-full text-center text-mono-3 dark:text-mono-c top-[50%];
+    transform: translateY(-50%);
     content: "✔";
     position: absolute;
 } 

@@ -4,6 +4,19 @@ import live-elements-web-server.view
 import live-elements-web-server.style
 
 component FormGroup < Div{
+    static Object Layout = {
+        Row: 0,
+        Column: 1,
+        Center: 2
+    }
+    Object layout = FormGroup.Layout.Col
+
     string[] extraClasses: []
-    classes: this.extraClasses.concat(ScopedStyle.className(FormGroup))
+    classes: this.extraClasses.concat(ScopedStyle.className(FormGroup)).concat(
+        this.layout === FormGroup.Layout.Row 
+            ? ['layout-row'] 
+            : this.layout === FormGroup.Layout.Center
+                ? ['layout-center']
+                : []
+    )
 }

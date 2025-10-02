@@ -3,13 +3,26 @@
 }
 
 &FormContainer &FormGroup{
-    @apply w-full my-3;
+    @apply w-full my-3 flex flex-col items-start gap-1;
 }
-
+&FormContainer &FormGroup&.layout-row{
+    @apply flex flex-row items-center gap-4;
+}
+&FormContainer &FormGroup&.layout-center{
+    @apply flex flex-col items-center;
+}
+&FormContainer &FormGroup&.layout-row > label{
+    @apply w-32 text-right;
+}
+&FormContainer &FormGroup&.layout-row > *:last-child{
+    @apply flex-1;
+}
+&FormContainer label{
+    @apply font-sans;
+}
 &FormContainer &TextInput, &FormContainer textarea{
-    @apply dark:text-mono-f dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 mt-2 border border-mono-d dark:border-mono-3 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
+    @apply dark:text-mono-f dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 border border-mono-d dark:border-mono-4 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
 }
-
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
     @apply text-mono-9 dark:text-mono-f;
 }
@@ -27,7 +40,7 @@
 }
 
 &FormContainer &SubmitButton{
-    @apply text-base font-sans px-4 py-1 text-mono-1 dark:text-mono-f transition-colors duration-300 transform bg-mono-d dark:bg-mono-3 border border-mono-b dark:border-mono-5 rounded hover:bg-mono-e dark:hover:bg-mono-5;
+    @apply text-base font-sans px-4 py-1 text-mono-1 dark:text-mono-f transition-colors duration-300 transform bg-mono-d dark:bg-mono-4 border border-mono-b dark:border-mono-5 rounded hover:bg-mono-e dark:hover:bg-mono-5;
 }
 &FormContainer .text-color-button{
     @apply text-mono-1 dark:text-mono-f;

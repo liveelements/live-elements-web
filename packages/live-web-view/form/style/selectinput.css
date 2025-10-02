@@ -1,0 +1,63 @@
+/* Wrapper */
+&SelectInput{
+  @apply relative inline-block w-56 text-sm; /* set width as needed */
+}
+
+/* Keep real <select> for a11y & forms; hide visually */
+&SelectInput select{
+  @apply sr-only;
+}
+
+/* The clickable opener */
+&SelectInput .select-opener{
+  @apply flex items-center justify-between w-full h-10 rounded border px-3
+         bg-white dark:bg-mono-2 border-mono-d dark:border-mono-3
+         text-mono-9 dark:text-mono-c cursor-pointer select-none
+         whitespace-nowrap overflow-hidden text-ellipsis transition;
+}
+
+/* Caret icon */
+&SelectInput .select-caret{
+  @apply w-4 h-4 ml-2 shrink-0 transition-transform;
+}
+
+/* Focus ring when the hidden select or opener is focused */
+&SelectInput:focus-within .select-opener{
+  @apply ring-2 ring-mono-3 border-mono-3;
+}
+
+&SelectInput .select-panel{
+  @apply hidden;
+}
+
+&SelectInput .select-panel{
+  @apply absolute left-0 right-0 mt-1 z-50 hidden
+         rounded border border-mono-d dark:border-mono-3
+         bg-white dark:bg-mono-2 shadow-lg
+         max-h-64 overflow-auto overscroll-contain;
+}
+
+&SelectInput&.open .select-panel{
+  @apply block;
+}
+&SelectInput&.open .select-caret{
+  @apply rotate-180;
+}
+
+/* Options */
+&SelectInput .select-panel li{
+  @apply px-3 py-2 cursor-pointer text-mono-9 dark:text-mono-c;
+}
+&SelectInput .select-panel li:hover,
+&SelectInput .select-panel li.active{
+  @apply bg-mono-1/70 dark:bg-mono-3/60;
+}
+&SelectInput .select-panel li.selected{
+  @apply font-medium;
+}
+
+/* Subtle transitions */
+&SelectInput .select-opener,
+&SelectInput .select-panel{
+  transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease, opacity .15s ease;
+}

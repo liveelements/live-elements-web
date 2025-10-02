@@ -1,0 +1,144 @@
+import live-web.dom
+import live-web.behavior
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component SelectInput < Div{
+    id: selectInput
+
+    static any[] use = [
+        ScopedStyle{ src: './style/selectinput.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(SelectInput)])
+
+    string placeholder: 'Select ...'
+    string name: ''
+    number tabIndex: 0
+    string controlId
+    Object[] options: []
+
+    Select{ name: selectInput.name props: ({ tabIndex: selectInput.tabIndex }) glid: selectInput.controlId
+        children: []
+            .concat(selectInput.placeholder 
+                ? [Option{ value: '' props = { disabled: true, selected: true, hidden: true} T{ text: selectInput.placeholder } }]
+                : [])
+            .concat(selectInput.options.map(option => {
+                return Option{ value: option.value T{ text: option.label } }
+            }))
+    }
+
+    Span{ classes: ['select-opener']
+        T{ text: selectInput.placeholder }
+        Svg{ 
+            classes: ['select-caret']
+            props = {viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'}
+            Path{ 
+            props = {d: 'M6 9l6 6 6-6', stroke: {width: '2',linecap: 'round',linejoin: 'round'}}
+            }
+        }
+    }
+
+    Ul{ classes: ['select-panel']
+        children: selectInput.options.map(option => {
+            return Li{ classes: ['select-panel-item'] props = ({ data: { value: option.value } }) T{ text: option.label} }
+        })
+    }
+
+    DOMBehavior{
+        domReady: (d) => {
+            const sel = d.querySelector('select')
+            const opener = d.querySelector('.select-opener')
+            const panel = d.querySelector('.select-panel')
+            const items = Array.from(panel.querySelectorAll('li'))
+
+            opener.setAttribute('tabindex', sel.disabled ? '-1' : '0');
+
+            function setOpenerText(txt){
+                const caret = opener.querySelector('.select-caret');
+                if (caret){
+                    if (!opener.firstChild || opener.firstChild.nodeType !== window.Node.TEXT_NODE) {
+                        opener.insertBefore(document.createTextNode(''), caret);
+                    }
+                    opener.firstChild.nodeValue = txt
+                } else {
+                    opener.textContent = txt
+                }
+            }
+
+            function syncFromSelect(){
+                const opt = sel.options[sel.selectedIndex]
+                setOpenerText(opt && opt.value ? opt.text : 'Select...')
+                items.forEach(li => li.classList.toggle('selected', li.dataset.value === sel.value))
+            }
+
+            function open(){ 
+                if (!sel.disabled){ 
+                    d.classList.add('open'); 
+                    opener.focus(); 
+                } 
+            }
+            function close(){ 
+                d.classList.remove('open'); 
+                panel.querySelectorAll('.active').forEach(a=>a.classList.remove('active')); 
+            }
+
+            function choose(val){
+                if (val !== sel.value){
+                    sel.value = val
+                    sel.dispatchEvent(new window.Event('change', { bubbles: true }))
+                }
+                syncFromSelect()
+                close()
+            }
+
+            syncFromSelect()
+
+            opener.addEventListener('click', () => {
+                (d.classList.contains('open') ? close() : open())
+            })
+            items.forEach(li => li.addEventListener('mousedown', (e) => {
+                e.preventDefault()
+                choose(li.dataset.value)
+            }))
+
+            opener.addEventListener('focusout', (e) => {
+                close()
+            })
+
+            opener.addEventListener('keydown', (e) => {
+                const openKeys = ['Enter', ' ']
+                if (e.key === 'Escape') { 
+                    close() 
+                }
+                if (d.classList.contains('open')) {
+                    const current = panel.querySelector('.active') || panel.querySelector('.selected')
+                    const idx = current ? items.indexOf(current) : -1
+                    if (e.key === 'ArrowDown') { 
+                        e.preventDefault()
+                        items.forEach(i => i.classList.remove('active'))
+                        items[Math.min(idx + 1, items.length-1)]?.classList.add('active')
+                    }
+                    if (e.key === 'ArrowUp'){ 
+                        e.preventDefault() 
+                        items.forEach(i => i.classList.remove('active'))
+                        items[Math.max(idx - 1, 0)]?.classList.add('active')
+                    }
+                    if (openKeys.includes(e.key) && panel.querySelector('.active')){ 
+                        e.preventDefault()
+                        choose(panel.querySelector('.active').dataset.value)
+                    }
+                } else {
+                    if (openKeys.includes(e.key)) { 
+                        e.preventDefault()
+                        d.classList.contains('open') ? close() : open() 
+                    }
+                }
+            })
+        }
+    }
+
+}
