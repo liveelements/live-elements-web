@@ -324,8 +324,6 @@ component FormContainerDoc{
         element: FormContainer{
             FormGroup{
                 SelectExtendedInput{
-                    name = 'time'
-                    placeholder = 'Time ...'
                     options = ({ 
                         choices: [
                             {
@@ -374,8 +372,6 @@ component FormContainerDoc{
             FormContainer{
                 FormGroup{
                     SelectExtendedInput{
-                        name = 'time'
-                        placeholder = 'Time ...'
                         options = ({ 
                             choices: [
                                 {
