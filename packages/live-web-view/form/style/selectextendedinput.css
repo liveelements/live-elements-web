@@ -1,0 +1,67 @@
+&SelectExtendedInput{
+    @apply block min-w-64;
+}
+select{
+    @apply dark:text-mono-f dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 border border-mono-d dark:border-mono-3 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
+}
+.choices {
+  @apply dark:text-mono-f;
+}
+
+.choices[data-type*=select-one] .choices__inner{
+  @apply py-0;
+}
+
+.choices[data-type*=select-one] .choices__inner {
+  @apply dark:bg-mono-2 dark:border dark:border-mono-4 dark:text-mono-e rounded-[6px] min-h-[40px];
+}
+
+.choices[data-type*=select-one] .choices__list--single{
+  @apply px-0 py-0;
+}
+
+.choices[data-type*=select-one] .choices__list--single .choices__item {
+  @apply dark:text-mono-e px-1 py-2 font-sans;
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted, 
+.c-selectextendedinput .choices__list[aria-expanded] .choices__item--selectable.is-highlighted{
+  @apply dark:bg-mono-5;
+}
+
+.choices[data-type*=select-one] .choices__list--dropdown {
+  @apply dark:bg-mono-2 dark:border dark:border-mono-6 rounded-[6px] dark:shadow-[0_4px_12px_rgba(0,0,0,0.6)];
+}
+
+.choices[data-type*=select-one] .choices__input--cloned {
+  @apply dark:bg-mono-1 dark:border dark:border-mono-6 dark:text-mono-e py-[6px] px-[8px] outline-none;
+}
+
+.choices[data-type*=select-one] .choices__list--dropdown .choices__item {
+  @apply dark:text-mono-e py-2 px-[10px] cursor-pointer;
+}
+
+.choices[data-type*=select-one] .choices__list--dropdown .choices__item--highlighted {
+  @apply dark:bg-mono-3 dark:text-mono-f;
+}
+
+.choices[data-type*=select-one] .choices__item.is-disabled {
+  @apply dark:text-mono-c cursor-not-allowed;
+}
+
+.choices[data-type*=select-one] .choices__list--dropdown .choices__notice {
+  @apply dark:text-mono-9 py-2 px-[10px] italic dark:bg-mono-3 dark:border-t dark:border-dashed dark:border-mono-6;
+}
+
+.choices__heading{
+  @apply font-sans text-base font-[500] dark:text-mono-a border-b dark:border-mono-5 tracking-normal;
+}
+
+.choices[data-type*=select-one] .is-focused .choices__inner {
+  /* kept brand focus blue color; prepend dark if you only want it in dark mode */
+  @apply dark:border-[#3b82f6] dark:shadow-[0_0_0_2px_rgba(59,130,246,0.3)];
+}
+
+.choices[data-type*=select-one] .is-disabled .choices__inner {
+  @apply dark:bg-mono-2 dark:text-mono-8 dark:border-mono-7;
+}

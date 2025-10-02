@@ -12,6 +12,8 @@ component FormContainer < Form{
         TextInput,
         SubmitButton,
         Checkbox,
+        Switch,
+        SelectInput,
         ScopedStyle{ src: './style/form.css' process: '../style/CSSProcessor.lv' }, 
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
     ]

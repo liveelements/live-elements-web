@@ -17,6 +17,10 @@ component FormContainerDocPage < DocPageView{
 
     static any[] use = DocPageView.usedComponents.concat([
         FormContainer,
+        SelectInput,
+        SelectExtendedInput,
+        PasswordInput,
+        DateTimeInput,
         ScopedStyle{ src: '../../styles/views.css' process: 'live-web-view/style/CSSProcessor.lv' },
     ])
     active: '/forms'

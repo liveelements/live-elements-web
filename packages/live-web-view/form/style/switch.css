@@ -1,0 +1,48 @@
+&Switch{
+  @apply relative inline-flex items-center align-middle;
+  --sw-w: 2.2rem;
+  --sw-h: 1.2rem;
+  --knob: 1rem;
+  --pad : 0.125rem;
+}
+&Switch > input[type="checkbox"]{
+  @apply absolute inset-0 z-[10] cursor-pointer opacity-0;
+}
+.switch-view{
+  @apply relative inline-block rounded-full select-none;
+  width: var(--sw-w);
+  height: var(--sw-h);
+  @apply bg-mono-d dark:bg-mono-3;
+  @apply transition-colors duration-200 ease-out;
+  @apply ring-0 outline-none;
+}
+&Switch > input[type="checkbox"]:focus-visible + .switch-view{
+  @apply ring-2 ring-offset-2 ring-neutral-400 dark:ring-mono-4 ring-offset-white dark:ring-offset-mono-1;
+}
+&Switch > input[type="checkbox"]:disabled{
+  @apply cursor-not-allowed;
+}
+&Switch > input[type="checkbox"]:disabled + .switch-view{
+  @apply opacity-60;
+}
+.switch-view::after{
+  content: "";
+  @apply absolute rounded-full shadow;
+    @apply bg-mono-2 dark:bg-mono-e;
+  width: var(--knob);
+  height: var(--knob);
+  left: var(--pad);
+  top:  calc((var(--sw-h) - var(--knob)) / 2);
+  @apply transition-transform duration-200 ease-out;
+  transform: translateX(0);
+}
+&Switch > input[type="checkbox"]:checked + .switch-view{
+  @apply bg-mono-2 dark:bg-mono-e;
+}
+&Switch > input[type="checkbox"]:checked + .switch-view::after{
+    @apply bg-mono-e dark:bg-mono-2;
+  transform: translateX(calc(var(--sw-w) - var(--knob) - (var(--pad) * 2)));
+}
+@media (prefers-reduced-motion: reduce){
+  .switch-view, .switch-view::after{ transition: none; }
+}

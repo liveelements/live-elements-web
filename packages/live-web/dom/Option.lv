@@ -15,4 +15,5 @@ component Option < DOMElement{
             this.deleteOwnAttribute('selected')
             this.attributesChanged.emit()
         }
+    }
 }

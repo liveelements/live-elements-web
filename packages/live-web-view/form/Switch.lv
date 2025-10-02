@@ -1,0 +1,26 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component Switch < Span{
+    id: cbx
+
+    string indicatorId: null
+    string name
+    boolean required
+    DOMElement indicator: Input{ glid: cbx.indicatorId ? cbx.indicatorId : null type = 'checkbox' name: cbx.name required: cbx.required }
+
+    static any[] use = [
+        ScopedStyle{ src: './style/switch.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Switch)])
+
+    children: [
+        this.indicator,
+        Span{ classes: ['switch-view'] }
+    ]
+}

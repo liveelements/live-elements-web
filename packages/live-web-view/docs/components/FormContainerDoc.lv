@@ -18,12 +18,12 @@ component FormContainerDoc{
         render: Example.RenderType.CSRSSR
         element: FormContainer{
             FormGroup{
-                Label{ T`Email` }
-                TextInput{ type='email' placeholder="Email Address" name="email" }
+                Label{ htmlFor: 'name' T`Name` }
+                TextInput{ type='text' placeholder="Name" name="name" }
             }
             FormGroup{
-                Label{ T`Password` }
-                TextInput{ type='password' placeholder="Password" name="password" }
+                Label{ htmlFor: 'email' T`Email` }
+                TextInput{ type='email' placeholder="Email Address" name="email" }
             }
             FormGroup{
                 SubmitButton{ T`Submit` }
@@ -41,15 +41,54 @@ component FormContainerDoc{
         ContentSource```
             FormContainer{
                 FormGroup{
-                    Label{ T\`Email\` }
+                    Label{ htmlFor: 'name' T\`Name\` }
+                    TextInput{ type='text' placeholder=\"Name\" name=\"name\" }
+                }
+                FormGroup{
+                    Label{ htmlFor: 'email' T\`Email\` }
                     TextInput{ type='email' placeholder='Email Address' name='email' }
                 }
                 FormGroup{
-                    Label{ T\`Password\` }
-                    TextInput{ type='password' placeholder='Password' name='password' }
-                }
-                FormGroup{
                     SubmitButton{ T\`Submit\` }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Single line form groups`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{ layout: FormGroup.Layout.Row
+                Label{ htmlFor: 'name' T`Name` }
+                TextInput{ type='text' placeholder="Name" name="name" }
+            }
+            FormGroup{ layout: FormGroup.Layout.Row
+                Label{ T`Email` }
+                TextInput{ type='email' placeholder="Email Address" name="email" }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{ layout: FormGroup.Layout.Row
+                    Label{ htmlFor: 'email' T\`Email\` }
+                    TextInput{ type='email' placeholder='Email Address' name='email' }
+                }
+                FormGroup{ layout: FormGroup.Layout.Row
+                    Label{ htmlFor: 'password' T\`Password\` }
+                    TextInput{ type='password' placeholder='Password' name='password' }
                 }
             }
         ```
@@ -105,6 +144,392 @@ component FormContainerDoc{
                 }
                 FormGroup{
                     SubmitButton{ T\`Submit\` }
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H2S`Form Controls`
+
+        H3S`Text Input`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                TextInput{ type='text' placeholder="Text Input" name="input" }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{
+                    TextInput{ type='text' placeholder=\"Text Input\" name=\"input\" }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H3S`Text Area`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                TextArea{ placeholder="Text Area" name="input" }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{
+                    TextArea{ placeholder=\"Text Area\" name=\"input\" }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H3S`Checkbox`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{ layout: FormGroup.Layout.Row
+                Label{ htmlFor: 'checkbox' T`Check Box` }
+                Checkbox{ name='checkbox' }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{ layout: FormGroup.Layout.Row
+                    Label{ htmlFor: 'checkbox' T\`Check Box\` }
+                    Checkbox{ name='checkbox' }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H3S`Switch`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{ layout: FormGroup.Layout.Row
+                Label{ htmlFor: 'switch' T`On/Off Switch` }
+                Switch{ name='switch' }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{ layout: FormGroup.Layout.Row
+                    Label{ htmlFor: 'checkbox' T\`Check Box\` }
+                    Checkbox{ name='checkbox' }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H3S`Select`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                SelectInput{ 
+                    placeholder='Select ...' 
+                    name='select'
+                    options = [
+                        { value: 'chocolate', label: 'Chocolate' },
+                        { value: 'vanilla', label: 'Vanilla' },
+                        { value: 'strawberry', label: 'Strawberry' }
+                    ]
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer]
+        ```
+        ContentSource```
+            FormContainer{
+                SelectInput{ 
+                    placeholder='Select ...' 
+                    name='select'
+                    options = [
+                        { value: 'chocolate', label: 'Chocolate' },
+                        { value: 'vanilla', label: 'Vanilla' },
+                        { value: 'strawberry', label: 'Strawberry' }
+                    ]
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H3S`Extended Select`
+        P{
+            T`The `Code`SelectExtendedInput`T` component is a wrapper around `A{ href: 'https://choices-js.github.io/Choices' T`choices.js` props=({target: '_blank'}) }T`. `
+            T`The `Code`options`T` property allows you to send configuration options to the choices internal object.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                SelectExtendedInput{
+                    name = 'time'
+                    placeholder = 'Time ...'
+                    options = ({ 
+                        choices: [
+                            {
+                                value: 'Option 1',
+                                label: 'Option 1',
+                                selected: true,
+                                disabled: false,
+                            },
+                            {
+                                value: 'Option 2',
+                                label: 'Option 2 [Disabled]',
+                                selected: false,
+                                disabled: true
+                            },
+                            {
+                                label: 'Group 1',
+                                choices: [
+                                    {
+                                        value: 'Option 3',
+                                        label: 'Option 3',
+                                        selected: true,
+                                        disabled: false,
+                                    },
+                                    {
+                                        value: 'Option 4',
+                                        label: 'Option 4',
+                                        selected: false,
+                                        disabled: false
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer, DateTimeInput]
+        ```
+        ContentSource```
+            FormContainer{
+                FormGroup{
+                    SelectExtendedInput{
+                        name = 'time'
+                        placeholder = 'Time ...'
+                        options = ({ 
+                            choices: [
+                                {
+                                    value: 'Option 1',
+                                    label: 'Option 1',
+                                    selected: true,
+                                    disabled: false,
+                                },
+                                {
+                                    value: 'Option 2',
+                                    label: 'Option 2 [Disabled]',
+                                    selected: false,
+                                    disabled: true
+                                },
+                                {
+                                    label: 'Group 1',
+                                    choices: [
+                                        {
+                                            value: 'Option 3',
+                                            label: 'Option 3',
+                                            selected: true,
+                                            disabled: false,
+                                        },
+                                        {
+                                            value: 'Option 4',
+                                            label: 'Option 4',
+                                            selected: false,
+                                            disabled: false
+                                        }
+                                    ]
+                                }
+                            ]
+                        })
+                    }
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H3S`Password`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                PasswordInput{ 
+                    placeholder='Password ...' 
+                    name='password'
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer, PasswordInput]
+        ```
+        ContentSource```
+            FormContainer{
+                FormContainer{
+                    FormGroup{
+                        PasswordInput{ 
+                            placeholder='Password ...' 
+                            name='password'
+                        }
+                    }
+                }
+            }
+        ```
+    }
+
+
+    Content{
+        H3S`Date & Time`
+        P{
+            T`The `Code`DateTimeInput`T` component is a wrapper around `A{ href: 'https://flatpickr.js.org' T`flatpickr` props=({target: '_blank'}) }T`. `
+            T`The `Code`options`T` property allows you to send configuration options to flatpickr.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: FormContainer{
+            FormGroup{
+                DateTimeInput{
+                    name = 'date'
+                    placeholder = 'Date ...'
+                }
+            }
+            FormGroup{
+                DateTimeInput{
+                    name = 'time'
+                    placeholder = 'Time ...'
+                    options = ({ noCalendar: true, enableTime: true })
+                }
+            }
+            FormGroup{
+                DateTimeInput{
+                    name = 'date-time'
+                    placeholder = 'Date and Time ...'
+                    options = ({ enableTime: true })
+                }
+            }
+            FormGroup{
+                DateTimeInput{
+                    name = 'date-range'
+                    placeholder = 'Date Range  ...'
+                    options = ({ mode: 'range' })
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.form
+        ```
+        UseSource```
+            static any[] use = [FormContainer, DateTimeInput]
+        ```
+        ContentSource```
+            FormContainer{
+                FormContainer{
+                    FormGroup{
+                        DateTimeInput{
+                            name = 'date'
+                            placeholder = 'Date ...'
+                        }
+                    }
+                    FormGroup{
+                        DateTimeInput{
+                            name = 'time'
+                            placeholder = 'Time ...'
+                            options = ({ noCalendar: true, enableTime: true })
+                        }
+                    }
+                    FormGroup{
+                        DateTimeInput{
+                            name = 'date-time'
+                            placeholder = 'Date and Time ...'
+                            options = ({ enableTime: true })
+                        }
+                    }
+                    FormGroup{
+                        DateTimeInput{
+                            name = 'date-range'
+                            placeholder = 'Date Range  ...'
+                            options = ({ mode: 'range' })
+                        }
+                    }
                 }
             }
         ```

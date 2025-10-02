@@ -1,0 +1,65 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component DateTimeInput < Div{
+    id: dateTimeInput
+
+    static any[] use = [
+        ScopedStyle{ src: 'flatpickr/dist/flatpickr.min.css' },
+        ScopedStyle{ src: './style/datetimeinput.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string name
+    string placeholder
+    string value
+
+    boolean time: false
+    boolean date: true
+    boolean range: false
+
+    Object options = ({})
+
+    string currentValue: input.currentValue
+
+    props : ({
+        data: {
+            options: JSON.stringify(dateTimeInput.options)
+        }
+    })
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(DateTimeInput)])
+
+    Input{ 
+        id: input
+        type: 'text'
+        name: dateTimeInput.name
+        placeholder: dateTimeInput.placeholder
+        value: dateTimeInput.value
+    }
+
+
+    DOMBehavior{
+        domReady: async (d) => {
+            if ( !window.__packages__ ){ window.__packages__ = {} }
+            if ( !window.__packages__.flatpickr ){
+                window.__packages__.flatpickr = (await import('flatpickr')).default
+            }
+            const flatpickr = window.__packages__.flatpickr
+
+            const input = d.querySelector('input')
+            const options = JSON.parse(d.dataset.options)
+
+            const dpick = flatpickr(input, {
+                appendTo: d,
+                position: "auto",
+                static: true,
+                ...options
+            })
+        }
+    }
+}

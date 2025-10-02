@@ -1,0 +1,54 @@
+import live-web.dom
+import live-web.behavior
+import live-web-view.button
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component SelectExtendedInput < Div{
+    id: selectExtendedInput
+
+    static any[] use = [
+        ScopedStyle{ src: 'choices.js/public/assets/styles/choices.css' },
+        ScopedStyle{ src: './style/selectextendedinput.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string name
+
+    boolean time: false
+    boolean date: true
+    boolean range: false
+
+    Object options = ({})
+
+    string currentValue: input.currentValue
+
+    props : ({
+        data: {
+            options: JSON.stringify(selectExtendedInput.options)
+        }
+    })
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(SelectExtendedInput)])
+
+    Select{ 
+        id: input
+        name: selectExtendedInput.name
+    }
+
+
+    DOMBehavior{
+        domReady: async (d) => {
+            if ( !window.__packages__ ){ window.__packages__ = {} }
+            if ( !window.__packages__.choicesjs ){
+                window.__packages__.choicesjs = (await import('choices.js')).default
+            }
+            const Choices = window.__packages__.choicesjs
+            const input = d.querySelector('select')
+            const options = JSON.parse(d.dataset.options)
+
+            const chs = new Choices(input, options)
+        }
+    }
+}
