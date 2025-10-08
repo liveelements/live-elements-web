@@ -35,7 +35,7 @@ component NavSections < Div{
                             : [T{ text: link.label } ]
                     }
                     DropdownContent{ style = ({ right: 0 })
-                        Ul{ classes: ['secondary']
+                        Ul{ classes: ['secondary-mn']
                             children: link.children.map(l => {
                                 return Li{
                                     A{ href: l.href T{ text: l.label }}

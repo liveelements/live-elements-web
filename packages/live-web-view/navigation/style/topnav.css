@@ -107,13 +107,16 @@
     pointer-events: auto;
     @apply h-auto md:hidden md:opacity-0 md:absolute md:bg-mono-1 w-[220px] md:right-[-10px] md:rounded-b-[10px] pl-0 md:pl-0 md:border border-mono-4 py-1 z-[10000];
 }
+&TopNav .nav-content ul.secondary-mn{
+    @apply h-auto block pl-0 md:pl-0 md:border border-mono-4 py-1 z-[10000];
+}
 &TopNav .nav-content ul li:hover ul.secondary{
   @apply md:block md:opacity-[1];
 }
-&TopNav .nav-content ul.secondary li{
+&TopNav .nav-content ul.secondary li, &TopNav .nav-content ul.secondary-mn li{
     @apply mx-0;
 }
-&TopNav .nav-content ul.secondary li a{
+&TopNav .nav-content ul.secondary li a, &TopNav .nav-content ul.secondary-mn li a{
     @apply py-2 px-2;
 }
 
