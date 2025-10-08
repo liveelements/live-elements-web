@@ -58,6 +58,18 @@ component DateTimeInput < Div{
                 appendTo: d,
                 position: "auto",
                 static: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    instance.hourElement.disabled = true
+                    instance.minuteElement.disabled = true
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    instance.hourElement.disabled = false
+                    instance.minuteElement.disabled = false
+                },
+                onClose: function(selectedDates, dateStr, instance) {
+                    instance.hourElement.disabled = true
+                    instance.minuteElement.disabled = true
+                },
                 ...options
             })
         }
