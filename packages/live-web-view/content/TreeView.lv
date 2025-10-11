@@ -56,14 +56,16 @@ component TreeView < Ul{
         if ( currentData.children ){
             const lis = this.children
             for ( let i = 0; i < currentData.children.length; ++i ){
-                const c = lis[i].children[0]
-                if ( currentData.children[i] === searchData ){
-                    c.expand()
-                    const ul = lis[i].children[1]
-                    ul.classes = ul.classes.concat(['expand'])
-                    break;
+                if ( i < lis.length && lis[i].children ){
+                    const c = lis[i].children[0]
+                    if ( currentData.children[i] === searchData ){
+                        c.expand()
+                        const ul = lis[i].children[1]
+                        ul.classes = ul.classes.concat(['expand'])
+                        break;
+                    }
+                    this.__expand(c, currentData.children[i], searchData)
                 }
-                this.__expand(c, currentData.children[i], searchData)
             }
         }
     }
