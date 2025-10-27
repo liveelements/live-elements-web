@@ -16,6 +16,7 @@ instance components BaseElement{
         { label: 'Sortable', url: '/sortable', c: SortableDoc },
         { label: 'Sidebar', url: '/sidebar', c:SidebarDoc },
         { label: 'SplitLayout', url: '/splitlayout', c: SplitLayoutDoc },
+        { label: 'Sticky', url: '/sticky', c: StickyDoc },
         { label: 'Tabs', url: '/tabs', c: TabLayoutDoc },
         { label: 'Table', url: '/table', c: TableDoc },
         { label: 'Text Formatting', url: '/text-formatting', c: ContentDoc },

@@ -1,0 +1,15 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+component StickySurface < Div{
+
+    static any[] use = [ 
+        ScopedStyle{ src: './style/stickysurface.css' process: '../style/CSSProcessor.lv' }, 
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' } 
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(StickySurface)])
+}

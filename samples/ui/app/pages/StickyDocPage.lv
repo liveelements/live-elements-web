@@ -1,0 +1,23 @@
+import live-web.dom
+import live-elements-web-server.view
+import live-elements-web-server.style
+import live-web-view.content
+import live-web-view.docs.components
+import .modules.components
+
+component StickyDocPage < DocPageView{
+    id: page
+
+    static any[] use = DocPageView.usedComponents.concat([
+        Sticky,
+        StickySurface,
+        Content
+    ])
+    active: '/sticky'
+    document: StickyDoc{}
+
+    constructor(data:Object){
+        super(data)
+        this{}
+    }
+}

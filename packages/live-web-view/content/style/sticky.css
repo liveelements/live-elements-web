@@ -1,0 +1,6 @@
+&Sticky&.sticky{
+    @apply fixed;
+}
+&Sticky&.stick-bottom{
+    @apply absolute bottom-0;
+}

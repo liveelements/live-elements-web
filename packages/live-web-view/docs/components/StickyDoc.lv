@@ -1,0 +1,62 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.button
+import .docs.internal
+
+component StickyDoc{
+    default children
+
+    Content{
+        H1S`Sticky`
+        P{
+            T`The `Code`Sticky`T` component pins content to the viewport, ensuring it remains visible as the user scrolls through the page..`
+        }
+        H2S`Basic Usage`
+        P{
+            T`Wrap the `Code`Sticky`T` element inside a `Code`StickySurface`T` component (or any container with position: relative).`
+        }
+        P{
+            T`Use the `Code`offset`T` property to control the point where the element attaches to the viewport. A larger offset means the element 
+            will start sticking further down the screen.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: StickySurface{ style = { height: '100vh', width: '14rem' }
+            Sticky{
+                Content{
+                    P`Scroll down to see it in action.`
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [Collapsible, Content]
+        ```
+        ContentSource```
+            Collapsible{
+                CollapsibleToggle{
+                    content: [
+                        T\`Click to collapse\`, 
+                        IconRotate{
+                            Svg{ props: ({xmlns: 'http://www.w3.org/2000/svg', width: '10', height: '10', viewBox: '0 0 16 16'}) 
+                                Path{ props: ({fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: '2', d: 'M2 5l6 6 6-6'}) }
+                            }
+                        }
+                    ]
+                }
+                CollapsibleContent{
+                    Content{
+                        P\`Content inside Collapsible.\`
+                    }
+                }
+            }
+        ```
+    }
+
+}
