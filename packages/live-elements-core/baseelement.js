@@ -19,6 +19,7 @@ export class BaseElement{
     constructor(){
         this.id = ''
         this.parent = null
+        Object.defineProperty(this, '__lv', { enumerable: false, value: {} })
     }
 
     setParent(parent){
@@ -59,7 +60,7 @@ export class BaseElement{
     }
 
     static assignChildren(element, children){
-        var propertyName = element['__default__']
+        const propertyName = element.__lv.__default__
         element[propertyName] = children
     }
 
@@ -74,22 +75,19 @@ export class BaseElement{
 
     static propertyNames(element){
         let keys = []
-        for (let [key, value] of Object.entries(element)) {
-            if ( value && typeof value === 'object' && value.hasOwnProperty('expression') && key.startsWith('__') ){
-                keys.push(key.substr(2))
-            }
+        for (let [key, _value] of Object.entries(element.__lv)) {
+            if ( key !== '__default__' )
+                keys.push(key)
         }
         return keys
     }
 
     static getProperty(obj, name){
-        const propMetaName = '__' + name
-        return obj[propMetaName].value
+        return obj.__lv[name].value
     }
 
     static setProperty(obj, name, newValue){
-        const propMetaName = '__' + name
-        const pm = obj[propMetaName]
+        const pm = obj.__lv[name]
         pm.value = newValue
     }
 
@@ -100,8 +98,6 @@ export class BaseElement{
             value: ('value' in options ? options['value'] : undefined)
         }
 
-        const propMetaName = '__' + propertyName
-
         if ('notify' in options){
             propMeta['event'] = BaseElement.addEvent(element, options['notify'], [])
         }
@@ -109,10 +105,10 @@ export class BaseElement{
         const isWritable = 'isWritable' in options ? options['isWritable'] : true
         const isDefault = 'type' in options && options['type'] === 'default'
 
-        element[propMetaName] = propMeta
+        element.__lv[propertyName] = propMeta
 
         if ( isDefault ){
-            element['__default__'] = propertyName
+            element.__lv.__default__ = propertyName
         }
 
         if ( 'set' in options ){
@@ -120,10 +116,10 @@ export class BaseElement{
         }
 
         Object.defineProperty(element, propertyName, {
-            get: 'get' in options ? options['get'] : function(){ return this[propMetaName].value },
+            get: 'get' in options ? options['get'] : function(){ return this.__lv[propertyName].value },
             set: propMeta.setter
                 ? function(newValue){ 
-                    const pm = this[propMetaName]
+                    const pm = this.__lv[propertyName]
                     if ( pm.value !== newValue ){
                         if ( pm.bindings ){
                             for ( var i = 0; i < pm.bindings.length; ++i ){
@@ -140,7 +136,7 @@ export class BaseElement{
                     }
                 }
                 : function(newValue){
-                    const pm = this[propMetaName]
+                    const pm = this.__lv[propertyName]
                     if ( pm.value !== newValue ){
                         if ( pm.bindings ){
                             for ( var i = 0; i < pm.bindings.length; ++i ){
@@ -202,7 +198,7 @@ export class BaseElement{
             var propName = eventBindings[i].eventName
             propName = propName.substr(0, propName.lastIndexOf('Changed'))
 
-            const objectId = 0
+            let objectId = 0
             const objectIdIndex = objectIds.indexOf(eventBindings[i].emitterObject)        
             if ( objectIdIndex !== -1 ){
                 objectId = objectIdIndex
@@ -295,8 +291,12 @@ export class BaseElement{
         return result
     }
 
+    static propertyBindingsInfo(element, propertyName){
+        return BaseElement.__debugEventBindings(element.__lv[propertyName].bindings)
+    }
+
     static assignPropertyExpression(element, propertyName, propertyExpression, bindings){
-        const propMeta = element['__' + propertyName]
+        const propMeta = element.__lv[propertyName]
         propMeta['expression'] = propertyExpression.bind(element)
 
         const previousBindings = propMeta['bindings']
