@@ -1,5 +1,5 @@
 &TableView{
-    @apply min-w-full divide-y divide-mono-d dark:divide-mono-4;
+    @apply font-sans min-w-full divide-y divide-mono-d dark:divide-mono-4;
 }
 &TableView&.border-around{
     @apply border border-mono-d dark:border-mono-4;
