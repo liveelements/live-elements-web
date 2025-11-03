@@ -62,6 +62,7 @@ class WebServerConfiguration{
         this._stylesUrl = '/styles'
         this._entryScriptName = 'main.bundle.js'
         this._staticFileHeaders = config.staticFileHeaders ? config.staticFileHeaders : { etag: true, lastModified: true, maxAge: 86400 * 1000 }
+        this._routePublisher = null
     }
 
     get runMode(){ return this._runMode }
@@ -160,7 +161,7 @@ export default class WebServer extends EventEmitter{
 
     static urlToFileName(url){
         const cacheUrl = url.startsWith('/') ? url.substr(1) : url
-        const fileName = cacheUrl.replaceAll('/', '-')
+        const fileName = cacheUrl.replaceAll('/', '-').replaceAll('=', '--eq--')
         const fileNameResolve = fileName 
             ? fileName.startsWith('index') ? fileName + '_' : fileName
             : 'index'
@@ -701,6 +702,8 @@ export default class WebServer extends EventEmitter{
                 this._app.post(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
             } else if ( ServerMiddlewareRoute.isType(route) ){
                 this._app.use(route.url, route.f)
+            } else if ( this._routePublisher ){
+                this._routePublisher(route)
             }
         })
 
@@ -736,6 +739,8 @@ export default class WebServer extends EventEmitter{
                 this._app.post(route.url, route.userMiddleware, ErrorHandler.forward(route.f))
             } else if ( ServerMiddlewareRoute.isType(route) ){
                 this._app.use(route.url, route.f)
+            } else if ( this._routePublisher ){
+                this._routePublisher(route)
             }
         })
 
