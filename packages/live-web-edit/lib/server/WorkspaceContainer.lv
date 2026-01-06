@@ -9,7 +9,7 @@ component WorkspaceContainer{
     WorkspaceOperations operations: null
 
     static fn create(location:string, templatePath:string, operations:WorkspaceOperations){
-        if ( !fs.existsSync(location) ){
+        if ( location && !fs.existsSync(location) ){
             fs.mkdirSync(location, { recursive: true })
         }
         if ( templatePath && !fs.existsSync(templatePath) ){
@@ -62,7 +62,12 @@ component WorkspaceContainer{
         if ( openedWs )
             return openedWs
 
-        const ws = Workspace.load(this.path, name)
+
+        let location = this.operations.findWorkspaceLocation
+            ? this.operations.findWorkspaceLocation(name)
+            : this.path
+
+        const ws = Workspace.load(location, name)
         this.workspaces = this.workspaces.concat([ws])
 
         this._cleanupOnLimit()

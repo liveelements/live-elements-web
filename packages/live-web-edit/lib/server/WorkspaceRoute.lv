@@ -19,7 +19,9 @@ component WorkspaceRoute < Route{
     string templatesPath = ''
     string defaultProject = 'page'
     WorkspaceContainer workspaces = null
+    string baseUrl = ''
     Object view = null
+    Object placement
     Array<Object> templates = []
     boolean forkOnLoad = false
 
@@ -80,9 +82,10 @@ component WorkspaceRoute < Route{
 
     ViewRoute{ url: '/'
         c: workspaceRoute.view
+        placement: workspaceRoute.placement
         data: (req, res) => {
             return { 
-                baseUrl: workspaceRoute.url,
+                baseUrl: workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
                 templates: workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section } }),
                 name: '-'
             }
@@ -92,6 +95,7 @@ component WorkspaceRoute < Route{
     ViewRoute{ 
         url: '/w/:wsname'
         c: workspaceRoute.view
+        placement: workspaceRoute.placement
         data: (req, res) => {
             try{
                 const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
@@ -99,7 +103,7 @@ component WorkspaceRoute < Route{
                     ws.writeBehavior = Workspace.WriteBehavior.Fork
                 }
                 const data = workspaceRoute.workspaceData(ws)
-                data['baseUrl'] = workspaceRoute.url
+                data['baseUrl'] = workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
                 data['templates'] = workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section }})
                 return data
             } catch ( e ){
@@ -217,7 +221,7 @@ component WorkspaceRoute < Route{
         f: async (req, res) => {
             try{
                 const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
-                const result = await ws.compile(workspaceRoute.workspaces.operations, workspaceRoute.url)
+                const result = await ws.compile(workspaceRoute.workspaces.operations, workspaceRoute.baseUrl || workspaceRoute.url )
                 if ( result.hasErrors() ){
                     throw new PublicError(result.errors.map(e => e.message))
                 } else {
@@ -249,7 +253,7 @@ component WorkspaceRoute < Route{
         try{
             const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
             if ( !ws.compilation ){
-                await ws.compile(workspaceRoute.workspaces.operations, workspaceRoute.url)
+                await ws.compile(workspaceRoute.workspaces.operations, workspaceRoute.baseUrl || workspaceRoute.url)
             }
             if ( ws.compilation.errors.length ){
                 res.send(ws.compilation.errors.map(e => e.message).join(',')).end()
@@ -294,7 +298,7 @@ component WorkspaceRoute < Route{
             } else {
                 try{
                     assignmentsToSend = await workspaceRoute.workspaces.operations.updateCompilationUsages(
-                        ws.compilation, req.body.page, ws.name, workspaceRoute.url
+                        ws.compilation, req.body.page, ws.name, workspaceRoute.baseUrl || workspaceRoute.url
                     )
                     // assignmentsToSend = await ws.compilation.updateUsages(req.body.page, ws.name, workspaceRoute.url)
                     ws.save()

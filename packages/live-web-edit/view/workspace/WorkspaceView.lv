@@ -80,11 +80,8 @@ component WorkspaceView < Div{
 
     constructor(data:Object){
         super()
-        if ( !data ){
-            throw new Error('WorkspaceView constructor requires data argument.')
-        }
-        
-        this{ data = WorkspaceViewData.fromJSON(data) }
+        const dataAssigned = data ? WorkspaceViewData.fromJSON(data) : WorkspaceViewData{}
+        this{ data = dataAssigned }
     }
 
     async fn completed(){
