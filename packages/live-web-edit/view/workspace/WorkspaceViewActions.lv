@@ -1,0 +1,187 @@
+import live-web.model
+import ky from 'ky'
+
+import ApiRequest from '../lib/api-request.mjs'
+
+instance workspaceViewActions Actions{
+
+    async fn loadWorkspace(data:WorkspaceViewData, workspaceName:string){
+        const result = await ApiRequest.get(`${data.serverRoutes.load}/${workspaceName}`)
+        if ( result.value ){
+            data.updateFromJSON(result.value)
+            data.logMessages = []
+            if ( data.lastCompilation ){
+                const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+                if ( frameRoute !== data.workspaceFrameSrc )
+                    data.workspaceFrameSrc = frameRoute
+                else {
+                    data.workspaceFrameRev = data.workspaceFrameRev + 1
+                }
+            } else if ( data.writeEnabled() ){
+                this.compile(data)
+            }
+        } else if ( result.error ){
+            data.errors = [result.error.message]
+        }
+    }
+
+    async fn save(data:WorkspaceViewData){
+        if ( !data.writeEnabled() )
+            return
+
+        const activeEditorData = data.editors.find(editor => editor.isActive)
+        data.loadingStatus = { message: 'Saving ...' }
+
+        if ( !activeEditorData.document.isDirty ){ return data }
+
+        const route = data.serverRoutes.save.replace(':workspace', data.workspaceName)
+        const res = await ApiRequest.post(route, { document: activeEditorData.document.toJSON() })
+        if ( res.value ){
+            activeEditorData.document.isDirty = false
+            data.loadingStatus = null
+            if ( res.value.name ){
+                data.updateFromJSON(res.value)
+                data.appendHistory(null, data.route(`/w/${data.workspaceName}`))
+            }
+            await this.saveReady(data)
+        } else if ( res.error ){
+            data.errors = data.errors.concat([res.error.message])
+        }
+
+        return data
+    }
+
+    async fn saveReady(data:WorkspaceViewData){
+        return this.compile(data)
+    }
+
+    async fn saveAll(data:WorkspaceViewData){
+        if ( !data.writeEnabled() )
+            return
+
+        const route = data.serverRoutes.save.replace(':workspace', data.workspaceName)
+
+        let anyDocumentDirty = null
+        let newName = null
+        const editors = data.editors
+
+        data.loadingStatus = { message: 'Saving ...' }
+
+        for ( let i = 0; i < editors.length; ++i ){
+            const editor = editors[i]
+            const document = editor.document
+            if ( document.isDirty ){
+                anyDocumentDirty = document
+
+                const res = await ApiRequest.post(route, { document: document.toJSON() } )
+                if ( res.value ){
+                    document.isDirty = false
+                    if ( res.value.name ){
+                        newName = { name: res.value.name }
+                    }
+                } else if ( res.error ){
+                    data.errors = data.errors.concat([res.error.message])
+                    return data
+                }
+            }
+        }
+        
+        if ( newName ){
+            data.appendHistory(null, data.route(`/w/${data.workspaceName}`))
+        }
+
+        if ( anyDocumentDirty ){
+            await this.saveReady(data)
+        }
+        return data
+    }
+
+    fn actionMap(data:WorkspaceViewData){
+        return {
+            'save' : this.save.bind(this, data),
+            'compile' : this.compile.bind(this, data)
+        }
+    }
+
+    fn lockReady(data:WorkspaceViewData){}
+
+    async fn lockWrite(data:WorkspaceViewData){
+        if ( !data.lockEnabled() )
+            return
+        
+        const route = data.serverRoutes.lockWrite.replace(':workspace', data.workspaceName)
+        const res = await ApiRequest.post(route, {})
+        if ( res.error ){
+            data.errors = data.errors.concat([res.error.message])
+        } else {
+            data.writeBehavior = WorkspaceViewData.WriteBehavior.ReadOnly
+            this.lockReady(data)
+        }
+        return data
+    }
+
+    fn toggleWorkspaceOpenSelector(data:WorkspaceViewData){
+        if ( !data.workspaceSelector ){
+            setTimeout(() => { data.workspaceSelector = true })
+        }
+    }
+
+    async fn forkTemplate(data:WorkspaceViewData, name:string){
+        return this.forkByName(data, name)
+    }
+
+    async fn forkByName(data:WorkspaceViewData, name:string){
+        const route = data.serverRoutes.fork.replace(':workspace', name)
+
+        const res = await ApiRequest.post(route, {})
+        if ( res.value ){
+            data.updateFromJSON(res.value)
+            if ( data.workspaceName === '' || data.workspaceName === '-' ){
+                return
+            }
+            data.logMessages = []
+            data.appendHistory(null, data.route(`/w/${data.workspaceName}`))
+
+            if ( data.lastCompilation ){
+                const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+                if ( frameRoute !== data.workspaceFrameSrc )
+                    data.workspaceFrameSrc = frameRoute
+                else {
+                    data.workspaceFrameRev = data.workspaceFrameRev + 1
+                }
+            } else if ( data.writeEnabled() ){
+                await this.compile(data)
+            }
+
+        } else if ( res.error ){
+            data.errors = data.errors.concat([res.error.message])
+        }
+        return data
+    }
+
+    async fn fork(data:WorkspaceViewData){
+        return this.forkByName(data, data.workspaceName)
+    }
+
+    async fn compile(data:WorkspaceViewData){
+        data.loadingStatus = { message: 'Compiling ...' }
+        if ( data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write )
+            return null
+
+        const route = data.serverRoutes.compile.replace(':workspace', data.workspaceName)
+        const res = await ApiRequest.post(route, { workspace: data.workspaceName })
+        data.loadingStatus = null
+        if ( res.value ){
+            const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+            if ( frameRoute !== data.workspaceFrameSrc )
+                data.workspaceFrameSrc = frameRoute
+            else {
+                data.workspaceFrameRev = data.workspaceFrameRev + 1
+            }
+
+        } else if ( res.error ){
+            data.errors = data.errors.concat([res.error.message])
+        }
+    }
+
+}

@@ -2,16 +2,18 @@ import {indentWithTab} from "@codemirror/commands"
 
 component WorkspaceViewKeymap{
     Object actions = ({})
+    Object prepare = null
     
     constructor(actions:Object){
         super()
-        WorkspaceViewKeymap.prototype.__initialize.call(this)
-        if ( actions )
-            this.actions = actions
+        this{}
     }
 
     fn run(actionName:string){
         if ( this.actions.hasOwnProperty(actionName) ){
+            if ( this.prepare ){
+                this.prepare()
+            }
             this.actions[actionName]()
         }
     }

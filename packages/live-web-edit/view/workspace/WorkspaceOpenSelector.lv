@@ -9,7 +9,7 @@ component WorkspaceOpenSelector < Div{
         ScopedStyle{ src: './style/workspaceopenselector.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
 
-    static fn groupBySection(data:Array<Object>){
+    static fn groupBySection(data:Object[]){
         const groupedData = {}
         data.forEach(item => {
             if (!groupedData[item.section]) {

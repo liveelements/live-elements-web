@@ -1,4 +1,5 @@
 import live-web.dom
+import live-web.model
 import live-web.behavior
 import live-elements-web-server.view
 import live-elements-web-server.style
@@ -12,10 +13,7 @@ import live-web-view.iframe
 
 import .view.button
 import .view.codeeditor
-import .view.workspace.data
 import .lib.middle
-
-import ky from 'ky'
 
 component WorkspaceView < Div{
     id: workspaceView
@@ -36,11 +34,28 @@ component WorkspaceView < Div{
         WorkspaceOpenSelector,
         ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv'  }
     ]
+
+    Actions actions: Actions.bindFirst(workspaceView.data, workspaceViewActions)
     
     string[] extraClasses = []
     classes: this.extraClasses.concat([ScopedStyle.className(WorkspaceView)])
-    Object data = WorkspaceViewData.fromJSON({ name: '-' })
-    WorkspaceViewKeymap keymap = WorkspaceViewKeymap.(this._workspaceViewActions.actionMap()){}
+    Object data
+    WorkspaceViewKeymap keymap = WorkspaceViewKeymap{ 
+        prepare: () => {
+            for ( let i = 0; i < tabLayout.children.length; ++i ){
+                if ( tabLayout.children[i] instanceof TabContent ){
+                    const tabcontent = tabLayout.children[i]
+                    for ( let j = 0; j < tabcontent.children.length; ++j ){
+                        const tabpane = tabcontent.children[j]
+                        const editor = tabpane.children[0]
+                        editor.document.content = editor.editor.state.doc.toString()
+                    }
+                }
+            }
+        }
+        actions: workspaceView.actions ? workspaceView.actions.actionMap() : ({}) 
+    }
+
     boolean forkEnabled: true
     boolean lockEnabled: true
     DOMElement tabLayout: tabLayout
@@ -51,7 +66,7 @@ component WorkspaceView < Div{
     })
 
     Object openWorkspaceHandler = (workspaceView, name) => {
-        workspaceView._workspaceViewActions.forkTemplate(name) 
+        workspaceView.actions.forkTemplate(name) 
         workspaceView.data.workspaceSelector = false
     }
     Object reloadFrameHandler = (wsView) => {
@@ -65,31 +80,11 @@ component WorkspaceView < Div{
 
     constructor(data:Object){
         super()
-
-        const workspaceViewActions = WorkspaceViewActions.(this){}
-        const baseUrl = data.baseUrl ? data.baseUrl : ''
-        this._dataActions = WorkspaceViewDataActions{
-            serverRoutes = {
-                load: `${baseUrl}/w-load`,
-                save: `${baseUrl}/w-document/save/:workspace`,
-                compile: `${baseUrl}/w-compile/:workspace`,
-                lockWrite: `${baseUrl}/w-lockwrite/:workspace`,
-                fork: `${baseUrl}/w-fork/:workspace`
-            }
-            hooks = {
-                saveReady: async (data, _workspaceViewor) => { workspaceViewActions.compile() }
-            }
-        }
-
-        this._workspaceViewActions = workspaceViewActions
-
         if ( !data ){
             throw new Error('WorkspaceView constructor requires data argument.')
         }
         
-        this{}
-
-        this.data = WorkspaceViewData.fromJSON(data)
+        this{ data = WorkspaceViewData.fromJSON(data) }
     }
 
     async fn completed(){
@@ -108,54 +103,35 @@ component WorkspaceView < Div{
 
             const prevSegment = pathSegments[pathSegments.length - 2]
             const lastSegment = pathSegments[pathSegments.length - 1]
-            if ( prevSegment === 'w' ){
-                const ws = await ky.get(`${this._dataActions.serverRoutes.load}/${lastSegment}`).json()
-                this.data.updateFromJSON(ws)
 
-                if ( this.data.lastCompilation ){
-                    if ( this.data.workspaceViewUrl !== this.data.workspaceName ){
-                        this.data.frameLoading = true
-                        this.reloadFrameHandler(this)
-                    }
-                } else if ( this.data.writeEnabled() ){
-                    this._workspaceViewActions.compile()
-                }
+            if ( prevSegment === 'w' ){
+                await this.actions.loadWorkspace(lastSegment)
+                return
             }
         })
 
-        try{
-            if ( this.data.workspaceName === '-'){
-                const ws = await ky.get(`${this._dataActions.serverRoutes.load}/-`).json()
-                this.data.updateFromJSON(ws)
+        const currentUrl = window.location.href
+        const currentPath = window.location.pathname
+        const pathSegments = currentPath.split('/').filter(segment => segment !== '')
 
-                if ( this.data.workspaceName === '' || this.data.workspaceName === '-' ){
-                    return
-                }
+        const prevSegment = pathSegments[pathSegments.length - 2]
+        const lastSegment = pathSegments[pathSegments.length - 1]
 
-                this.data.frameLoading = true
-                window.history.pushState(null, null, this.data.route(`/w/${this.data.workspaceName}`))
-            }
-
-            if ( this.data.lastCompilation ){
-                this.reloadFrameHandler(this)
-            } else if ( this.data.writeEnabled() ){
-                this._workspaceViewActions.compile()
-            }
-        } catch ( e ){
-            console.error(e)
-        }
+        await this.actions.loadWorkspace(lastSegment ? lastSegment : '-')
+        if ( this.data.workspaceName !== '-' )
+            this.data.appendHistory(null, this.data.route(`/w/${this.data.workspaceName}`))
     }
 
     TopNav{ position: 'static'
         NavContent{
             children: [
                 TooltipArea{
-                    OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.toggleWorkspaceOpenSelector(); } }
+                    OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.toggleWorkspaceOpenSelector(); } }
                     Tooltip`Open Workspace`
                 },
                 ...(workspaceView.forkEnabled ? 
                     [TooltipArea{
-                        ForkButton{ on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.fork() }}
+                        ForkButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.fork() }}
                         Tooltip`Fork`
                     }] 
                     : []
@@ -165,13 +141,13 @@ component WorkspaceView < Div{
                     Div{ classes: ['spinner']} 
                 },
                 TooltipArea{ extraClasses: [workspaceView.data.loadingStatus ? 'hide' : '']
-                    CompileButton{ extraClasses: [workspaceView.data.writeEnabled() ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView._workspaceViewActions.saveAll() }}
+                    CompileButton{ extraClasses: [workspaceView.data.writeEnabled() ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView.keymap.prepare(); workspaceView.actions.saveAll() }}
                     Tooltip`Save & Compile`
                 },
 
                 ...(workspaceView.lockEnabled ? 
                     [TooltipArea{
-                        WriteLockButton{ isLocked: !workspaceView.data.lockEnabled() on click: () => { workspaceView._workspaceViewActions.lockWrite() }  }
+                        WriteLockButton{ isLocked: workspaceView.data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write on click: () => { workspaceView.actions.lockWrite() }  }
                         Tooltip`Lock Write`
                     }] 
                     : []
@@ -210,17 +186,21 @@ component WorkspaceView < Div{
         }
     }
 
-    FullScreen{
+    FullScreen{ center: false extraClasses: ['pad-topnav']
 
-        SplitLayout{
-            id: workspaceSplitLayout
-
+        SplitLayout{ id: workspaceSplitLayout
             panes: [
                 SplitPane{ extraClasses: ['flex-content']
                     TabLayout{ extraClasses: ['no-b']
                         id: tabLayout
 
                         on activated: (index) => {
+                            workspaceView.data.editors.forEach((editor, i) => {
+                                if ( i === index )
+                                    editor.isActive = true
+                                else
+                                    editor.isActive = false
+                            })
                             for ( let i = 0; i < tabLayout.children.length; ++i ){
                                 if ( tabLayout.children[i] instanceof TabContent ){
                                     const tabcontent = tabLayout.children[i]
@@ -232,16 +212,20 @@ component WorkspaceView < Div{
                         }
 
                         TabHeader{
-                            children: workspaceView.data.documents.map(d => {
-                                return TabButton{ T{ text: d.isDirty ? '*' + d.path : d.path } }
+                            children: workspaceView.data.editors.map(editor => {
+                                const document = editor.document
+                                return TabButton{ 
+                                    T{ text: (document.isDirty ? '*' + document.path : document.path ) }
+                                }
                             })
                         }
                         TabContent{ extraClasses: ['no-p', 'bt']
-                            children: workspaceView.data.documents.map(d => {
+                            children: workspaceView.data.editors.map(editor => {
                                 return TabPane{ 
                                     CodeEditorView{ 
                                         id: codeEditorView
-                                        Document document = d
+                                        Object editorData = editor.editor
+                                        Document document = editor.document
                                         readContent: () => { return this.document.content }
                                         themes: workspaceView.codeEditorThemes
                                         number writeBehavior: workspaceView.data.writeBehavior
@@ -255,10 +239,11 @@ component WorkspaceView < Div{
                                         boolean isReadOnly = codeEditorView.writeBehavior === WorkspaceViewData.WriteBehavior.ReadOnly
                                         config : {
                                             updateListener: (v) => { 
-                                                if ( v.docChanged )
-                                                    d.isDirty = true 
+                                                if ( v.docChanged ){
+                                                    editor.document.isDirty = true 
+                                                }
                                             },
-                                            language: d.path.endsWith('.css') ? 'css' : 'javascript',
+                                            language: editor.document.path.endsWith('.css') ? 'css' : 'javascript',
                                             readOnly: codeEditorView.isReadOnly,
                                             keymap: workspaceView.keymap.keymap
                                         }
@@ -285,9 +270,15 @@ component WorkspaceView < Div{
                                     IFrame{
                                         id: frame
                                         classes: [workspaceView.data.frameLoading ? 'frame-loading' : '']
+                                        string frameSrc: workspaceView.data.workspaceFrameSrc
+                                        on frameSrcChanged: () => {  this.src = this.frameSrc  }
                                         on srcChanged: () => {
                                             if ( this.dom )
                                                 workspaceView.data.frameLoading = true
+                                        }
+                                        number frameRev: workspaceView.data.workspaceFrameRev
+                                        on frameRevChanged: () => {
+                                            this.refresh()
                                         }
                                         on load: (d) => {
                                             workspaceView.data.frameLoading = false

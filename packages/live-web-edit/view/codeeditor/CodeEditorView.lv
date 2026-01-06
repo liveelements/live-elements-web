@@ -174,8 +174,6 @@ component CodeEditorView < Div{
                             const newUseFragment = LvFragmentEditor.findUse(useText, useText.length - 1)
                             const newUseSegments = newUseFragment.source.split(',').map(i => i.trim()).filter(i => i.length > 0)
 
-                            console.log("COMPARIGIN:", newUseSegments, existingUseSegments)
-
                             const uniqueUseSegments = newUseSegments.filter(newImp => 
                                 !existingUseSegments.some(existing => existing === newImp)
                             );

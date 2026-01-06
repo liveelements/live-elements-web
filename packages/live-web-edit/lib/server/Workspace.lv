@@ -1,7 +1,8 @@
 import path from 'path'
 import fs from 'fs'
-
 import .lib.middle
+
+import PublicError from 'live-elements-web-server/shared/errors/public-error.mjs'
 
 component Workspace{
 
@@ -120,7 +121,7 @@ component Workspace{
     static fn load(location:string, name:string){
         const wspath = path.join(location, name)
         if ( !fs.existsSync(wspath) ){
-            throw new Error(`Workspace '${name}' doesn't exist.`)
+            throw new PublicError(`Workspace '${name}' doesn't exist.`)
         }
         const info = Workspace.loadInfo(wspath)
 
@@ -192,7 +193,7 @@ component Workspace{
 
     fn writeFile(filePath:string, content:string){
         if ( !this.canWrite() ){
-            throw new Error(`Workspace ${this.name} is read-only.`)
+            throw new PublicError(`Workspace ${this.name} is read-only.`)
         }
         const fullpath = path.join(this._path, filePath)
         const fileDir = path.dirname(fullpath)
@@ -212,7 +213,7 @@ component Workspace{
 
     async fn compile(workspaceOperations:WorkspaceOperations, baseUrl:string){
         if ( !this.canWrite() ){
-            throw new Error(`Workspace ${this.name} is read only. Can't compile.`)
+            throw new PublicError(`Workspace ${this.name} is read only. Can't compile.`)
         }
         this._compilation = await workspaceOperations.compile(this, baseUrl)
         return this._compilation
