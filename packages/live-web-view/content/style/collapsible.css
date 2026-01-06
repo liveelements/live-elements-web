@@ -4,16 +4,16 @@
 &CollapsibleContent{
     @apply hidden px-4;
 }
-&Collapsible&.show &CollapsibleContent{
+&Collapsible&.show>&CollapsibleContent{
     @apply block bg-white dark:bg-mono-1;
 }
 &CollapsibleToggle{
     @apply flex flex-row items-center justify-between text-base px-4 py-2 text-mono-1 dark:text-mono-f border-b border-mono-c dark:border-mono-4 hover:border-mono-b dark:hover:border-mono-5;
 }
-&Collapsible &IconRotate > *:first-child{
+&Collapsible > &CollapsibleToggle > &IconRotate > *:first-child{
     transition: transform 0.5s;
 }
-&Collapsible&.show &IconRotate > *:first-child{
+&Collapsible&.show > &CollapsibleToggle > &IconRotate > *:first-child{
     transform: rotate(180deg);
 }
 &Collapsible &IconSwap{
