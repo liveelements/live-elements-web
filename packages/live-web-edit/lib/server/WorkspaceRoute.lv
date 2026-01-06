@@ -22,6 +22,7 @@ component WorkspaceRoute < Route{
     string baseUrl = ''
     Object view = null
     Object placement
+    Object viewsEnabled = true
     Array<Object> templates = []
     boolean forkOnLoad = false
 
@@ -80,37 +81,43 @@ component WorkspaceRoute < Route{
         }
     }
 
-    ViewRoute{ url: '/'
-        c: workspaceRoute.view
-        placement: workspaceRoute.placement
-        data: (req, res) => {
-            return { 
-                baseUrl: workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
-                templates: workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section } }),
-                name: '-'
-            }
-        }
-    }
-    
-    ViewRoute{ 
-        url: '/w/:wsname'
-        c: workspaceRoute.view
-        placement: workspaceRoute.placement
-        data: (req, res) => {
-            try{
-                const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
-                if ( workspaceRoute.forkOnLoad && ws.writeBehavior === Workspace.WriteBehavior.Write ){
-                    ws.writeBehavior = Workspace.WriteBehavior.Fork
+    Route{
+        children: workspaceRoute.viewsEnabled ? [
+
+            ViewRoute{ url: '/'
+                c: workspaceRoute.view
+                placement: workspaceRoute.placement
+                data: (req, res) => {
+                    return { 
+                        baseUrl: workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
+                        templates: workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section } }),
+                        name: '-'
+                    }
                 }
-                const data = workspaceRoute.workspaceData(ws)
-                data['baseUrl'] = workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
-                data['templates'] = workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section }})
-                return data
-            } catch ( e ){
-                return { error: e.message }
+            },
+            
+            ViewRoute{ 
+                url: '/w/:wsname'
+                c: workspaceRoute.view
+                placement: workspaceRoute.placement
+                data: (req, res) => {
+                    try{
+                        const ws = workspaceRoute.workspaces.loadWorkspace(req.params.wsname)
+                        if ( workspaceRoute.forkOnLoad && ws.writeBehavior === Workspace.WriteBehavior.Write ){
+                            ws.writeBehavior = Workspace.WriteBehavior.Fork
+                        }
+                        const data = workspaceRoute.workspaceData(ws)
+                        data['baseUrl'] = workspaceRoute.baseUrl ? workspaceRoute.baseUrl : workspaceRoute.url,
+                        data['templates'] = workspaceRoute.templates.map(t => { return { name: t.name, label: t.label, section: t.section }})
+                        return data
+                    } catch ( e ){
+                        return { error: e.message }
+                    }
+                }
             }
-        }
+        ] : []
     }
+
 
     GetRoute{ 
         url: '/w-load/:wsname'
