@@ -77,7 +77,7 @@
 }
 &TopNav ul li a::before{
     content: '';
-    @apply absolute w-full left-0 bottom-0 opacity-[0] bg-mono-a dark:bg-mono-c h-[1px];
+    @apply absolute w-full left-0 bottom-0 opacity-[0] bg-mono-7 dark:bg-mono-c h-[1px];
     transition: opacity 0.4s;
 }
 &TopNav ul li a:hover::before, &TopNav ul li a.active::before{

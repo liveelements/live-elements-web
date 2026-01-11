@@ -21,10 +21,10 @@
     @apply font-sans;
 }
 &FormContainer &TextInput, &FormContainer textarea{
-    @apply dark:text-mono-f dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 border border-mono-d dark:border-mono-4 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
+    @apply text-mono-1 dark:text-mono-f placeholder-mono-7 dark:placeholder-mono-7 text-base font-sans block bg-white dark:bg-mono-2 w-full px-4 py-1.5 border border-mono-d dark:border-mono-4 rounded focus:border-mono-2 dark:focus:border-mono-9 focus:outline-none;
 }
 &FormContainer .text-color, &FormContainer .text-color-input, &FormContainer a{
-    @apply text-mono-9 dark:text-mono-f;
+    @apply text-mono-2 dark:text-mono-f;
 }
 
 &FormContainer &FormMessage{
