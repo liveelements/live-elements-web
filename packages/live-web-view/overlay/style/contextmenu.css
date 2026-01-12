@@ -15,7 +15,7 @@ button:hover{
     @apply bg-mono-d dark:bg-mono-4;
 }
 .menu-content{
-    @apply bg-[#e1e1e1cc] dark:bg-[#111111cc] text-[#111] dark:text-mono-d border border-mono-3;
+    @apply bg-[#f1f1f1] dark:bg-[#111111cc] text-[#111] dark:text-mono-d border border-mono-3;
     @apply w-48 rounded-md shadow-lg absolute mt-4 z-10;
     backdrop-filter: blur(1px);
 }
