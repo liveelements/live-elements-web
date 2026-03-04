@@ -57,6 +57,10 @@ component WorkspaceContainer{
         throw new Error(`Failed to find template: ${template}`)
     }
 
+    fn closeLoadedWorkspace(name:string){
+        this.workspaces = this.workspaces.filter(ws => ws.name !== name )
+    }
+
     fn loadWorkspace(name:string){
         const openedWs = this.workspaces.find(ws => ws.name === name )
         if ( openedWs )

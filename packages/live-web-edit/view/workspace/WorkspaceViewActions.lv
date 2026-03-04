@@ -10,6 +10,7 @@ instance workspaceViewActions Actions{
         if ( result.value ){
             data.updateFromJSON(result.value)
             data.logMessages = []
+            data.errors = []
             if ( data.lastCompilation ){
                 const frameRoute = data.route('/v/' + data.workspaceViewUrl)
                 if ( frameRoute !== data.workspaceFrameSrc )
@@ -165,6 +166,7 @@ instance workspaceViewActions Actions{
 
     async fn compile(data:WorkspaceViewData){
         data.loadingStatus = { message: 'Compiling ...' }
+        data.errors = []
         if ( data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write )
             return null
 

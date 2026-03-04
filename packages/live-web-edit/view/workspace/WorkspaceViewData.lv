@@ -90,7 +90,7 @@ component WorkspaceViewData{
             baseUrl = data.baseUrl ? data.baseUrl : ''
             workspaceName = data.name
             documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
-            writeBehavior = data.writeBehavior
+            writeBehavior = data.writeBehavior ? data.writeBehavior : WorkspaceViewData.WriteBehavior.ReadOnly
             lastCompilation = data.compilation ? data.compilation : null
             templates = data.templates ? data.templates : []
             serverRoutes = ({
