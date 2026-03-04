@@ -261,8 +261,8 @@ component FormContainerDoc{
         ContentSource```
             FormContainer{
                 FormGroup{ layout: FormGroup.Layout.Row
-                    Label{ htmlFor: 'checkbox' T\`Check Box\` }
-                    Checkbox{ name='checkbox' }
+                    Label{ htmlFor: 'switch' T\`On/Off Switch\` }
+                    Switch{ name='switch' }
                 }
             }
         ```
