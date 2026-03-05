@@ -61,6 +61,10 @@ component WorkspaceContainer{
         this.workspaces = this.workspaces.filter(ws => ws.name !== name )
     }
 
+    fn findWorkspace(name:string){
+        return this.workspaces.find(ws => ws.name === name )
+    }
+
     fn loadWorkspace(name:string){
         const openedWs = this.workspaces.find(ws => ws.name === name )
         if ( openedWs )
