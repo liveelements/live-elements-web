@@ -441,17 +441,20 @@ export default class WebServer extends EventEmitter{
                         data = route.data
                     }
                 }
+                
                 const content = await this.renderRouteContent(route, data)
                 const routeUrl = route.url.replaceAll('*', '-')
                 const routePath = path.join(distPath, WebServer.urlToFileName(routeUrl))
                 log.i(`Route written: ${path.relative(distPath, routePath)} in ${(performance.now() - performanceStart).toFixed(2)} ms`)
                 fs.writeFileSync(routePath, content)
-
-                route.behaviors.bundles.forEach(bundle => {
-                    if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
-                        collectedBehaviors.push(bundle)
-                    }
-                })
+                
+                if ( route.behaviors ){
+                    route.behaviors.bundles.forEach(bundle => {
+                        if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
+                            collectedBehaviors.push(bundle)
+                        }
+                    })
+                }
             }
         }
 

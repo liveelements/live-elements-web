@@ -226,7 +226,8 @@ export class ServerViewRoute extends ServerRoute{
             }
         }
 
-        return new ValueWithReport(undefined, behaviorReport)
+        const content = domEmulator.serializeDOM(pageDOM)
+        return new ValueWithReport(content, behaviorReport)
     }
 }
 
