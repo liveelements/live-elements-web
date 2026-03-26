@@ -1,12 +1,10 @@
 component TreeNode{
     default children
     string label: ''
-    boolean noNavigate: false
 
-    constructor(label:string, noNavigate:boolean){
+    constructor(label:string){
         super()
         TreeNode.prototype.__initialize.call(this)
         this.label = label
-        this.noNavigate = noNavigate ?? false
     }
 }
