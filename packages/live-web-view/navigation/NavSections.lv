@@ -59,9 +59,9 @@ component NavSections < Div{
             const C = d.toggle ? NavContentToggle : NavContent
             return C{ 
                 Ul{
-                    children: d.links.map(link => {
+                    children: d.links ? d.links.map(link => {
                         return NavSections.createFromLink(link, active)
-                    })
+                    }) : []
                 }
             }
         })

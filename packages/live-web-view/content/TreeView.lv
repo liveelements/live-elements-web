@@ -134,10 +134,10 @@ component TreeView < Ul{
                                 return
 
                             if ( that ){
-                                const expandElement = TreeView.__search(that, p)
+                                const expandElement = that.dom === p ? that : TreeView.__search(that, p)
                                 if ( !expandElement )
                                     return 
-                                
+
                                 const expandable = expandElement.children.find(c => c.classes.includes('expandable'))
                                 const expander = expandElement.children.find(c => c.classes.includes('expander') && c.expand && c.collapse)
 
