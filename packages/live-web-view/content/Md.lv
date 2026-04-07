@@ -1,0 +1,115 @@
+import live-web.dom
+import live-web
+import live-elements-web-server.view
+import live-elements-web-server.style
+
+import {marked} from 'marked'
+
+component Md < Div{
+    static any[] use = []
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat(ScopedStyle.className(Md))
+    
+    string content
+    prop handleLink: (a: string) => string = (url) => url
+
+    constructor(md:string){
+        super()
+        this{ content = md }
+    }
+
+    children: this.content ? Md.renderMarkdown(this.content, this.handleLink) : []
+
+
+    static fn renderMarkdown(text: string, handleLink: (a:string) => string) {
+        if (!text) 
+            return []
+        const tokens = marked.lexer(text)
+        const linkHandler = handleLink ? handleLink : (url) => { return url }
+        return Md.renderTokens(tokens, linkHandler)
+    }
+
+    static fn renderTokens(tokens: any[], handleLink: (a:string) => string ) {
+        if (!tokens) return []
+        return tokens.map(token => Md.renderToken(token, handleLink)).filter(t => t !== null)
+    }
+
+    static fn renderToken(token: any, handleLink: (a: string) => string) {
+        switch (token.type) {
+            case 'heading':
+                const HeadingTag = [H1S, H2S, H3S, H4S, H5S, H6S][token.depth - 1] || H1S
+                return HeadingTag.(token.text){ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'paragraph':
+                return P{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'text':
+                if (token.tokens) {
+                    return Span{ children: Md.renderTokens(token.tokens, handleLink) }
+                }
+                return T{ text: token.text }
+            case 'strong':
+                return Strong{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'em':
+                return I{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'del':
+                return Del{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'codespan':
+                return Code{ children: [T{ text: token.text }] }
+            case 'code':
+                return Pre{ children: [Code{ children: [T{ text: token.text }] }] }
+            case 'list':
+                const ListTag = token.ordered ? Ol : Ul
+                return ListTag{ children: Md.renderTokens(token.items, handleLink) }
+            case 'list_item':
+                return Li{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'blockquote':
+                return Blockquote{ children: Md.renderTokens(token.tokens, handleLink) }
+            case 'hr':
+                return Hr{}
+            case 'link':
+                return A{ href: handleLink(token.href) props: ({title: token.title}) children: Md.renderTokens(token.tokens, handleLink) }
+            case 'image':
+                return Img{ src: token.href alt: token.text props: ({title: token.title}) }
+            case 'br':
+                return Br{}
+            case 'checkbox':
+                return Input{ type: 'checkbox' value: token.checked props: ({disabled: true}) }
+            case 'escape':
+                return T{ text: token.text }
+            case 'table':
+                return Table{
+                    children: [
+                        THead{
+                            children: [
+                                Tr{
+                                    children: token.header.map((cell, i) => Th{
+                                        props: ({ align: token.align[i] })
+                                        children: Md.renderTokens(cell.tokens, handleLink)
+                                    })
+                                }
+                            ]
+                        },
+                        TBody{
+                            children: token.rows.map(row => Tr{
+                                children: row.map((cell, j) => Td{
+                                    props: ({ align: token.align[j] })
+                                    children: Md.renderTokens(cell.tokens, handleLink)
+                                })
+                            })
+                        }
+                    ]
+                }
+            case 'space':
+                return null
+            case 'def':
+                return null
+            case 'html':
+                return T{ text: token.text }
+            case 'tag':
+                return T{ text: token.text }
+            default:
+                console.log("Unhandled token type:", token.type, token)
+                return T{ text: token.raw || '' }
+        }
+    }
+}
