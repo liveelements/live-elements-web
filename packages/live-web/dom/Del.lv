@@ -1,0 +1,8 @@
+
+component Del < DOMElement{
+
+    constructor(){
+        super('del')
+        Del.prototype.__initialize.call(this)
+    }
+}

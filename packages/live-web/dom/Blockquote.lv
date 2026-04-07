@@ -1,0 +1,8 @@
+
+component Blockquote < DOMElement{
+
+    constructor(){
+        super('blockquote')
+        Blockquote.prototype.__initialize.call(this)
+    }
+}
