@@ -1,0 +1,7 @@
+{
+    "children": ["packages/live-web"],
+    "ignore": ["**/samples/**", "**/test/**"],
+    "templates": {
+        "index": "./docs/templates/index.template.md"
+    }
+}
