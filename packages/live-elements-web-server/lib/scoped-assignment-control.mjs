@@ -45,13 +45,18 @@ export default class ScopedAssignmentControl{
                 usage.push(null)
             }
         }
+        const inherits = sc.inherits ? ScopedAssignmentControl.__toViewUsageAssignmentStructure(assignmentMap, sc.inherits) : null
         const fullName = sc.uri
         const renderProperties = assignmentMap.hasOwnProperty(fullName)
             ? { classes: assignmentMap[fullName].classes }
             : assignmentMap.hasOwnProperty(sc.name) ? { classes: assignmentMap[sc.name].classes } : {}
         renderProperties['name'] = sc.name
 
-        return {
+        return inherits ? {
+            renderProperties: renderProperties,
+            use: usage,
+            inh: inherits
+        } : {
             renderProperties: renderProperties,
             use: usage
         }
@@ -68,6 +73,7 @@ export default class ScopedAssignmentControl{
                 }
             }
         }
+        const inherits = cassign.inherits ? ScopedAssignmentControl.__toViewUsageAssignmentStructureFromAssignments(assignmentMap, cassign.inherits) : null
         const fullName = cassign.uri
         const name = cassign.name
         const renderProperties = assignmentMap.hasOwnProperty(fullName)
@@ -75,7 +81,11 @@ export default class ScopedAssignmentControl{
             : assignmentMap.hasOwnProperty(name) ? { classes: assignmentMap[name].classes } : {}
         renderProperties['name'] = name
 
-        return {
+        return inherits ? {
+            renderProperties: renderProperties,
+            use: usage,
+            inh: inherits
+        } : {
             renderProperties: renderProperties,
             use: usage
         }

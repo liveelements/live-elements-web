@@ -155,6 +155,11 @@ export default class ClientPageViewLoader{
                 }
             }
         }
+        if ( scopedStyles.inh ){
+            const result = ClientPageViewLoader.__populateScopedStyles(scopedStyles.inh, Object.getPrototypeOf(c), assertionSupport)
+            if ( !result.value )
+                return result
+        }
         return { value: true }
     }
 

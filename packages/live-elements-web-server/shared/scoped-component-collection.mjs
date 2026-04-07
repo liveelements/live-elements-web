@@ -74,6 +74,9 @@ export default class ScopedComponentCollection{
                     current.addUse(sc)
                     collection.addScopedComponent(sc)
                     ScopedComponentCollection.__recurseAddComponentData(sc, use, collection, view)
+                } else {
+                    exists.addViewUsage(view)
+                    current.addUse(exists)
                 }
             } else if ( use._ === 's' ){
                 current.createStyle(use.src, use.process)
