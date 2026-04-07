@@ -1,0 +1,20 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component BreadcrumbSeparator < Li{
+    id: root
+    string text: '/'
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(BreadcrumbSeparator)])
+    children: [
+        Svg{
+            props: ({width: '15', height: '15', viewBox: '0 0 16 16', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+            Line{
+                props: ({x1: '6.4', y1: '2.2', x2: '9.6', y2: '8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+            }
+            Line{
+                props: ({x1: '9.6', y1: '8', x2: '6.4', y2: '13.8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+            }
+        }
+    ]
+}

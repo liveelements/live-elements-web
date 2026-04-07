@@ -1,0 +1,62 @@
+import live-web.dom
+import live-elements-web-server.style
+import .content
+import .overlay
+
+component Breadcrumbs < Ol{
+    id: breadcrumbs
+
+    static any[] use = [
+        BreadcrumbItem,
+        BreadcrumbSeparator,
+        Dropdown,
+        ScopedStyle{ src: './style/breadcrumbs.css' process: '../style/CSSProcessor.lv' }
+    ]
+
+    Object[] data: []
+    Object separator: BreadcrumbSeparator
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([ScopedStyle.className(Breadcrumbs)])
+
+    static fn createFromItem(item:Object){
+        if ( item.type === 'dropdown' ){
+            return BreadcrumbItem{
+                Dropdown{
+                    DropdownToggleButton{
+                        children: item.image
+                            ? [Span{ on domChanged: () => { this.dom.innerHTML = item.image } }]
+                            : [T{ text: item.label }]
+                    }
+                    DropdownContent{
+                        UlV{
+                            children: item.children.map(child => {
+                                return Li{
+                                    A{ href: child.link T{ text: child.label } }
+                                }
+                            })
+                        }
+                    }
+                }
+            }
+        } else {
+            return BreadcrumbItem{
+                A{ href: item.link T{ text: item.label } }
+            }
+        }
+    }
+
+    static fn createFromData(data:Object[], SeparatorType:Object){
+        if ( !data || data.length === 0 ) return []
+        const result = []
+        data.forEach((item, i) => {
+            result.push(Breadcrumbs.createFromItem(item))
+            if ( i < data.length - 1 ){
+                result.push(SeparatorType{})
+            }
+        })
+        return result
+    }
+
+    children: Breadcrumbs.createFromData(breadcrumbs.data, breadcrumbs.separator)
+}

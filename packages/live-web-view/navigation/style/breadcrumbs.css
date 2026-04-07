@@ -1,0 +1,15 @@
+&Breadcrumbs{
+    @apply flex flex-row flex-wrap items-center list-none p-0 m-0 text-sm;
+}
+&BreadcrumbItem{
+    @apply flex items-center list-none;
+}
+&BreadcrumbItem a{
+    @apply text-mono-5 dark:text-mono-a no-underline hover:text-mono-1 dark:hover:text-mono-e font-sans;
+}
+&BreadcrumbSeparator{
+    @apply mx-1.5 text-mono-8 dark:text-mono-6 select-none flex items-center list-none text-xs;
+}
+&Breadcrumbs &DropdownToggleButton{
+    @apply text-sm px-1.5 py-0.5 border-0 bg-[transparent] text-mono-5 dark:text-mono-a hover:text-mono-1 dark:hover:text-mono-e rounded;
+}

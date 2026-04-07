@@ -1,0 +1,209 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.navigation
+import live-web-view.overlay
+import .docs.internal
+
+component BreadcrumbsDoc{
+    default children
+
+    Content{
+        H1S`Breadcrumbs`
+        P{
+            T`The `Code`Breadcrumbs`T` component displays the current page location within a navigational hierarchy.`
+        }
+        H2S`Basic Breadcrumbs`
+        P{
+            T`Use `Code`BreadcrumbItem`T` for each entry and `Code`BreadcrumbSeparator`T` between them.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Breadcrumbs{
+            BreadcrumbItem{
+                A{ href: '#' T`Home` }
+            }
+            BreadcrumbSeparator{}
+            BreadcrumbItem{
+                A{ href: '#' T`Library` }
+            }
+            BreadcrumbSeparator{}
+            BreadcrumbItem{
+                A{ href: '#' T`Current Page` }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [Breadcrumbs]
+        ```
+        ContentSource```
+            Breadcrumbs{
+                BreadcrumbItem{
+                    A{ href: '#' T\`Home\` }
+                }
+                BreadcrumbSeparator{}
+                BreadcrumbItem{
+                    A{ href: '#' T\`Library\` }
+                }
+                BreadcrumbSeparator{}
+                BreadcrumbItem{
+                    A{ href: '#' T\`Current Page\` }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Breadcrumbs with Dropdown`
+        P{
+            T`Use a `Code`Dropdown`T` inside a `Code`BreadcrumbItem`T` to display collapsed navigation items.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Breadcrumbs{
+            BreadcrumbItem{
+                A{ href: '#' T`Home` }
+            }
+            BreadcrumbSeparator{}
+            BreadcrumbItem{
+                Dropdown{
+                    DropdownToggleButton{
+                        T`...`
+                    }
+                    DropdownContent{
+                        UlV{
+                            Li{ A{ href: '#' T`Library` } }
+                            Li{ A{ href: '#' T`Archive` } }
+                        }
+                    }
+                }
+            }
+            BreadcrumbSeparator{}
+            BreadcrumbItem{
+                A{ href: '#' T`Current Page` }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.navigation
+            import live-web-view.overlay
+        ```
+        UseSource```
+            static any[] use = [Breadcrumbs]
+        ```
+        ContentSource```
+            Breadcrumbs{
+                BreadcrumbItem{
+                    A{ href: '#' T\`Home\` }
+                }
+                BreadcrumbSeparator{}
+                BreadcrumbItem{
+                    Dropdown{
+                        DropdownToggleButton{
+                            T\`...\`
+                        }
+                        DropdownContent{
+                            UlV{
+                                Li{ A{ href: '#' T\`Library\` } }
+                                Li{ A{ href: '#' T\`Archive\` } }
+                            }
+                        }
+                    }
+                }
+                BreadcrumbSeparator{}
+                BreadcrumbItem{
+                    A{ href: '#' T\`Current Page\` }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Breadcrumbs from Data`
+        P{
+            Code`Breadcrumbs`T` can be created from data. Each item defaults to type `Code`link`T`.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Breadcrumbs{
+            data: [
+                { label: 'Home', link: '#' },
+                { label: 'Library', link: '#' },
+                { label: 'Current Page', link: '#' }
+            ]
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [Breadcrumbs]
+        ```
+        ContentSource```
+            Breadcrumbs{
+                data: [
+                    { label: 'Home', link: '#' },
+                    { label: 'Library', link: '#' },
+                    { label: 'Current Page', link: '#' }
+                ]
+            }
+        ```
+    }
+
+    Content{
+        H2S`Data with Dropdown`
+        P{
+            T`Data items with `Code`type: 'dropdown'`T` render a dropdown with nested children.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Breadcrumbs{
+            data: [
+                { label: 'Home', link: '#' },
+                { type: 'dropdown', label: '...', children: [
+                    { label: 'Library', link: '#' },
+                    { label: 'Archive', link: '#' }
+                ]},
+                { label: 'Current Page', link: '#' }
+            ]
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.navigation
+        ```
+        UseSource```
+            static any[] use = [Breadcrumbs]
+        ```
+        ContentSource```
+            Breadcrumbs{
+                data: [
+                    { label: 'Home', link: '#' },
+                    { type: 'dropdown', label: '...', children: [
+                        { label: 'Library', link: '#' },
+                        { label: 'Archive', link: '#' }
+                    ]},
+                    { label: 'Current Page', link: '#' }
+                ]
+            }
+        ```
+    }
+
+}
