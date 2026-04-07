@@ -21,6 +21,8 @@ component Workspace{
         this._name = ''
         this._createdOn = null
         this._mainEntry = ''
+        this._mainEntryData = null
+        this._serverStub = null
         this._from = ''
         this._writeBehavior = Workspace.WriteBehavior.Write
         this._canFork = true
@@ -33,6 +35,9 @@ component Workspace{
     get name(){ return this._name }
     get createdOn(){ return this._createdOn }
     get mainEntry(){ return this._mainEntry }
+    get mainEntryData(){ return this._mainEntryData }
+    get serverStub(){ return this._serverStub }
+    get serverStubData(){ return this.readServerStub() }
     get mainEntryPath(){ return path.join(this._path,this._mainEntry ) }
     get documents(){ return this._documents }
     get compilation(){ return this._compilation }
@@ -54,7 +59,7 @@ component Workspace{
         return `${randomStringPre}-${timestamp}-${randomStringPost}`
     }
 
-    static fn create(location:string, name:string, files:Array<string>, mainEntry:string, author:string){
+    static fn create(location:string, name:string, files:Array<string>, mainEntry:string, author:string, mainEntryData:string, serverStub:string){
         if ( !fs.existsSync(location) ){
             throw new Error(`Failed to create workspace. Location doesn't exist: ${location}`)
         }
@@ -92,6 +97,8 @@ component Workspace{
         ws._path = wspath
         ws._createdOn = new Date()
         ws._mainEntry = mainEntry
+        ws._mainEntryData = mainEntryData ? mainEntryData : null
+        ws._serverStub = serverStub ? serverStub : null
         ws._authro = author ? author : null
         ws._loadedOn = ws._createdOn
 
@@ -105,7 +112,7 @@ component Workspace{
             throw new Error(`Template path doesn\'t exist: '${templatePath}'`)
         }
         const templateInfo = Workspace.loadInfo(templatePath)
-        const newWs = Workspace.create(location, name, [], '', author)
+        const newWs = Workspace.create(location, name, [], '', author, templateInfo.entryData, templateInfo.serverStub)
 
         await WorkspaceFs.copyContents(templatePath, newWs.path)
         
@@ -130,6 +137,8 @@ component Workspace{
         ws._path = wspath
         ws._createdOn = info.createdOn
         ws._mainEntry = info.entry
+        ws._mainEntryData = info.entryData ? info.entryData : null
+        ws._serverStub = info.serverStub ? info.serverStub : null
         ws._writeBehavior = info.writeBehavior
         ws._canFork = info.canFork
         ws._author = info.author
@@ -163,6 +172,8 @@ component Workspace{
         return {
             name: info.name,
             entry: info.entry,
+            entryData: info.entryData,
+            serverStub: info.serverStub,
             from: info.from,
             writeBehavior: info.writeBehavior,
             canFork: info.canFork,
@@ -178,6 +189,17 @@ component Workspace{
             throw new Error(`Can't read file, path doesn't exist: ${fullpath}`)
         }
         return fs.readFileSync(fullpath, 'utf8')
+    }
+
+    fn readServerStub(){
+        if ( !this._serverStub ){
+            return null
+        }
+        const fullpath = path.join(this._path, this._serverStub)
+        if ( !fs.existsSync(fullpath) ){
+            return null
+        }
+        return JSON.parse(fs.readFileSync(fullpath, 'utf8'))
     }
 
     fn saveFile(filePath:string, content:string){
@@ -261,6 +283,8 @@ component Workspace{
         const saveData = {
             name: this._name,
             entry: this._mainEntry,
+            entryData: this._mainEntryData,
+            serverStub: this._serverStub,
             from: this._from,
             writeBehavior: this._writeBehavior,
             canFork: this._canFork,

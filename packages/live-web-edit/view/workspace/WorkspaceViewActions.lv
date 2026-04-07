@@ -8,9 +8,9 @@ instance workspaceViewActions Actions{
     async fn loadWorkspace(data:WorkspaceViewData, workspaceName:string){
         const result = await ApiRequest.get(`${data.serverRoutes.load}/${workspaceName}`)
         if ( result.value ){
-            data.updateFromJSON(result.value)
             data.logMessages = []
             data.errors = []
+            data.updateFromJSON(result.value)
             if ( data.lastCompilation ){
                 const frameRoute = data.route('/v/' + data.workspaceViewUrl)
                 if ( frameRoute !== data.workspaceFrameSrc )

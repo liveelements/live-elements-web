@@ -25,11 +25,23 @@ component WorkspaceOperations{
         page.entryScript = `${baseUrl}/v-scripts/${workspace.name}/ws.bundle.js`
         const domEmulator = new LvDOMEmulator({beautify: true})
         const pageDOM = page.captureDOM(domEmulator)
-        const pageContent = domEmulator.serializeDOM(pageDOM)
+        let pageContent = domEmulator.serializeDOM(pageDOM)
 
         const id = WorkspaceCompilation.generateid()
         const time = new Date()
-        
+
+        if ( workspace.mainEntryData ){
+            const mainEntryDataFile = path.join(workspace.path, workspace.mainEntryData)
+            if ( !fs.existsSync(mainEntryDataFile) ){
+                throw new Error(`Main entry data file not found: ${mainEntryDataFile}`)
+            }
+            const mainEntryData = JSON.parse(fs.readFileSync(mainEntryDataFile, 'utf8'))
+            pageContent = pageContent.replace(
+                '</head>', 
+                `\n<script>window.__serverData__ = ${JSON.stringify(mainEntryData)}</script></head>`
+            )
+        }
+    
         const loaderScriptContent = generateLoader({
             mainEntry: `./${workspace.mainEntry}`,
             usagesRoute: `${baseUrl}/v-use/${workspace.name}`
@@ -81,7 +93,7 @@ component WorkspaceOperations{
             return compilation
         
         } catch ( e ){
-            console.error(e)
+            console.error('Workspace compilation error:', e)
             return WorkspaceCompilation.__createFromErrors(
                 e instanceof Array ? e : [e], id, time, workspace
             )
@@ -91,7 +103,6 @@ component WorkspaceOperations{
     //(wscomp:WorkspaceCompilation, usageStructure:Object, wsname:string, baseUrlParam:string)
     Object updateCompilationUsages: async (wscomp, usageStructure, wsname, baseUrlParam) => {
         const baseUrl = baseUrlParam ? baseUrlParam : ''
-
         const scopedCollection = ScopedComponentCollection.fromJSON(usageStructure)
         ScopedComponentPaths.resolveRelativePaths(scopedCollection, path.resolve('.'))
         const viewsc = scopedCollection.findScopedComponentByUri(usageStructure.uri)

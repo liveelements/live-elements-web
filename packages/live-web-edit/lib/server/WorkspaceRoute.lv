@@ -71,7 +71,10 @@ component WorkspaceRoute < Route{
         return {
             name: ws.name,
             documents: ws.documents,
-            entry: ws.entry,
+            entry: ws.mainEntry,
+            entryData: ws.mainEntryData,
+            serverStub: ws.serverStub,
+            serverStubData: ws.serverStubData,
             writeBehavior: ws.writeBehavior,
             compilation: ws.compilation ? {
                 identifier: ws.compilation.identifier,

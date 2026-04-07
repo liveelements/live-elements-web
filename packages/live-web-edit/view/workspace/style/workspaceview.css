@@ -14,12 +14,17 @@
     @apply h-[calc(100vh-3rem)];
 }
 
+&SplitLayout .handle.hide{
+    @apply hidden;
+}
+
 &SplitLayout &SplitPane&.flex-content{
     @apply flex flex-col;
 }
 
 &SplitLayout &SplitPane .error-box.show{
-    @apply bg-[rgb(105,28,35)] p-1 border border-mono-6 text-mono-e;
+    @apply bg-[#311417] p-1 border border-[#d93e3e] rounded-xl text-mono-e max-h-[50%] overflow-y-auto;
+    scrollbar-color: #aaa transparent;
 }
 &SplitLayout &SplitPane .error-box .error{
     @apply p-2;

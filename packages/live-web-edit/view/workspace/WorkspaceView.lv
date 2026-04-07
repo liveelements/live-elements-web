@@ -22,6 +22,7 @@ component WorkspaceView < Div{
         IconButton,
         WriteLockButton,
         CompileButton,
+        ToggleEditorButton,
         ForkButton,
         TopNav,
         Resizable,
@@ -58,8 +59,13 @@ component WorkspaceView < Div{
 
     boolean forkEnabled: true
     boolean lockEnabled: true
+    boolean openEnabled: true
+    boolean toggleEditorEnabled: false
+    boolean editorVisible: true
+    string editorPaneWidthBeforeHide: ''
     DOMElement tabLayout: tabLayout
     DOMElement frame: frame
+    DOMElement errorHeader: null
     Object codeEditorThemes = ({
         light: CodeEditorView.lightTheme,
         dark: CodeEditorView.darkTheme
@@ -77,6 +83,54 @@ component WorkspaceView < Div{
             wsView.frame.refresh()
         }
     }
+    fn toggleEditorPaneHandler(){
+        const wsView = this
+        const splitLayoutDom = this.ids.workspaceSplitLayout.dom
+        if ( !splitLayoutDom || splitLayoutDom.children.length < 3 )
+            return
+
+        const editorPane = splitLayoutDom.children[0]
+        const handle = splitLayoutDom.children[1]
+        const framePane = splitLayoutDom.children[2]
+        const currentWidth = (editorPane.style.width || '').trim().toLowerCase()
+        const editorPaneRect = editorPane.getBoundingClientRect()
+        const domCollapsed = currentWidth === '0px' || editorPaneRect.width < 1
+
+        if ( !wsView.editorVisible ){
+            if ( domCollapsed )
+                return
+            if ( editorPaneRect.width > 0 )
+                wsView.editorPaneWidthBeforeHide = `${Math.round(editorPaneRect.width)}px`
+            else if ( currentWidth && currentWidth !== '0px' )
+                wsView.editorPaneWidthBeforeHide = currentWidth
+
+            editorPane.style.width = '0px'
+            framePane.style.width = '100%'
+            editorPane.style.height = '100%'
+            framePane.style.height = '100%'
+            if ( handle && handle.classList )
+                handle.classList.add('hide')
+            return
+        }
+
+        if ( !domCollapsed )
+            return
+
+        const restoredWidth = wsView.editorPaneWidthBeforeHide && wsView.editorPaneWidthBeforeHide !== '0px'
+            ? wsView.editorPaneWidthBeforeHide
+            : '50%'
+
+        editorPane.style.width = restoredWidth
+        framePane.style.width = `calc(100% - ${restoredWidth})`
+        editorPane.style.height = '100%'
+        framePane.style.height = '100%'
+        if ( handle && handle.classList )
+            handle.classList.remove('hide')
+    }
+
+    on editorVisibleChanged: () => {
+        this.toggleEditorPaneHandler(this)
+    }
 
     constructor(data:Object){
         super()
@@ -87,7 +141,7 @@ component WorkspaceView < Div{
     async fn completed(){
         window.addEventListener('message', (event) => {
             if (event.data.type === 'error') {
-                this.data.errors = [`Client error: ${event.data.message}`]
+                this.data.errors = [`Client error: ${event.data.message}\n${event.data.stack}`]
             } else if ( event.data.type === 'log' ){
                 this.data.appendLogMessage(event.data.message.join(' '))
             }
@@ -122,12 +176,15 @@ component WorkspaceView < Div{
     TopNav{ position: 'static'
         NavContent{
             children: [
-                TooltipArea{
-                    OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.toggleWorkspaceOpenSelector(); } }
-                    Tooltip`Open Workspace`
-                },
-                ...(workspaceView.forkEnabled ? 
-                    [TooltipArea{
+                ...(workspaceView.openEnabled 
+                    ? [TooltipArea{
+                        OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.toggleWorkspaceOpenSelector(); } }
+                        Tooltip`Open Workspace`
+                    }] 
+                    : []
+                ),
+                ...(workspaceView.forkEnabled 
+                    ? [TooltipArea{
                         ForkButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.fork() }}
                         Tooltip`Fork`
                     }] 
@@ -142,11 +199,18 @@ component WorkspaceView < Div{
                     Tooltip`Save & Compile`
                 },
 
-                ...(workspaceView.lockEnabled ? 
-                    [TooltipArea{
+                ...(workspaceView.lockEnabled 
+                    ? [TooltipArea{
                         WriteLockButton{ isLocked: workspaceView.data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write on click: () => { workspaceView.actions.lockWrite() }  }
                         Tooltip`Lock Write`
                     }] 
+                    : []
+                ),
+                ...(workspaceView.toggleEditorEnabled
+                    ? [TooltipArea{
+                        ToggleEditorButton{ on click: (e) => { e.preventDefault(); workspaceView.editorVisible = !workspaceView.editorVisible } }
+                        Tooltip`Toggle Editor`
+                    }]
                     : []
                 )
             ]
@@ -211,8 +275,9 @@ component WorkspaceView < Div{
                         TabHeader{
                             children: workspaceView.data.editors.map(editor => {
                                 const document = editor.document
+                                const name = document.path.split('/').pop() || document.path
                                 return TabButton{ 
-                                    T{ text: (document.isDirty ? '*' + document.path : document.path ) }
+                                    T{ text: (document.isDirty ? '*' : '') + name }
                                 }
                             })
                         }
@@ -254,9 +319,14 @@ component WorkspaceView < Div{
                         }
                     }
                     Div{ classes: ['error-box', workspaceView.data.errors.length ? 'show' : '']
-                        children: workspaceView.data.errors.map(e => { 
-                            return Div{ classes: ['error'] T{ text: e } }
-                        })
+                        Header{
+                            children: workspaceView.data.errors.length && workspaceView.errorHeader ? [workspaceView.errorHeader] : []
+                        }
+                        Div{
+                            children: workspaceView.data.errors.map(e => { 
+                                return Pre{ classes: ['error'] T{ text: e } }
+                            })
+                        }
                     }
                 },
                 SplitPane{
@@ -336,7 +406,7 @@ component WorkspaceView < Div{
                         if ( !dom.contains(e.target) ){
                             workspaceView.data.workspaceSelector = false
                         }
-                    }   
+                    }
                 }
             }
         }

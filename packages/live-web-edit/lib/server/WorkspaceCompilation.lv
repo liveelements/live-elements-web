@@ -32,11 +32,14 @@ component WorkspaceCompilation{
     }
 
     static fn __replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
-        const paths = []
+        const paths = [workspace.path + '/', workspace.path]
         let p = workspace.path
         while ( p ){
-            paths.push(p)
             const parentPath = path.dirname(p)
+            if ( fs.existsSync(path.join(p, 'package.json'))){
+                paths.push(p + '/')
+                paths.push(p)
+            }
             if ( parentPath === p )
                 break
             p = parentPath
@@ -50,7 +53,6 @@ component WorkspaceCompilation{
     }
 
     static fn __createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspace:Workspace){
-        
         const errs = errors.map(error => {
             return {
                 message: WorkspaceCompilation.__replaceMessageWorkspacePaths(error.message, workspace)

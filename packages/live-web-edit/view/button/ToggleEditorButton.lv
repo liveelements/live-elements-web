@@ -1,0 +1,26 @@
+import live-web.dom
+import live-web.behavior
+import live-elements-web-server.style
+import live-web-view.button
+
+component ToggleEditorButton < IconButton{
+    id: toggleEditorButton
+    static any[] use = []
+    classes: [ScopedStyle.className(ToggleEditorButton)]
+
+    Svg{
+        props: ({width: '15', height: '15', viewBox: '0 0 16 16', fill: 'none', xmlns: 'http://www.w3.org/2000/svg'})
+        Line{
+            props: ({x1: '6', y1: '2.2', x2: '2.8', y2: '8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+        }
+        Line{
+            props: ({x1: '2.8', y1: '8', x2: '6', y2: '13.8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+        }
+        Line{
+            props: ({x1: '10', y1: '2.2', x2: '13.2', y2: '8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+        }
+        Line{
+            props: ({x1: '13.2', y1: '8', x2: '10', y2: '13.8', stroke: {'': 'currentColor', width: '1.6', linecap: 'round', linejoin: 'round'}})
+        }
+    }
+}
