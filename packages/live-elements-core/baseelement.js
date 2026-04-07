@@ -350,7 +350,7 @@ export class BaseElement{
         for ( let i = 0; i < bindingEvents.length; ++i ){
             const conn = bindingEvents[i]
             if ( !(conn.eventName in conn.emitterObject) ){
-                throw new Error("Failed to find event \'" + conn.eventName + "\' in object of type \'" +  conn.emitterObject.constructor.name + "\'")
+                throw new Error(`Failed to find event '${conn.eventName}' in object of type '${conn.emitterObject.constructor.name}'`)
             }
             conn.emitterObject[conn.eventName].listeners.push(conn)
         }

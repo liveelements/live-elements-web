@@ -32,7 +32,9 @@ module.exports = function (_source){
                 } else if ( err.error ){
                     if ( err.source ){
                         err.error.source = err.source
-                        err.error.message += ' At file ' + err.error.source.file + ':' + err.error.source.line + ':' + err.error.source.column
+                        if ( !err.error.message.includes(err.error.source.file) ){
+                            err.error.message += ' At file ' + err.error.source.file + ':' + err.error.source.line + ':' + err.error.source.column
+                        }
                     }
                     callback(err.error)
                 } else {

@@ -12,6 +12,7 @@
     "importLocalPath" : "node_modules",
     "packageBuildPath" : "build",
     "outputExtension" : "mjs",
+    "outputTarget": "JS_DTS",
     "enableComponentMetaInfo": true,
     "allowUnresolved" : false
 }

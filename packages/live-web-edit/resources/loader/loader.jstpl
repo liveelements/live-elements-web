@@ -48,14 +48,16 @@ importer.then(imp => {
             .catch(error => {
                 window.parent.postMessage({
                     type: 'error',
-                    message: error.message
+                    message: error.message, 
+                    stack: error.stack.replace(error.message, '')
                 }, '*')
             })
 
     } catch ( error ){
         window.parent.postMessage({
             type: 'error',
-            message: error.message
+            message: error.message,
+            stack: error.stack.replace(error.message, '')
         }, '*')
     }
 })

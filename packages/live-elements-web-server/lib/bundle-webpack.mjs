@@ -171,6 +171,25 @@ export default class WebpackBundler extends EventEmitter {
     get middleware() { return this._middleware; }
     get virtualModulesPlugin(){ return this._virtualModulesPlugin }
 
+    /** Webpack wraps loader failures as "Module build failed (from …):"; keep the underlying message only. */
+    static __webpackErrorMessage(message) {
+        if (typeof message !== 'string') {
+            return message
+        }
+        let s = message
+        const withPrefix = /^\s*(?:Error|PublicError):\s*Module build failed \(from [^)]+\):\s*\n?/
+        const bare = /^\s*Module build failed \(from [^)]+\):\s*\n?/
+        if (withPrefix.test(s)) {
+            s = s.replace(withPrefix, '')
+        } else if (bare.test(s)) {
+            s = s.replace(bare, '')
+        } else {
+            return message
+        }
+        s = s.trim()
+        return s.length > 0 ? s : message
+    }
+
     static compile(entries, config){
         const virtualModules = {}
         const entriesConfig = {}
@@ -225,7 +244,9 @@ export default class WebpackBundler extends EventEmitter {
                 }
                 const info = stats.toJson()
                 if (stats.hasErrors()) {
-                    resolve(ValueWithReport.fromErrors(info.errors.map(e => new Error(e.message))))
+                    resolve(ValueWithReport.fromErrors(
+                        info.errors.map(e => new Error(WebpackBundler.__webpackErrorMessage(e.message)))
+                    ))
                     return
                 }
 
