@@ -21,18 +21,41 @@ component SelectInput < Div{
     string controlId
     Object[] options: []
 
-    Select{ name: selectInput.name props: ({ tabIndex: selectInput.tabIndex }) glid: selectInput.controlId
+    any value: ''
+    on valueChanged: () => {
+        if ( this.dom ){
+            const sel = selectChild.currentValue
+            this.currentValue = sel
+        }
+    }
+    any currentValue: ''
+
+    Select{ 
+        id: selectChild
+        name: selectInput.name 
+        props: ({ tabIndex: selectInput.tabIndex }) 
+        glid: selectInput.controlId
+        on change: (e) => {
+            selectInput.value = e.target.value
+        }
         children: []
             .concat(selectInput.placeholder 
-                ? [Option{ value: '' props = { disabled: true, selected: true, hidden: true} T{ text: selectInput.placeholder } }]
-                : [])
+                ? [ Option{ 
+                    value: ''
+                     props = { disabled: !!selectInput.value, selected: !selectInput.value ? true : null, hidden: !!selectInput.value } 
+                     T{ text: selectInput.placeholder } }
+                ] : [])
             .concat(selectInput.options.map(option => {
-                return Option{ value: option.value T{ text: option.label } }
+                return Option{ 
+                    value: option.value 
+                    props = { selected: option.value === selectInput.value ? true : null } 
+                    T{ text: option.label } 
+                }
             }))
     }
 
     Span{ classes: ['select-opener']
-        T{ text: selectInput.placeholder }
+        T{ text: (selectInput.options.find(o => o.value === selectInput.value)?.label || selectInput.placeholder) }
         Svg{ 
             classes: ['select-caret']
             props = {viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'}
