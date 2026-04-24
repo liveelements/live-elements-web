@@ -26,23 +26,21 @@ h6 {
   @apply text-sm font-medium;
 }
 
-p {
-  @apply text-base text-mono-4 dark:text-mono-b leading-relaxed my-4;
+p{
+  @apply text-base text-mono-4 dark:text-mono-b leading-relaxed my-3;
 }
 a {
   @apply text-mono-2 dark:text-mono-e underline;
 }
 
 ul {
-  @apply list-disc list-inside;
+  @apply list-disc list-outside pl-6;
 }
-
-ol {
-  @apply list-decimal list-inside;
-}
-
 li {
-  @apply my-2;
+  @apply text-base text-mono-4 dark:text-mono-b leading-relaxed my-2 pl-2;
+}
+ol {
+  @apply list-decimal list-outside pl-6;
 }
 
 code {
@@ -61,24 +59,22 @@ blockquote {
   @apply border-l-4 border-mono-c dark:border-mono-3 pl-4 py-2 italic;
 }
 
-table {
-  @apply min-w-full divide-y divide-gray-200;
+table{
+    @apply font-sans min-w-full divide-y divide-mono-d dark:divide-mono-4;
 }
 
-thead {
-  @apply bg-mono-e dark:bg-mono-2;
+table thead th{
+    @apply text-sm px-4 py-3 text-left font-medium text-mono-6 dark:text-mono-8;
 }
 
-th {
-  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+table tbody{
+    @apply text-lg divide-y divide-mono-d dark:divide-mono-4;
 }
-
-td {
-  @apply px-6 py-4 whitespace-nowrap;
+table tbody td{
+    @apply text-sm px-4 py-2 text-left;
 }
-
-tr {
-  @apply bg-white even:bg-gray-50;
+table tbody td button{
+    @apply text-sm px-2 py-2;
 }
 
 img {
