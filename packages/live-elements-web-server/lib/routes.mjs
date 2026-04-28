@@ -10,15 +10,17 @@ import url from 'url'
 import WebpackBundler from "./bundle-webpack.mjs"
 
 export class ServerRoute{
-    constructor(url, userMiddleware, f){
+    constructor(url, userMiddleware, f, name){
         this._userMiddleware = userMiddleware
         this._url = url
         this._f = f
+        this._name = name
     }
 
     get userMiddleware(){ return this._userMiddleware }
     get url(){ return this._url }
     get f(){ return this._f }
+    get name(){ return this._name }
 
     appendMiddleware(middlewares){
         if ( !Array.isArray(this._userMiddleware) ){
@@ -32,8 +34,8 @@ export class ServerRoute{
 }
 
 export class ServerApiRoute extends ServerRoute{
-    constructor(url, userMiddleware, f, type){
-        super(url, userMiddleware, f)
+    constructor(url, userMiddleware, f, type, name){
+        super(url, userMiddleware, f, name)
         this._type = type
     }
 
@@ -47,8 +49,8 @@ ServerApiRoute.GET  = 1
 ServerApiRoute.POST = 2
 
 export class ServerMiddlewareRoute extends ServerRoute{
-    constructor(url, userMiddleware, f){
-        super(url, userMiddleware, f)
+    constructor(url, userMiddleware, f, name){
+        super(url, userMiddleware, f, name)
     }
 
     static isType(ob){ return ob instanceof ServerMiddlewareRoute }
@@ -58,8 +60,8 @@ export class ServerMiddlewareRoute extends ServerRoute{
 
 export class ServerViewRoute extends ServerRoute{
 
-    constructor(url, userMiddleware, f, c, render, data, placement, page){
-        super(url, userMiddleware, f)
+    constructor(url, userMiddleware, f, c, render, data, placement, page, name){
+        super(url, userMiddleware, f, name)
         this._c            = c
         this._render       = render
         this._data         = data

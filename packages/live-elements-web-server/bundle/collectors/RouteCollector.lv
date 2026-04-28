@@ -44,20 +44,23 @@ component RouteCollector < BundleDataCollector{
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
                 route.f,
-                ServerApiRoute.GET
+                ServerApiRoute.GET,
+                route.name
             )
         } else if ( route instanceof PostRoute ){
             return new ServerApiRoute(
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
                 route.f,
-                ServerApiRoute.POST
+                ServerApiRoute.POST,
+                route.name
             )
         } else if ( route instanceof MiddlewareRoute && route.f && route.url ){
             return new ServerMiddlewareRoute(
                 prefix ? prefix + route.url : route.url,
                 routeUserMiddleware,
-                route.f
+                route.f,
+                route.name
             )
         } else if ( route instanceof ViewRoute ){
             let placement = []
@@ -98,7 +101,8 @@ component RouteCollector < BundleDataCollector{
                 route.render,
                 route.data,
                 placement,
-                page
+                page,
+                route.name
             )
         }
     }

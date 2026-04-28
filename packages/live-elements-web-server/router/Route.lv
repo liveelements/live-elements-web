@@ -9,6 +9,7 @@ component Route{
     }
 
     string url: ''
+    string name
     any f: null
     number type= Route.Get
     any middleware: null
