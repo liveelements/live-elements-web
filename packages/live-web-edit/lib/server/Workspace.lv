@@ -186,7 +186,7 @@ component Workspace{
     fn readFile(filePath:string){
         const fullpath = path.join(this._path, filePath)
         if ( !fs.existsSync(fullpath) ){
-            throw new Error(`Can't read file, path doesn't exist: ${fullpath}`)
+            throw new Error(`Can't read file, path doesn't exist: ${filePath}`)
         }
         return fs.readFileSync(fullpath, 'utf8')
     }
