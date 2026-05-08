@@ -17,17 +17,47 @@ component SelectInput < Div{
 
     string placeholder: 'Select ...'
     string name: ''
-    number tabIndex: 0
+    number tabIndex
     string controlId
     Object[] options: []
+    string currentValue
+    event change(e:Event)
 
-    Select{ name: selectInput.name props: ({ tabIndex: selectInput.tabIndex }) glid: selectInput.controlId
+    Select{ name: selectInput.name 
+        props: (selectInput.tabIndex !== undefined ? {tabIndex: selectInput.tabIndex} : {}) glid: selectInput.controlId
+        on change: (e) => {
+            selectInput.currentValue = e.target.value
+            selectInput.change.emit(e)
+        }
         children: []
             .concat(selectInput.placeholder 
-                ? [Option{ value: '' props = { disabled: true, selected: true, hidden: true} T{ text: selectInput.placeholder } }]
+                ? [Option{
+                    value: ''
+                    props = !selectInput.options.some((option) => option.selected) 
+                        ? ({
+                            disabled: true,
+                            selected: true,
+                            hidden: true
+                        }) : ({
+                            disabled: true,
+                            hidden: true
+                        })
+                    T{ text: selectInput.placeholder }
+                }]
                 : [])
             .concat(selectInput.options.map(option => {
-                return Option{ value: option.value T{ text: option.label } }
+                return Option{
+                    value: option.value
+                    props = option.selected 
+                        ? {
+                            selected: true,
+                            disabled: option.disabled ? true : false
+                        } 
+                        : {
+                            disabled: option.disabled ? true : false
+                        }
+                    T{ text: option.label }
+                }
             }))
     }
 
@@ -71,7 +101,7 @@ component SelectInput < Div{
 
             function syncFromSelect(){
                 const opt = sel.options[sel.selectedIndex]
-                setOpenerText(opt && opt.value ? opt.text : 'Select...')
+                setOpenerText(opt && opt.value ? opt.text : selectInput.placeholder)
                 items.forEach(li => li.classList.toggle('selected', li.dataset.value === sel.value))
             }
 
