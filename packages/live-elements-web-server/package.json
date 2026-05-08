@@ -37,7 +37,7 @@
         "webpack-virtual-modules": "^0.5.0",
         "live-elements-core": "^0.1.15",
         "live-elements-loader": "^0.1.15",
-        "live-elements-js-compiler": "^0.1.10",
+        "live-elements-js-compiler": "^0.1.20",
         "live-web": "^0.1.15"
     }
 }
