@@ -52,14 +52,35 @@ export default class ComponentRegistry{
         return ComponentRegistry.Components
     }
 
+    /**
+     * Dot-separated LV module paths use either `pkgname.a.b` or `@scope.pkgname.a.b`.
+     * Scoped npm packages always appear as two dot segments after the split.
+     */
+    static splitPackageFromUriSegments(segments){
+        if (segments.length === 0) {
+            throw new Error('ComponentRegistry: empty module segments')
+        }
+        if (segments[0].startsWith('@')) {
+            if (segments.length < 2) {
+                throw new Error(`ComponentRegistry: invalid scoped module path (expected @scope/pkg): ${segments.join('.')}`)
+            }
+            const packageName = `${segments[0]}/${segments[1]}`
+            return { packageName, rest: segments.slice(2) }
+        }
+        return { packageName: segments[0], rest: segments.slice(1) }
+    }
+
     static findComponentPath(c, lookupPath){
         const module = c.Meta.module
         const moduleSegments = module.split('.')
         if ( moduleSegments.length === 0 ){
             throw new Error(`Cannot determine components '${c.name}' module. Result is empty.`)
         }
-        const modulePackagePath = PackagePath.find(moduleSegments[0], lookupPath)
-        const moduleDirectoryPath = path.join(modulePackagePath, moduleSegments.slice(1).join('/'))
+        const { packageName, rest } = ComponentRegistry.splitPackageFromUriSegments(moduleSegments)
+        const modulePackagePath = PackagePath.find(packageName, lookupPath)
+        const moduleDirectoryPath = rest.length
+            ? path.join(modulePackagePath, rest.join('/'))
+            : modulePackagePath
         return path.join(moduleDirectoryPath, c.Meta.sourceFileName)
     }
 
@@ -80,10 +101,13 @@ export default class ComponentRegistry{
         const uriSegments = uriId.split('.')
         if ( uriSegments.length < 2 )
             throw new Error(`ComponentRegistry: Invalid component uri: ${uriId}`)
+        const { packageName, rest } = ComponentRegistry.splitPackageFromUriSegments(uriSegments)
+        if (rest.length < 1)
+            throw new Error(`ComponentRegistry: Invalid component uri (missing component name): ${uriId}`)
         return {
-            package: uriSegments[0],
-            modules: uriSegments.slice(1, uriSegments.length - 1),
-            name: uriSegments[uriSegments.length - 1]
+            package: packageName,
+            modules: rest.slice(0, rest.length - 1),
+            name: rest[rest.length - 1]
         }
     }
 

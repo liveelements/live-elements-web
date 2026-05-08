@@ -67,14 +67,28 @@ module.exports = class PackagePath{
     }
 
     static findLocation(relativePath, currentLocation){
-        let packageSeparator = relativePath.indexOf('/')
-        if (packageSeparator === -1) {
-            throw new Error(`Cannot find path: ${relativePath}`)
+        let packageName
+        let pathFromPackage
+        if (relativePath.startsWith('@')) {
+            const firstSlash = relativePath.indexOf('/')
+            if (firstSlash === -1) {
+                throw new Error(`Cannot find path: ${relativePath}`)
+            }
+            const secondSlash = relativePath.indexOf('/', firstSlash + 1)
+            if (secondSlash === -1) {
+                throw new Error(`Cannot find path: ${relativePath}`)
+            }
+            packageName = relativePath.substring(0, secondSlash)
+            pathFromPackage = relativePath.substring(secondSlash + 1)
+        } else {
+            let packageSeparator = relativePath.indexOf('/')
+            if (packageSeparator === -1) {
+                throw new Error(`Cannot find path: ${relativePath}`)
+            }
+            packageName = relativePath.substr(0, packageSeparator)
+            pathFromPackage = relativePath.substr(packageSeparator + 1)
         }
-
-        let packageName = relativePath.substr(0, packageSeparator)
         let packagePath = PackagePath.find(packageName, currentLocation)
-        let pathFromPackage = relativePath.substr(packageSeparator + 1)
         return path.join(packagePath, pathFromPackage);
     }
 }
