@@ -3,7 +3,7 @@ import live-elements-web-server.style
 import .content
 import .overlay
 
-component Breadcrumbs < Ol{
+component Breadcrumbs < Ul{
     id: breadcrumbs
 
     static any[] use = [
