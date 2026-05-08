@@ -1,7 +1,8 @@
 export default class StandardError extends Error{
-    constructor(message){
+    constructor(message, code){
         super(message)
         this.name = this.constructor.name
+        this.code = code
     }
 
     toJSON(...fields){
@@ -22,6 +23,8 @@ export default class StandardError extends Error{
         }
 
         const result = { name: this.name }
+        if ( this.code )
+            result['code'] = this.code
         if (fields.includes(StandardError.Field.Message)) {
             result['message'] = this.message
         }
@@ -40,7 +43,7 @@ export default class StandardError extends Error{
     }
 
     toString(){
-        return `${this.name}: ${this.message}\n${this.stackToString()}`;
+        return `${this.name}: ${this.code ? this.code : ''}${this.message}\n${this.stackToString()}`;
     }
 
     stackToString(){
@@ -48,7 +51,7 @@ export default class StandardError extends Error{
     }
 
     static __fromJSON(json, cls){
-        const error = new cls(json.message ? json.message : '')
+        const error = new cls(json.message ? json.message : '', json.code ? json.code : undefined)
         error.name = json.name
         if ( json.stack ){
             error.stack = json.stack
@@ -69,7 +72,7 @@ export default class StandardError extends Error{
     static errorToString(e){
         return e instanceof StandardError
             ? e.toString()
-            : `${e.name}: ${e.message}\n${e.stack ? e.stack.split("\n").slice(1).join("\n") : ''}`;
+            : `${e.name}: ${e.code ? '[' + e.code + ']' : ''}${e.message}\n${e.stack ? e.stack.split("\n").slice(1).join("\n") : ''}`;
     }
 }
 
