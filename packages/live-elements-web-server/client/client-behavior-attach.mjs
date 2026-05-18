@@ -1,5 +1,5 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
-import ScopedAssignment from '../shared/scoped-assignment.mjs'
+import {ScopedAssignment} from '../shared/scoped-assignment.mjs'
 
 class DOMBehaviorTarget{
     constructor(dom){ this.dom = dom }
@@ -9,7 +9,7 @@ class DOMBehaviorTarget{
     }
 }
 
-export default function attach(moduleImport, name, dom, assignmentStructure){
+export function attach(moduleImport, name, dom, assignmentStructure){
     moduleImport.then(module => {
         const c = module[name]
         if ( c.use && assignmentStructure && c.use.length === assignmentStructure.length){

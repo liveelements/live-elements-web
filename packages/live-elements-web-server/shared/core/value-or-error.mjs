@@ -1,6 +1,6 @@
-import StandardError from "../errors/standard-error.mjs";
+import {StandardError} from "../errors/standard-error.mjs";
 
-export default class ValueOrError{
+export class ValueOrError{
     constructor(value, error){
         this._value = value
         this._error = error
@@ -76,3 +76,4 @@ export default class ValueOrError{
 
 ValueOrError.eob = ValueOrError.errorObject
 ValueOrError.vob = ValueOrError.valueObject
+export { ValueOrError as VE }

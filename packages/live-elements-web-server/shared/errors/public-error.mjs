@@ -1,6 +1,6 @@
-import StandardError from "./standard-error.mjs"
+import {StandardError} from "./standard-error.mjs"
 
-export default class PublicError extends StandardError{
+export class PublicError extends StandardError{
     constructor(message, internal){
         super(message)
         this._internal = internal

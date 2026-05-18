@@ -1,4 +1,4 @@
-export default class ScopedComponentStyle{
+export class ScopedComponentStyle{
     constructor(src, process){
         this._src = src
         this._process = process

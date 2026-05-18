@@ -1,0 +1,26 @@
+{
+  "exports": [
+    "client/client-behavior-attach.mjs",
+    "client/client-bundle-socket.mjs",
+    "client/client-pageview-loader.mjs",
+    "lib/class-info.mjs",
+    "shared/convert/html-to-lv.mjs",
+    "shared/core/value-or-error.mjs",
+    "shared/errors/css-error.mjs",
+    "shared/errors/errors.mjs",
+    "shared/errors/public-error.mjs",
+    "shared/errors/request-error.mjs",
+    "shared/errors/source-error.mjs",
+    "shared/errors/standard-error.mjs",
+    "shared/errors/trace-error.mjs",
+    "shared/errors/warning.mjs",
+    "shared/errors/worker-error.mjs",
+    "shared/scoped-assignment.mjs",
+    "shared/scoped-component-collection.mjs",
+    "shared/scoped-component-style.mjs",
+    "shared/scoped-component.mjs",
+    "build/style/ScopedStyle.lv.mjs",
+    "build/view/**/*.lv.mjs",
+    "build/shared/**/*.lv.mjs"
+  ]
+}

@@ -1,9 +1,9 @@
 import lvimport from "live-elements-core/lvimport.mjs"
 import { Worker } from 'worker_threads'
-import errors from "../shared/errors/errors.mjs"
+import {errors} from "../shared/errors/errors.mjs"
 import path from 'path'
 import url from 'url'
-import WorkerError from "../shared/errors/worker-error.mjs"
+import {WorkerError} from "../shared/errors/worker-error.mjs"
 
 let currentWorker = null
 

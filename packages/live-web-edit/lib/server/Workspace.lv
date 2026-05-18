@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import .lib.middle
 
-import PublicError from 'live-elements-web-server/shared/errors/public-error.mjs'
+import {PublicError} from 'live-elements-web-server/shared/errors/public-error.mjs'
 
 component Workspace{
 

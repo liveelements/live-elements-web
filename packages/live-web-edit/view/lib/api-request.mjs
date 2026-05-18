@@ -1,7 +1,7 @@
 import ky from 'ky'
-import ValueOrError from 'live-elements-web-server/shared/core/value-or-error.mjs'
+import {ValueOrError} from 'live-elements-web-server/shared/core/value-or-error.mjs'
 
-export default class ApiRequest{
+export class ApiRequest{
     
     static get(url){
         return ky.get(url).json()

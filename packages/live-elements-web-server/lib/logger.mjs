@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import StandardError from '../shared/errors/standard-error.mjs'
+import {StandardError} from '../shared/errors/standard-error.mjs'
 
 export default class Logger{
 

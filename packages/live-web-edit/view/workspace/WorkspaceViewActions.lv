@@ -1,7 +1,7 @@
 import live-web.model
 import ky from 'ky'
 
-import ApiRequest from '../lib/api-request.mjs'
+import {ApiRequest} from '../lib/api-request.mjs'
 
 instance workspaceViewActions Actions{
 

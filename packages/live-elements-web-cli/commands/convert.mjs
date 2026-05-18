@@ -3,7 +3,7 @@ import fs from 'fs'
 import jsdom from 'jsdom'
 const { JSDOM } = jsdom
 
-import HtmlToLv from 'live-elements-web-server/shared/convert/html-to-lv.mjs'
+import {HtmlToLv} from 'live-elements-web-server/shared/convert/html-to-lv.mjs'
 
 function readFromStdIn(){
     return new Promise((resolve, _reject) => {

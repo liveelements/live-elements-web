@@ -1,8 +1,8 @@
 import .style
 
-import ScopedComponentCollection from "./scoped-component-collection.mjs"
-import ScopedComponent from "./scoped-component.mjs"
-import ClassInfo from '../lib/class-info.mjs'
+import {ScopedComponentCollection} from "./scoped-component-collection.mjs"
+import {ScopedComponent} from "./scoped-component.mjs"
+import {ClassInfo} from '../lib/class-info.mjs'
 
 component ScopedComponentScanner{
 

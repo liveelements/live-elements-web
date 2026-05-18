@@ -1,6 +1,6 @@
-import ScopedComponent from "./scoped-component.mjs"
+import {ScopedComponent} from "./scoped-component.mjs"
 
-export default class ScopedComponentCollection{
+export class ScopedComponentCollection{
     constructor(){
         this._components = []
     }

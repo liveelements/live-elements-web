@@ -1,8 +1,8 @@
 import { parentPort } from 'worker_threads'
 import lvimport from 'live-elements-core/lvimport.mjs'
-import CSSError from '../../shared/errors/css-error.mjs'
-import WorkerError from '../../shared/errors/worker-error.mjs'
-import StandardError from '../../shared/errors/standard-error.mjs'
+import {CSSError} from '../../shared/errors/css-error.mjs'
+import {WorkerError} from '../../shared/errors/worker-error.mjs'
+import {StandardError} from '../../shared/errors/standard-error.mjs'
 
 const loadedComponents = {}
 

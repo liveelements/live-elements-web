@@ -81,7 +81,7 @@ export default class ServerRenderer{
             
             const ready = `function (d){\n` +
                 `import('live-elements-web-server/client/client-behavior-attach.mjs').then( attach => {\n` + 
-                    `attach.default(import('${attachImport}'), '${element.c.name}', d, ${JSON.stringify(scopedAssignment)}) \n` + 
+                    `attach.attach(import('${attachImport}'), '${element.c.name}', d, ${JSON.stringify(scopedAssignment)}) \n` + 
                 `})\n` + 
             `}\n` 
             let behavior = {

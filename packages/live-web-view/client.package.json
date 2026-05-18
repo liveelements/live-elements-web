@@ -1,0 +1,6 @@
+{
+  "exports": [
+    "build/**/*.{mjs,js}",
+    "!build/style/**"
+  ]
+}

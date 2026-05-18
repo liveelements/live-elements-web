@@ -1,4 +1,4 @@
-export default class ScopedAssignment{
+export class ScopedAssignment{
 
     static populateViewComponent(componentCollection, c){
         const fullName = c.Meta.module + '.' + c.name

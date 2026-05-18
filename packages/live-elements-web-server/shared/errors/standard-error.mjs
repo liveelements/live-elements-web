@@ -1,4 +1,4 @@
-export default class StandardError extends Error{
+export class StandardError extends Error{
     constructor(message, code){
         super(message)
         this.name = this.constructor.name

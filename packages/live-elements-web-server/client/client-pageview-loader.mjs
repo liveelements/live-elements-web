@@ -1,7 +1,7 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
-import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
+import { ScopedComponentScanner } from 'live-elements-web-server/build/shared/ScopedComponentScanner.lv.mjs'
 
-export default class ClientPageViewLoader{
+export class ClientPageViewLoader{
 
     static async loadAwaitingModule(awaitingModule, componentName, placements, serverData){
         const locations = document.querySelectorAll('[data-content-type="main"]')

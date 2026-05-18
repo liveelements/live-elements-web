@@ -1,5 +1,5 @@
 
-export default class ClientBundleSocket{
+export class ClientBundleSocket{
     constructor(location){
         this.actions = ClientBundleSocket.defaultActions
         this.socket = new WebSocket(location, 'echo-protocol')

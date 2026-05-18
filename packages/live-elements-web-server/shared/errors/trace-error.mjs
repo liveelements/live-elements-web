@@ -1,6 +1,6 @@
-import StandardError from "./standard-error.mjs"
+import {StandardError} from "./standard-error.mjs"
 
-export default class TraceError extends StandardError{
+export class TraceError extends StandardError{
     constructor(message, source){
         super(message)
         this._source = source

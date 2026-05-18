@@ -7,7 +7,7 @@ import { EventEmitter } from 'node:events'
 
 import lvimport from 'live-elements-core/lvimport.mjs'
 import LvDOMEmulator from './lvdomemulator.mjs'
-import ClassInfo from './class-info.mjs'
+import {ClassInfo} from './class-info.mjs'
 import StyleContainer from './style-container.mjs'
 import ErrorHandler from './error-handler.mjs'
 import { Watcher, WatcherGroup } from './watcher.mjs'
@@ -19,9 +19,9 @@ import { ServerApiRoute, ServerMiddlewareRoute, ServerViewRoute } from './routes
 import { VirtualScript } from './scripts.mjs'
 import ComponentRegistry from './component-registry.mjs'
 import ScopedAssignmentControl from './scoped-assignment-control.mjs'
-import ScopedAssignment from '../shared/scoped-assignment.mjs'
+import {ScopedAssignment} from '../shared/scoped-assignment.mjs'
 import ScopedComponentPaths from './scoped-component-paths.mjs'
-import ScopedComponentCollection from '../shared/scoped-component-collection.mjs'
+import {ScopedComponentCollection} from '../shared/scoped-component-collection.mjs'
 import BundleData from './bundle-data.mjs'
 import PageNotFoundError from './page-not-found-error.mjs'
 import Memory from './memory/memory.mjs'
@@ -317,7 +317,7 @@ export default class WebServer extends EventEmitter{
         const clientBundleSocketImporter = clientBundleSocket.substring(0, clientBundleSocket.length - 4) + '.loader.mjs'
         const clientBundleSocketImporterAbsolute = path.join(WebServer.currentDir(), clientBundleSocketImporter)
         const clientBundleSocketImporterContent = [
-            `import ClientBundleSocket from "${clientBundleSocket}"`,
+            `import {ClientBundleSocket} from "${clientBundleSocket}"`,
             `window.clientBundleSocket = new ClientBundleSocket("${this.config.socketUrl}")`
         ].join('\n')
         return new VirtualScript(clientBundleSocketImporterAbsolute, clientBundleSocketImporterContent)

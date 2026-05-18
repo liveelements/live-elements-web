@@ -3,7 +3,7 @@ import .router
 import .style
 import .shared
 
-import ClassInfo from '../../lib/class-info.mjs'
+import {ClassInfo} from '../../lib/class-info.mjs'
 import ScopedComponentPaths from '../../lib/scoped-component-paths.mjs'
 
 component ScopedStyleCollector < BundleDataCollector{

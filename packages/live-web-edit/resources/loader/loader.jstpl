@@ -1,4 +1,4 @@
-import Loader from "live-elements-web-server/client/client-pageview-loader.mjs"
+import { ClientPageViewLoader as Loader } from "live-elements-web-server/client/client-pageview-loader.mjs"
 import { BaseElement } from "live-elements-core/baseelement.js"
 import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
 import ky from 'ky'

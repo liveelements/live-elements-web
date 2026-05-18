@@ -1,4 +1,4 @@
-import ScopedComponent from "../shared/scoped-component.mjs"
+import {ScopedComponent} from "../shared/scoped-component.mjs"
 
 export default class ScopedComponentSelectors{
 

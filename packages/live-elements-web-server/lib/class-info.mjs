@@ -1,4 +1,4 @@
-export default class ClassInfo{
+export class ClassInfo{
     static extends(subClass, superClass) {
         let prototype = Object.getPrototypeOf(subClass)
         while (prototype != null) {

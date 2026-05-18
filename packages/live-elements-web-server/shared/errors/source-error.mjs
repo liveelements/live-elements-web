@@ -1,6 +1,6 @@
-import StandardError from "./standard-error.mjs"
+import {StandardError} from "./standard-error.mjs"
 
-export default class SourceError extends StandardError{
+export class SourceError extends StandardError{
     constructor(message, sourceFile, sourceLine, sourceColumn){
         super(message)
         this.name = SourceError.constructor.name

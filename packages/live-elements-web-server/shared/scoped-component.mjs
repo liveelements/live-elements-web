@@ -1,7 +1,7 @@
 
-import ScopedStyle from "./scoped-component-style.mjs"
+import {ScopedComponentStyle as ScopedStyle} from "./scoped-component-style.mjs"
 
-export default class ScopedComponent{
+export class ScopedComponent{
     constructor(){
         this._c = null
         this._name = ''

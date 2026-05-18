@@ -1,6 +1,6 @@
-import TraceError from "./trace-error.mjs";
+import {TraceError} from "./trace-error.mjs";
 
-export default class WorkerError extends TraceError{
+export class WorkerError extends TraceError{
     constructor(message, source){
         super(message, source)
         this.name = this.constructor.name

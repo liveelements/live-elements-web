@@ -1,6 +1,6 @@
-import StandardError from "./standard-error.mjs"
+import {StandardError} from "./standard-error.mjs"
 
-export default class RequestError extends StandardError{
+export class RequestError extends StandardError{
     constructor(request, internal, options){
         const url = request.originalUrl
         const method = request.method.toUpperCase()

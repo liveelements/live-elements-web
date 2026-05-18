@@ -1,5 +1,5 @@
 
-export default class HtmlToLv{
+export class HtmlToLv{
 
     static capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
