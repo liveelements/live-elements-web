@@ -76,12 +76,12 @@ component WorkspaceView < Div{
         workspaceView.data.workspaceSelector = false
     }
     Object reloadFrameHandler = (wsView) => {
-        if ( wsView.data.workspaceViewUrl !== wsView.data.workspaceName ){
-            wsView.data.workspaceViewUrl = wsView.data.workspaceName
-            wsView.frame.src = wsView.data.route('/v/' + wsView.data.workspaceViewUrl)
-        } else {
-            wsView.frame.refresh()
+        const frameRoute = wsView.data.route('/v/' + wsView.data.workspaceName)
+        if ( wsView.frame.src !== frameRoute ){
+            wsView.frame.src = frameRoute
+            return
         }
+        wsView.frame.refresh()
     }
     fn toggleEditorPaneHandler(){
         const wsView = this

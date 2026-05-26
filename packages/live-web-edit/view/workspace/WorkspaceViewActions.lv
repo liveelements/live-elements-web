@@ -12,7 +12,7 @@ instance workspaceViewActions Actions{
             data.errors = []
             data.updateFromJSON(result.value)
             if ( data.lastCompilation ){
-                const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+                const frameRoute = data.route('/v/' + data.workspaceName)
                 if ( frameRoute !== data.workspaceFrameSrc )
                     data.workspaceFrameSrc = frameRoute
                 else {
@@ -144,7 +144,7 @@ instance workspaceViewActions Actions{
             data.appendHistory(null, data.route(`/w/${data.workspaceName}`))
 
             if ( data.lastCompilation ){
-                const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+                const frameRoute = data.route('/v/' + data.workspaceName)
                 if ( frameRoute !== data.workspaceFrameSrc )
                     data.workspaceFrameSrc = frameRoute
                 else {
@@ -174,7 +174,7 @@ instance workspaceViewActions Actions{
         const res = await ApiRequest.post(route, { workspace: data.workspaceName })
         data.loadingStatus = null
         if ( res.value ){
-            const frameRoute = data.route('/v/' + data.workspaceViewUrl)
+            const frameRoute = data.route('/v/' + data.workspaceName)
             if ( frameRoute !== data.workspaceFrameSrc )
                 data.workspaceFrameSrc = frameRoute
             else {

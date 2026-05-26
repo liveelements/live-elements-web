@@ -31,7 +31,7 @@ component WorkspaceCompilation{
         return `${randomString}${timestamp}`
     }
 
-    static fn __replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
+    static fn replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
         const paths = [workspace.path + '/', workspace.path]
         let p = workspace.path
         while ( p ){
@@ -45,17 +45,34 @@ component WorkspaceCompilation{
             p = parentPath
         }
 
-        let result = message
+        let result = String(message ? message : '')
         for ( let i = 0; i < paths.length; ++i ){
             result = result.replaceAll(paths[i], '')
         }
         return result
     }
 
+    static fn workspaceData(ws:Workspace):Object{
+        return {
+            name: ws.name,
+            documents: ws.documents,
+            entry: ws.mainEntry,
+            entryData: ws.mainEntryData,
+            serverStub: ws.serverStub,
+            serverStubData: ws.serverStubData,
+            writeBehavior: ws.writeBehavior,
+            compilation: ws.compilation ? {
+                identifier: ws.compilation.identifier,
+                stamp: ws.compilation.stamp.toISOString(),
+                errors: ws.compilation.errors.map(error => error?.message || String(error))
+            } : null
+        }
+    }
+
     static fn __createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspace:Workspace){
         const errs = errors.map(error => {
             return {
-                message: WorkspaceCompilation.__replaceMessageWorkspacePaths(error.message, workspace)
+                message: WorkspaceCompilation.replaceMessageWorkspacePaths(error.message, workspace)
             }
         })
         return WorkspaceCompilation{ errors = errs identifier = identifier stamp = stamp }

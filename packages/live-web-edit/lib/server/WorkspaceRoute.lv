@@ -68,20 +68,7 @@ component WorkspaceRoute < Route{
     }
 
     fn workspaceData(ws:Workspace){
-        return {
-            name: ws.name,
-            documents: ws.documents,
-            entry: ws.mainEntry,
-            entryData: ws.mainEntryData,
-            serverStub: ws.serverStub,
-            serverStubData: ws.serverStubData,
-            writeBehavior: ws.writeBehavior,
-            compilation: ws.compilation ? {
-                identifier: ws.compilation.identifier,
-                stamp: ws.compilation.stamp.toISOString(),
-                errors: ws.compilation.errors.map(e => e.message)
-             } : null
-        }
+        return WorkspaceCompilation.workspaceData(ws)
     }
 
     Route{
@@ -314,7 +301,7 @@ component WorkspaceRoute < Route{
                     ws.save()
                 } catch ( e ){
                     if ( e instanceof CSSError ){
-                        res.json({ error: { message: WorkspaceCompilation.__replaceMessageWorkspacePaths(e.message, ws) }})
+                        res.json({ error: { message: WorkspaceCompilation.replaceMessageWorkspacePaths(e.message, ws) }})
                         ws.save()
                         return
                     }
