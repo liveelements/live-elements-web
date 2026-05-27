@@ -29,7 +29,7 @@ component Tooltip < Div{
                 let timeout = null
 
                 current.addEventListener('pointerenter', function (e){
-                    const rect = d.getBoundingClientRect()
+                    const rect = current.getBoundingClientRect()
                     const midX = rect.left + rect.width  / 2
                     const midY = rect.top  + rect.height / 2
                     const halfW = window.innerWidth  / 2
