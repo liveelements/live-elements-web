@@ -8,7 +8,8 @@
         "allowBundleView": true
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "vitest run --config vitest.config.mjs",
+        "test:watch": "vitest --config vitest.config.mjs",
         "build": "webpack",
         "start": "webpack-dev-server --port 8080",
         "bootstrap": "npx lerna bootstrap --hoist",
@@ -19,7 +20,8 @@
     "license": "MIT",
     "devDependencies": {
         "lerna": "^8.0.0",
-        "tape": "^5.5.3"
+        "tape": "^5.5.3",
+        "vitest": "^1.6.0"
     },
     "dependencies": {
         "live-elements-core": "file:packages/live-elements-core",

@@ -1,16 +1,33 @@
+import {describe, test, expect} from 'vitest'
+
 component Spec{
 
     default children: []
-    var describe: ''
+    string describe: ''
+    Object provides: null
 
-    fn run(){
-        return import('tape').then((tapeModule) => {
-            var test = tapeModule.test
-
-            for ( var i = 0; i < this.children.length; ++i ){
-                test(this.children[i].name, this.children[i].run)
+    fn completed(){
+        const t = this.provides ? test.extend(this.provides) : test
+        const fixtureKeys = this.provides ? Object.keys(this.provides) : []
+        const register = () => {
+            for (let i = 0; i < this.children.length; ++i){
+                const scenario = this.children[i]
+                if (fixtureKeys.length === 0){
+                    const f = async (ctx) => scenario.run(expect, ctx)
+                    t(scenario.name, f)
+                } else {
+                    const keys = fixtureKeys.join(', ')
+                    const body = 'return async function({ ' + keys + ' }){ return scenario.run(expect, { ' + keys + ' }) }'
+                    const f = new Function('scenario', 'expect', body)( scenario, expect )
+                    t(scenario.name, f)
+                }
             }
-        })
+        }
+        if (this.describe){
+            describe(this.describe, register)
+        } else {
+            register()
+        }
     }
 
 }

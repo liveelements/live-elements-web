@@ -10,13 +10,18 @@
     ],
     "author": "Dinu SV",
     "license": "MIT",
-    "bin": {
-        "lvtest": "./index.js"
-    },
     "dependencies": {
         "live-elements-js-compiler": "^0.1.20",
         "live-elements-core": "^0.1.15",
         "commander": "^9.0.0",
         "tape": "^5.5.3"
+    },
+    "peerDependencies": {
+        "vitest": ">=1.0.0"
+    },
+    "peerDependenciesMeta": {
+        "vitest": {
+            "optional": true
+        }
     }
 }

@@ -1,4 +1,4 @@
 component Scenario{
-    var name: ''
-    var run: null
+    string name: ''
+    Function run: null
 }

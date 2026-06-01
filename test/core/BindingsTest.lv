@@ -3,20 +3,19 @@ import live-testspec
 instance test Spec{
     Scenario{
         name: 'Nested Property Test'
-        run: (t) => {
+        run: (expect) => {
             var data = BaseElement{
                 var x: 100
                 var y: this.x
             }
             data.x = 200
-            t.equals(data.y, 200)
-            t.end()
+            expect(data.y).toBe(200)
         }
     }
 
     Scenario{
         name: 'Nested Property Test'
-        run: (t) => {
+        run: (expect) => {
             var data = BaseElement{
                 var x: BaseElement{
                     var z: 30
@@ -24,21 +23,20 @@ instance test Spec{
                 var y: this.x.z + 100
             }
             data.x.z = 130
-            t.equals(data.y, 230)
+            expect(data.y).toBe(230)
 
             data.x = BaseElement{
                 var z: 1000
             }
-            t.equals(data.y, 1100)
+            expect(data.y).toBe(1100)
             data.x.z = 300
-            t.equals(data.y, 400)
-            t.end()
+            expect(data.y).toBe(400)
         }
     }
 
     Scenario{
         name: 'Nested Nested Property Test'
-        run: (t) => {
+        run: (expect) => {
             var data = BaseElement{
                 var x: BaseElement{
                     var y: BaseElement{
@@ -47,26 +45,25 @@ instance test Spec{
                 }
                 var t: this.x.y.z + 100
             }
-            t.equals(data.t, 200)
+            expect(data.t).toBe(200)
             data.x.y.z = 130
 
-            t.equals(data.t, 230)
+            expect(data.t).toBe(230)
 
             data.x = BaseElement{
                 var y: BaseElement{
                     var z: 1000
                 }
             }
-            t.equals(data.t, 1100)
+            expect(data.t).toBe(1100)
             data.x.y.z = 300
-            t.equals(data.t, 400)
-            t.end()
+            expect(data.t).toBe(400)
         }
     }
 
     Scenario{
         name: 'Null initial element assignment'
-        run: (t) => {
+        run: (expect) => {
             component User < BaseElement{
                 any name: '123'
             };
@@ -77,25 +74,23 @@ instance test Spec{
             };
 
             let userView = UserView{ user: User{} }
-            t.equals(userView.userName, '123')
+            expect(userView.userName).toBe('123')
             userView.user.name = '345'
-            t.equals(userView.userName, '345')
+            expect(userView.userName).toBe('345')
 
             userView.user = null
-            t.equals(userView.userName, null)
+            expect(userView.userName).toBe(null)
 
             userView.user = User{}
             userView.user.name = '345'
-            t.equals(userView.userName, '345')
-
-            t.end()
+            expect(userView.userName).toBe('345')
         }
     }
 
     
     Scenario{
         name: 'Setter'
-        run: (t) => {
+        run: (expect) => {
             let setterCount = 0
             component User{
                 string value: '100'
@@ -108,13 +103,11 @@ instance test Spec{
 
             const user = User{}
             user.value = '300'
-            t.equals(setterCount, 1)
-            t.equals(user.boundValue, '300')
+            expect(setterCount).toBe(1)
+            expect(user.boundValue).toBe('300')
             user.boundValue = '400'
-            t.equals(setterCount, 2)
-            t.equals(user.boundValue, '400')
-
-            t.end()
+            expect(setterCount).toBe(2)
+            expect(user.boundValue).toBe('400')
         }
     }
 }

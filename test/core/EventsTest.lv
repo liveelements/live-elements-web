@@ -3,7 +3,7 @@ import live-testspec
 instance test Spec{
     Scenario{
         name: 'timing test'
-        run: (t) => {
+        run: (expect) => {
             var data = BaseElement{
                 var x: 100
                 var y: 200
@@ -12,8 +12,7 @@ instance test Spec{
                 }
             }
             data.x = 130
-            t.equals(data.y, 300)
-            t.end()
+            expect(data.y).toBe(300)
         }
     }
 }
