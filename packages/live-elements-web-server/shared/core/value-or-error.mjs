@@ -27,15 +27,16 @@ export class ValueOrError{
     }
 
     match(valCb, errCb){
-        if ( this._value ){
+        if ( this._value !== undefined ){
             return valCb(this._value)
-        } else if ( this._error ){
+        } else if ( this._error !== undefined ){
             return errCb(this._error)
         }
+        return undefined
     }
 
     toJSON(valueCb, errorCb){
-        if ( this._value ){
+        if ( this._value !== undefined ){
             return valueCb 
                 ? { value: valueCb(this._value ) }
                 : { value: this._value }
