@@ -26,6 +26,10 @@ component NavSections < Div{
             return Li{
                 NavToggleButton{}
             }
+        } else if ( link.type === 'label' ){
+            return Li{ classes: ['nav-label']
+                Span{ T{ text: link.label } }
+            }
         } else if ( link.type === 'dropdown' ){
             return Li{ classes: ['dropdown-item']
                 Dropdown{
@@ -45,7 +49,7 @@ component NavSections < Div{
                     }
                 }
             }
-        } else {
+        } else if ( !link.type || link.type === 'link' ){
             return Li{ 
                 A{ href: link.href classes: [active && link.href.endsWith(active) ? 'active' : ''] 
                     T{ text: link.label }
@@ -55,7 +59,8 @@ component NavSections < Div{
     }
 
     static fn createFromData(data:Object, active:string){
-        return data.map(d => {
+        const sections = Array.isArray(data) ? data : []
+        return sections.map(d => {
             const C = d.toggle ? NavContentToggle : NavContent
             return C{ 
                 Ul{

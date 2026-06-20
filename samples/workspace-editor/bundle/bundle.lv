@@ -1,0 +1,25 @@
+import live-elements-web-server.bundle
+import live-elements-web-server.router
+import live-elements-web-server.style
+import live-web-edit.lib.server
+
+import .samples.workspace-editor.app
+import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
+import path from 'path'
+
+instance bundle Bundle{
+    string currentPackage = path.dirname(PackagePath.findPackageJson(path.resolve('.')))
+    string liveWebEdit = PackagePath.find('live-web-edit', path.resolve('.'))
+    string templatesPath = path.join(this.liveWebEdit, 'resources', 'templates')
+    string examplesTemplatesPath = path.join(this.liveWebEdit, 'resources', 'templates-examples')
+    WorkspaceContainer workspaces = WorkspaceContainer.create(path.join(this.currentPackage, 'workspaces'), path.join(this.liveWebEdit, 'resources', 'templates'), WorkspaceOperations{})
+
+    Array<Object> templates = [
+        { path: path.join(this.templatesPath, 'default'), name: 'page', section: 'New', label: 'New Page' },
+        { path: path.join(this.templatesPath, 'application-console'), name: 'application', section: 'Templates', label: 'Application (Console)' }
+    ].concat(WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath))
+
+    WorkspaceEditorRoute.(this.workspaces, this.templates){
+        view: Main
+    }
+}

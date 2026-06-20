@@ -1,0 +1,158 @@
+import .lib.middle
+
+component WorkspaceEditorData{
+
+    static Object WriteBehavior = {
+        ReadOnly: 0,
+        Write: 1,
+        Fork: 2
+    }
+
+    string baseUrl: ''
+    Array<Document> documents: []
+    Array<Object> editors: []
+    string workspaceName: ''
+    string workspaceId: ''
+    string workspacePagePath: ''
+    number writeBehavior: WorkspaceEditorData.WriteBehavior.Write
+    Object lastCompilation: null
+    bool workspaceSelector: false
+    Object loadingStatus: null
+    Array<Object> templates: []
+    Array<Object> errors: []
+    Object serverRoutes: ({})
+    string workspacePreviewPath: ''
+    number previewRevision: 0
+    string workspaceSyncReason: ''
+    number workspaceSyncRevision: 0
+
+    fn writeEnabled():boolean{
+        return this.writeBehavior === WorkspaceEditorData.WriteBehavior.Write
+            || this.writeBehavior === WorkspaceEditorData.WriteBehavior.Fork
+    }
+
+    fn lockEnabled():boolean{
+        return this.writeBehavior === WorkspaceEditorData.WriteBehavior.Write
+    }
+
+    fn route(url:string):string{
+        return this.baseUrl + url
+    }
+
+    fn currentWorkspacePagePath():string{
+        return this.workspacePagePath ? this.workspacePagePath : this.route(`/w/${this.workspaceName}`)
+    }
+
+    fn currentWorkspacePreviewPath():string{
+        return this.workspacePreviewPath ? this.workspacePreviewPath : this.route(`/v/${this.workspaceName}`)
+    }
+
+    fn invalidatePreview(){
+        this.previewRevision = this.previewRevision + 1
+    }
+
+    fn markWorkspaceSync(reason:string){
+        this.workspaceSyncReason = reason ? reason : ''
+        this.workspaceSyncRevision = this.workspaceSyncRevision + 1
+    }
+
+    fn updateServerRoutes(){
+        const defaults = {
+            load: `${this.baseUrl}/w-load`,
+            save: `${this.baseUrl}/w-document/save/:workspace`,
+            compile: `${this.baseUrl}/w-compile/:workspace`,
+            lockWrite: `${this.baseUrl}/w-lockwrite/:workspace`,
+            fork: `${this.baseUrl}/w-fork/:workspace`
+        }
+        this.serverRoutes = ({ ...defaults, ...(this.serverRoutes ? this.serverRoutes : {}) })
+    }
+
+    fn refreshEditors(){
+        const activePath = (this.editors.find(editor => editor.isActive) || {}).document?.path
+        this.editors = this.documents.map((doc, i) => ({
+            document: doc,
+            isActive: activePath ? doc.path === activePath : i === 0
+        }))
+
+        if ( this.editors.length && !this.editors.find(editor => editor.isActive) ){
+            this.editors[0].isActive = true
+        }
+    }
+
+    fn updateFromJSON(data:Object){
+        this.baseUrl = data.baseUrl != null ? data.baseUrl : this.baseUrl
+        this.workspaceId = data.workspaceId ? data.workspaceId : (this.workspaceId ? this.workspaceId : data.name)
+        this.workspaceName = this.workspaceId
+        this.workspacePagePath = data.workspacePagePath ? data.workspacePagePath : this.workspacePagePath
+        this.workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : this.workspacePreviewPath
+
+        if ( data.documents ){
+            data.documents.forEach(dataDocument => {
+                const doc = this.documents.find(d => d.path === dataDocument.path)
+                if ( doc ){
+                    const isReset = doc.content !== dataDocument.content
+                    doc.type = dataDocument.type
+                    doc.content = dataDocument.content
+                    if ( isReset ){
+                        doc.contentReset.emit()
+                    }
+                } else {
+                    this.documents = this.documents.concat([Document.fromJSON(dataDocument)])
+                }
+            })
+
+            const removePaths = this.documents
+                .filter(thisDocument => !data.documents.find(d => d.path === thisDocument.path))
+                .map(document => document.path)
+
+            if ( removePaths.length ){
+                this.documents = this.documents.filter(document => !removePaths.includes(document.path))
+            }
+
+            this.refreshEditors()
+        }
+
+        if ( data.writeBehavior != null ){
+            this.writeBehavior = data.writeBehavior
+        }
+
+        this.lastCompilation = data.compilation != null ? data.compilation : this.lastCompilation
+        this.templates = data.templates ? data.templates : this.templates
+        this.errors = data.errors
+            ? data.errors
+            : data.error ? [data.error]
+                : data.compilation && data.compilation.errors ? data.compilation.errors
+                    : this.errors
+
+        this.updateServerRoutes()
+    }
+
+    static fn fromJSON(data:Object):WorkspaceEditorData{
+        if ( data instanceof WorkspaceEditorData ){
+            return data
+        }
+        data = data ? data : {}
+        const baseUrl = data.baseUrl ? data.baseUrl : ''
+        const workspaceId = data.workspaceId ? data.workspaceId : data.name
+        const result = WorkspaceEditorData{
+            baseUrl = baseUrl
+            workspaceName = workspaceId ? workspaceId : ''
+            workspaceId = workspaceId ? workspaceId : ''
+            workspacePagePath = data.workspacePagePath ? data.workspacePagePath : `${baseUrl}/w/${data.name ? data.name : ''}`
+            documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
+            writeBehavior = data.writeBehavior != null ? data.writeBehavior : WorkspaceEditorData.WriteBehavior.ReadOnly
+            lastCompilation = data.compilation ? data.compilation : null
+            templates = data.templates ? data.templates : []
+            errors = data.errors
+                ? data.errors
+                : data.error ? [data.error]
+                    : data.compilation && data.compilation.errors ? data.compilation.errors
+                        : []
+            workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : `${baseUrl}/v/${data.name ? data.name : ''}`
+        }
+
+        result.updateServerRoutes()
+        result.refreshEditors()
+        return result
+    }
+}

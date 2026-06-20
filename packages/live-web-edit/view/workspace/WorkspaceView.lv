@@ -1,61 +1,21 @@
 import live-web.dom
-import live-web.model
-import live-web.behavior
-import live-elements-web-server.view
 import live-elements-web-server.style
-import live-web-view.form
 import live-web-view.layout
-import live-web-view.button
-import live-web-view.color
-import live-web-view.content
-import live-web-view.navigation
-import live-web-view.iframe
-
-import .view.button
-import .view.codeeditor
-import .lib.middle
+import .view.workspace.editor
+import .view.workspace.frame
 
 component WorkspaceView < Div{
     id: workspaceView
 
-     static any[] use = [
-        IconButton,
-        WriteLockButton,
-        CompileButton,
-        ToggleEditorButton,
-        ForkButton,
-        TopNav,
-        Resizable,
+    static any[] use = [
         FullScreen,
         SplitLayout,
-        TabLayout,
-        TooltipArea,
-        CodeEditorView,
-        ColorSchemeToggleButton,
-        WorkspaceOpenSelector,
-        ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv'  }
+        WorkspaceEditorView,
+        WorkspaceFrameView,
+        ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
-    Actions actions: Actions.bindFirst(workspaceView.data, workspaceViewActions)
-    
-    string[] extraClasses = []
-    classes: this.extraClasses.concat([ScopedStyle.className(WorkspaceView)])
-    Object data
-    WorkspaceViewKeymap keymap = WorkspaceViewKeymap{ 
-        prepare: () => {
-            for ( let i = 0; i < tabLayout.children.length; ++i ){
-                if ( tabLayout.children[i] instanceof TabContent ){
-                    const tabcontent = tabLayout.children[i]
-                    for ( let j = 0; j < tabcontent.children.length; ++j ){
-                        const tabpane = tabcontent.children[j]
-                        const editor = tabpane.children[0]
-                        editor.document.content = editor.editor.state.doc.toString()
-                    }
-                }
-            }
-        }
-        actions: workspaceView.actions ? workspaceView.actions.actionMap() : ({}) 
-    }
+    WorkspaceViewData data: WorkspaceViewData{}
 
     boolean forkEnabled: true
     boolean lockEnabled: true
@@ -63,31 +23,26 @@ component WorkspaceView < Div{
     boolean toggleEditorEnabled: false
     boolean editorVisible: true
     string editorPaneWidthBeforeHide: ''
-    DOMElement tabLayout: tabLayout
-    DOMElement frame: frame
-    DOMElement errorHeader: null
-    Object codeEditorThemes = ({
-        light: CodeEditorView.lightTheme,
-        dark: CodeEditorView.darkTheme
-    })
+    Object errorHeader: null
 
-    Object openWorkspaceHandler = (workspaceView, name) => {
-        workspaceView.actions.forkTemplate(name) 
-        workspaceView.data.workspaceSelector = false
+    boolean syncHistoryOnWorkspaceChanged: true
+    string workspacePagePathBinding: workspaceView.data?.editor ? workspaceView.data.editor.currentWorkspacePagePath() : ''
+    number previewRevisionBinding: workspaceView.data?.editor ? workspaceView.data.editor.previewRevision : 0
+    number workspaceSyncRevisionBinding: workspaceView.data?.editor ? workspaceView.data.editor.workspaceSyncRevision : 0
+
+    constructor(data:Object){
+        super()
+        this{ data = WorkspaceViewData.fromJSON(data ? data : {}) }
     }
-    Object reloadFrameHandler = (wsView) => {
-        const frameRoute = wsView.data.route('/v/' + wsView.data.workspaceName)
-        if ( wsView.frame.src !== frameRoute ){
-            wsView.frame.src = frameRoute
-            return
-        }
-        wsView.frame.refresh()
-    }
+
+    classes: [ScopedStyle.className(WorkspaceView)]
+
     fn toggleEditorPaneHandler(){
         const wsView = this
         const splitLayoutDom = this.ids.workspaceSplitLayout.dom
-        if ( !splitLayoutDom || splitLayoutDom.children.length < 3 )
+        if ( !splitLayoutDom || splitLayoutDom.children.length < 3 ){
             return
+        }
 
         const editorPane = splitLayoutDom.children[0]
         const handle = splitLayoutDom.children[1]
@@ -97,24 +52,28 @@ component WorkspaceView < Div{
         const domCollapsed = currentWidth === '0px' || editorPaneRect.width < 1
 
         if ( !wsView.editorVisible ){
-            if ( domCollapsed )
+            if ( domCollapsed ){
                 return
-            if ( editorPaneRect.width > 0 )
+            }
+            if ( editorPaneRect.width > 0 ){
                 wsView.editorPaneWidthBeforeHide = `${Math.round(editorPaneRect.width)}px`
-            else if ( currentWidth && currentWidth !== '0px' )
+            } else if ( currentWidth && currentWidth !== '0px' ){
                 wsView.editorPaneWidthBeforeHide = currentWidth
+            }
 
             editorPane.style.width = '0px'
             framePane.style.width = '100%'
             editorPane.style.height = '100%'
             framePane.style.height = '100%'
-            if ( handle && handle.classList )
+            if ( handle && handle.classList ){
                 handle.classList.add('hide')
+            }
             return
         }
 
-        if ( !domCollapsed )
+        if ( !domCollapsed ){
             return
+        }
 
         const restoredWidth = wsView.editorPaneWidthBeforeHide && wsView.editorPaneWidthBeforeHide !== '0px'
             ? wsView.editorPaneWidthBeforeHide
@@ -124,291 +83,126 @@ component WorkspaceView < Div{
         framePane.style.width = `calc(100% - ${restoredWidth})`
         editorPane.style.height = '100%'
         framePane.style.height = '100%'
-        if ( handle && handle.classList )
+        if ( handle && handle.classList ){
             handle.classList.remove('hide')
+        }
+    }
+
+    fn resolveWorkspaceNameFromLocation():string{
+        const currentPath = window.location.pathname
+        const pathSegments = currentPath.split('/').filter(segment => segment !== '')
+        const prevSegment = pathSegments[pathSegments.length - 2]
+        const lastSegment = pathSegments[pathSegments.length - 1]
+
+        return this.data.editor.workspaceName
+            ? this.data.editor.workspaceName
+            : (
+                prevSegment === 'w'
+                    ? lastSegment
+                    : pathSegments[pathSegments.length - 3] === 'w'
+                        ? `${prevSegment}:${lastSegment}`
+                        : (lastSegment ? lastSegment : '-')
+            )
+    }
+
+    async fn completed(){
+        window.addEventListener('popstate', async () => {
+            const currentPath = window.location.pathname
+            const pathSegments = currentPath.split('/').filter(segment => segment !== '')
+            const prevSegment = pathSegments[pathSegments.length - 2]
+            const lastSegment = pathSegments[pathSegments.length - 1]
+
+            this.syncHistoryOnWorkspaceChanged = false
+            try{
+                if ( prevSegment === 'w' ){
+                    await this.ids.workspaceEditorView.actions.loadWorkspace(lastSegment)
+                    return
+                }
+
+                const thirdFromLast = pathSegments[pathSegments.length - 3]
+                if ( thirdFromLast === 'w' ){
+                    await this.ids.workspaceEditorView.actions.loadWorkspace(`${prevSegment}:${lastSegment}`)
+                }
+            } finally {
+                this.syncHistoryOnWorkspaceChanged = true
+            }
+        })
+
+        await this.ids.workspaceEditorView.actions.loadWorkspace(this.resolveWorkspaceNameFromLocation())
     }
 
     on editorVisibleChanged: () => {
         this.toggleEditorPaneHandler(this)
     }
 
-    constructor(data:Object){
-        super()
-        const dataAssigned = data ? WorkspaceViewData.fromJSON(data) : WorkspaceViewData{}
-        this{ data = dataAssigned }
+    // Consumers may assign a raw server payload to `data` declaratively
+    // (`WorkspaceView{ data: payload }`) instead of constructing via
+    // `WorkspaceView.(payload){}`. Normalize it into a WorkspaceViewData so the
+    // `data.editor` / `data.frame` bindings below resolve.
+    on dataChanged: () => {
+        if ( this.data && !(this.data.editor && this.data.frame) ){
+            this.data = WorkspaceViewData.fromJSON(this.data)
+        }
     }
 
-    async fn completed(){
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'error') {
-                this.data.errors = [`Client error: ${event.data.message}\n${event.data.stack}`]
-            } else if ( event.data.type === 'log' ){
-                this.data.appendLogMessage(event.data.message.join(' '))
-            }
-        }, false)
+    on workspacePagePathBindingChanged: () => {
+        const nextPath = this.workspacePagePathBinding
+        if ( !this.syncHistoryOnWorkspaceChanged || !nextPath || this.data.editor.workspaceName === '-' ){
+            return
+        }
 
-        window.addEventListener('popstate', async (event) => {
-            const currentUrl = window.location.href
-            const currentPath = window.location.pathname
-            const pathSegments = currentPath.split('/').filter(segment => segment !== '')
+        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
+        if ( currentPath !== nextPath ){
+            this.data.appendHistory(null, nextPath)
+        }
+    }
 
-            const prevSegment = pathSegments[pathSegments.length - 2]
-            const lastSegment = pathSegments[pathSegments.length - 1]
+    on workspaceSyncRevisionBindingChanged: () => {
+        if ( !this.data || !this.data.frame || !this.data.editor ){
+            return
+        }
 
-            if ( prevSegment === 'w' ){
-                await this.actions.loadWorkspace(lastSegment)
-                return
-            }
+        this.data.frame.updateFromJSON({
+            baseUrl: this.data.editor.baseUrl,
+            workspaceId: this.data.editor.workspaceId,
+            workspacePreviewPath: this.data.editor.currentWorkspacePreviewPath()
         })
 
-        const currentUrl = window.location.href
-        const currentPath = window.location.pathname
-        const pathSegments = currentPath.split('/').filter(segment => segment !== '')
+        if ( this.data.editor.workspaceSyncReason === 'load' || this.data.editor.workspaceSyncReason === 'fork' ){
+            this.data.frame.logMessages = []
+            this.data.frame.lastRuntimeError = ''
+        }
 
-        const prevSegment = pathSegments[pathSegments.length - 2]
-        const lastSegment = pathSegments[pathSegments.length - 1]
-
-        await this.actions.loadWorkspace(lastSegment ? lastSegment : '-')
-        if ( this.data.workspaceName !== '-' )
-            this.data.appendHistory(null, this.data.route(`/w/${this.data.workspaceName}`))
+        this.data.syncCompatFromStates()
     }
 
-    TopNav{ position: 'static'
-        NavContent{
-            children: [
-                ...(workspaceView.openEnabled 
-                    ? [TooltipArea{
-                        OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.toggleWorkspaceOpenSelector(); } }
-                        Tooltip`Open Workspace`
-                    }] 
-                    : []
-                ),
-                ...(workspaceView.forkEnabled 
-                    ? [TooltipArea{
-                        ForkButton{ on click: (e) => { e.preventDefault(); workspaceView.actions.fork() }}
-                        Tooltip`Fork`
-                    }] 
-                    : []
-                ),
-                Div{ classes: ['loading', workspaceView.data.loadingStatus ? 'show' : ''] 
-                    Span{ T{ text: workspaceView.data.loadingStatus && workspaceView.data.loadingStatus.message ? workspaceView.data.loadingStatus.message : '' }} 
-                    Div{ classes: ['spinner']} 
-                },
-                TooltipArea{ extraClasses: [workspaceView.data.loadingStatus ? 'hide' : '']
-                    CompileButton{ extraClasses: [workspaceView.data.writeEnabled() ? '' : 'hide'] on click: (e) => { e.preventDefault(); workspaceView.keymap.prepare(); workspaceView.actions.saveAll() }}
-                    Tooltip`Save & Compile`
-                },
-
-                ...(workspaceView.lockEnabled 
-                    ? [TooltipArea{
-                        WriteLockButton{ isLocked: workspaceView.data.writeBehavior !== WorkspaceViewData.WriteBehavior.Write on click: () => { workspaceView.actions.lockWrite() }  }
-                        Tooltip`Lock Write`
-                    }] 
-                    : []
-                ),
-                ...(workspaceView.toggleEditorEnabled
-                    ? [TooltipArea{
-                        ToggleEditorButton{ on click: (e) => { e.preventDefault(); workspaceView.editorVisible = !workspaceView.editorVisible } }
-                        Tooltip`Toggle Editor`
-                    }]
-                    : []
-                )
-            ]
-            
-        }
-        NavContent{
-            
-            TooltipArea{
-                RefreshButton{ on click: () => { 
-                    workspaceView.reloadFrameHandler(workspaceView)
-                } }
-                Tooltip`Refresh`
-            }
-            
-            TooltipArea{
-                ZoomInButton{ target: frame }
-                Tooltip`Zoom In`
-            }
-            
-            TooltipArea{
-                ZoomOutButton{ target: frame }
-                Tooltip`Zoom Out`
-            }
-            
-            TooltipArea{
-                ResizableFillButton{ target: resizable isFilled: true }
-                Tooltip`Resize`
-            }
-            
-            TooltipArea{
-                ColorSchemeToggleButton{}
-                Tooltip.("Color Scheme"){ extraClasses: ['position-left'] }
-            }
-        }
-    }
-
-    FullScreen{ center: false extraClasses: ['pad-topnav']
-
-        SplitLayout{ id: workspaceSplitLayout
-            panes: [
-                SplitPane{ extraClasses: ['flex-content']
-                    TabLayout{ extraClasses: ['no-b']
-                        id: tabLayout
-
-                        on activated: (index) => {
-                            workspaceView.data.editors.forEach((editor, i) => {
-                                if ( i === index )
-                                    editor.isActive = true
-                                else
-                                    editor.isActive = false
-                            })
-                            for ( let i = 0; i < tabLayout.children.length; ++i ){
-                                if ( tabLayout.children[i] instanceof TabContent ){
-                                    const tabcontent = tabLayout.children[i]
-                                    const tabpane = tabcontent.children[index]
-                                    const editor = tabpane.children[0]
-                                    editor.editor.focus()
-                                }
-                            }
-                        }
-
-                        TabHeader{
-                            children: workspaceView.data.editors.map(editor => {
-                                const document = editor.document
-                                const name = document.path.split('/').pop() || document.path
-                                return TabButton{ 
-                                    T{ text: (document.isDirty ? '*' : '') + name }
-                                }
-                            })
-                        }
-                        TabContent{ extraClasses: ['no-p', 'bt']
-                            children: workspaceView.data.editors.map(editor => {
-                                return TabPane{ 
-                                    CodeEditorView{ 
-                                        id: codeEditorView
-                                        Object editorData = editor.editor
-                                        Document document = editor.document
-                                        readContent: () => { return this.document.content }
-                                        themes: workspaceView.codeEditorThemes
-                                        number writeBehavior: workspaceView.data.writeBehavior
-                                        on writeBehaviorChanged: () => {
-                                            if ( this.isReadOnly && codeEditorView.writeBehavior !== WorkspaceViewData.WriteBehavior.ReadOnly ){
-                                                this.isReadOnly = false
-                                            } else if ( !this.isReadOnly && codeEditorView.writeBehavior === WorkspaceViewData.WriteBehavior.ReadOnly) {
-                                                this.isReadOnly = true
-                                            }
-                                        }
-                                        boolean isReadOnly = codeEditorView.writeBehavior === WorkspaceViewData.WriteBehavior.ReadOnly
-                                        config : {
-                                            updateListener: (v) => { 
-                                                if ( v.docChanged ){
-                                                    editor.document.isDirty = true 
-                                                }
-                                            },
-                                            language: editor.document.path.endsWith('.css') ? 'css' : 'javascript',
-                                            readOnly: codeEditorView.isReadOnly,
-                                            keymap: workspaceView.keymap.keymap
-                                        }
-
-                                        fn completed(){ 
-                                            this.document.on('contentReset', () => this.initEditor())
-                                        }
-                                    }
-                                }
-                            })
-                        }
+    SplitLayout{ id: workspaceSplitLayout
+        panes: [    
+            SplitPane{ extraClasses: ['flex-content']
+                WorkspaceEditorView{
+                    id: workspaceEditorView
+                    data: workspaceView.data?.editor
+                    forkEnabled: workspaceView.forkEnabled
+                    lockEnabled: workspaceView.lockEnabled
+                    openEnabled: workspaceView.openEnabled
+                    toggleEditorEnabled: workspaceView.toggleEditorEnabled
+                    runtimeError: workspaceView.data?.frame?.lastRuntimeError ? workspaceView.data.frame.lastRuntimeError : ''
+                    toggleEditorHandler: () => {
+                        workspaceView.editorVisible = !workspaceView.editorVisible
                     }
-                    Div{ classes: ['error-box', workspaceView.data.errors.length ? 'show' : '']
-                        Header{
-                            children: workspaceView.data.errors.length && workspaceView.errorHeader ? [workspaceView.errorHeader] : []
-                        }
-                        Div{
-                            children: workspaceView.data.errors.map(e => { 
-                                return Pre{ classes: ['error'] T{ text: e } }
-                            })
-                        }
-                    }
-                },
-                SplitPane{
-                    SplitLayout{ vertical: true extraClasses: ['split-3-1', workspaceView.data.logMessages.length === 0 ? 'split-one' : '']
-                        panes: [
-                            SplitPane{ extraClasses: ['flex-content']
-                                Resizable{ id: resizable fill: true border: true
-                                    IFrame{
-                                        id: frame
-                                        classes: [workspaceView.data.frameLoading ? 'frame-loading' : '']
-                                        string frameSrc: workspaceView.data.workspaceFrameSrc
-                                        on frameSrcChanged: () => {  this.src = this.frameSrc  }
-                                        on srcChanged: () => {
-                                            if ( this.dom )
-                                                workspaceView.data.frameLoading = true
-                                        }
-                                        number frameRev: workspaceView.data.workspaceFrameRev
-                                        on frameRevChanged: () => {
-                                            this.refresh()
-                                        }
-                                        on load: (d) => {
-                                            workspaceView.data.frameLoading = false
-                                        }
-                                    }
-                                    ResizableHandlePoint{}
-                                }
-
-                                Div{ classes: ['iframe-loading', workspaceView.data.frameLoading ? 'show' : '']
-                                    Div{ classes: ['loader'] }
-                                }
-                            },
-                            SplitPane{
-                                Div{ classes: ['log-view']
-                                    H2`Console`
-                                    Div{ classes: ['log-messages']
-                                        boolean manualScroll: false
-                                        children: workspaceView.data.logMessages.map(e => { 
-                                            return Div{ classes: ['log-message'] T{ text: e } }
-                                        })
-                                        on childrenChanged: () => {
-                                            if ( this.dom && !this.manualScroll ){ // update scroll
-                                                this.dom.scrollTop = this.dom.scrollHeight
-                                            }
-                                        }
-                                        on scroll: () => {
-                                            // disable auto scroll if user interacted
-                                            const atBottom = this.dom.scrollTop + this.dom.clientHeight >= this.dom.scrollHeight - 1
-                                            this.manualScroll = !atBottom
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
+                    errorHeader: workspaceView.errorHeader
                 }
-            ]
-        }
-    }
-
-    WorkspaceOpenSelector{
-        id: workspaceOpenSelector
-        data : ({
-            templates: workspaceView.data.templates
-        })
-        workspaceForkHandler: (name) => {
-            workspaceView.openWorkspaceHandler(workspaceView, name)
-        }
-        isOpen : workspaceView.data.workspaceSelector
-    }
-
-    DOMBehavior{
-        domReady: (d) => {
-            window.onclick = (e) => {
-                if ( workspaceView.data.workspaceSelector ){ 
-                    const dom = workspaceOpenSelector.dom
-                    if ( dom ){
-                        if ( !dom.contains(e.target) ){
-                            workspaceView.data.workspaceSelector = false
-                        }
-                    }
+            },
+            SplitPane{
+                WorkspaceFrameView{
+                    id: workspaceFrameView
+                    data: workspaceView.data?.frame
+                    workspaceName: workspaceView.data?.editor?.workspaceName ? workspaceView.data.editor.workspaceName : ''
+                    baseUrl: workspaceView.data?.editor?.baseUrl ? workspaceView.data.editor.baseUrl : ''
+                    workspacePreviewPath: workspaceView.data?.editor ? workspaceView.data.editor.currentWorkspacePreviewPath() : ''
+                    previewRevision: workspaceView.previewRevisionBinding
                 }
             }
-        }
+        ]
     }
 }

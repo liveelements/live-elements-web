@@ -1,0 +1,204 @@
+import live-elements-web-server.router
+import live-elements-web-server.page.index
+
+import .lib.middle
+
+import {VE} from 'live-elements-web-server/shared/core/value-or-error.mjs'
+import {PublicError} from 'live-elements-web-server/shared/errors/public-error.mjs'
+import {RequestError} from 'live-elements-web-server/shared/errors/request-error.mjs'
+import path from 'path'
+import fs from 'fs'
+
+component WorkspaceEditorRoute < Route{
+    id: workspaceEditorRoute
+
+    string defaultProject = 'page'
+    WorkspaceContainer workspaces = null
+    string baseUrl = ''
+    Object view = null
+    Object placement
+    Object viewsEnabled = true
+    Array<Object> templates = []
+    boolean forkOnLoad = false
+
+    constructor(workspaces:WorkspaceContainer, templates:Array<Object> = []){
+        super()
+        this{}
+        this.workspaces = workspaces
+        this.templates = templates
+    }
+
+    fn workspaceData(ws:Workspace){
+        return WorkspaceCompilation.workspaceData(ws, workspaceEditorRoute.workspaces.compilationFor(ws.name))
+    }
+
+    Route{
+        children: workspaceEditorRoute.viewsEnabled ? [
+            ViewRoute{ url: '/'
+                c: workspaceEditorRoute.view
+                placement: workspaceEditorRoute.placement
+                data: (req, res) => {
+                    return {
+                        baseUrl: workspaceEditorRoute.baseUrl ? workspaceEditorRoute.baseUrl : workspaceEditorRoute.url,
+                        templates: workspaceEditorRoute.templates.map(t => ({ name: t.name, label: t.label, section: t.section })),
+                        name: '-'
+                    }
+                }
+            },
+            ViewRoute{
+                url: '/w/:wsname'
+                c: workspaceEditorRoute.view
+                placement: workspaceEditorRoute.placement
+                data: (req, res) => {
+                    try{
+                        const ws = workspaceEditorRoute.workspaces.loadWorkspace(req.params.wsname)
+                        if ( workspaceEditorRoute.forkOnLoad && ws.writeBehavior === Workspace.WriteBehavior.Write ){
+                            ws.writeBehavior = Workspace.WriteBehavior.Fork
+                        }
+                        const data = workspaceEditorRoute.workspaceData(ws)
+                        data['baseUrl'] = workspaceEditorRoute.baseUrl ? workspaceEditorRoute.baseUrl : workspaceEditorRoute.url
+                        data['templates'] = workspaceEditorRoute.templates.map(t => ({ name: t.name, label: t.label, section: t.section }))
+                        return data
+                    } catch ( e ){
+                        return { error: e.message }
+                    }
+                }
+            }
+        ] : []
+    }
+
+    GetRoute{
+        url: '/w-load/:wsname'
+        f: async (req, res) => {
+            try{
+                const wsname = req.params.wsname
+                let ws = null
+                if ( wsname === '-' ){
+                    if ( fs.existsSync(path.join(workspaceEditorRoute.workspaces.path, workspaceEditorRoute.defaultProject)) ){
+                        ws = await workspaceEditorRoute.workspaces.loadWorkspace(workspaceEditorRoute.defaultProject)
+                    } else {
+                        ws = await workspaceEditorRoute.workspaces.createWorkspaceFrom('default')
+                        ws.save()
+                    }
+                } else {
+                    ws = await workspaceEditorRoute.workspaces.loadWorkspace(wsname)
+                }
+
+                res.json(VE.vob(workspaceEditorRoute.workspaceData(ws)))
+                res.end()
+            } catch ( e ){
+                console.error(RequestError.wrap(req, e).toString())
+                res.status(500).json(VE.eob(PublicError.mask(e, 'Workspace loading error.')))
+            }
+        }
+    }
+
+    GetRoute{ url: '/w-documents/:wsname' f: (req, res) => {
+            const ws = workspaceEditorRoute.workspaces.loadWorkspace(req.params.wsname)
+            res.json(ws.documents.map(d => d.toJSON())).end()
+        }
+    }
+
+    PostRoute{ url: '/w-fork/:wsname'
+        f: async (req, res) => {
+            try{
+                const name = req.params.wsname
+                let wsFrom = name
+                if ( wsFrom === 'default' ){
+                    const ws = await workspaceEditorRoute.workspaces.createWorkspaceFrom('default')
+                    ws.save()
+                    res.json(VE.vob(workspaceEditorRoute.workspaceData(ws))).end()
+                    return
+                }
+
+                for ( let i = 0; i < workspaceEditorRoute.templates.length; ++i ){
+                    if ( workspaceEditorRoute.templates[i].name === name ){
+                        wsFrom = workspaceEditorRoute.templates[i].path
+                        const ws = await workspaceEditorRoute.workspaces.createWorkspaceFrom(wsFrom)
+                        res.json(VE.vob(workspaceEditorRoute.workspaceData(ws))).end()
+                        return
+                    }
+                }
+
+                const wsfork = await workspaceEditorRoute.workspaces.createWorkspaceFrom(wsFrom)
+                res.json(VE.vob(workspaceEditorRoute.workspaceData(wsfork))).end()
+            } catch ( e ){
+                console.error(RequestError.wrap(req, e).toString())
+                res.status(500).json(VE.eob(PublicError.mask(e, 'Workspace fork error.')))
+            }
+        }
+    }
+
+    PostRoute{ url: '/w-document/save/:wsname'
+        f: async (req, res) => {
+            try{
+                const ws = workspaceEditorRoute.workspaces.loadWorkspace(req.params.wsname)
+                const doc = req.body.document
+
+                if ( ws.writeBehavior === Workspace.WriteBehavior.Write ){
+                    const wsdoc = ws.isDocumentOpened(doc.path)
+                    if ( wsdoc ){
+                        const contentRestore = wsdoc.content
+                        try{
+                            wsdoc.content = doc.content
+                        } catch ( e ){
+                            wsdoc.content = contentRestore
+                        }
+                        ws.writeFile(doc.path, doc.content)
+                    }
+                    res.json(VE.vob({ success: true })).end()
+                } else if ( ws.writeBehavior === Workspace.WriteBehavior.Fork ){
+                    const wsfork = await workspaceEditorRoute.workspaces.createWorkspaceFrom(req.params.wsname)
+                    const wsdoc = wsfork.isDocumentOpened(doc.path)
+                    if ( wsdoc ){
+                        const contentRestore = wsdoc.content
+                        try{
+                            wsdoc.content = doc.content
+                        } catch ( e ){
+                            wsdoc.content = contentRestore
+                        }
+                        wsfork.writeFile(doc.path, doc.content)
+                    }
+                    res.json(VE.vob(workspaceEditorRoute.workspaceData(wsfork))).end()
+                } else {
+                    res.json(VE.eob(new PublicError('Workspace is read-only.')))
+                }
+            } catch ( e ){
+                console.error(RequestError.wrap(req, e).toString())
+                res.status(500).json(VE.eob(PublicError.mask(e, 'Document save error.')))
+            }
+        }
+    }
+
+    PostRoute{ url: '/w-compile/:wsname'
+        f: async (req, res) => {
+            try{
+                const ws = workspaceEditorRoute.workspaces.loadWorkspace(req.params.wsname)
+                const result = await workspaceEditorRoute.workspaces.compileWorkspace(ws.name, workspaceEditorRoute.baseUrl || workspaceEditorRoute.url)
+                if ( result.hasErrors() ){
+                    throw new PublicError(result.errors.map(e => e.message))
+                }
+                res.json(VE.vob({ compilation: result.identifier })).end()
+            } catch ( e ){
+                console.error(RequestError.wrap(req, e).toString())
+                res.status(500).json(VE.eob(PublicError.mask(e, 'Workspace compilation error.')))
+            }
+        }
+    }
+
+    PostRoute{ url: '/w-lockwrite/:wsname'
+        f: async (req, res) => {
+            try{
+                const ws = workspaceEditorRoute.workspaces.loadWorkspace(req.params.wsname)
+                if ( ws.writeBehavior !== Workspace.WriteBehavior.ReadOnly ){
+                    ws.writeBehavior = Workspace.WriteBehavior.ReadOnly
+                    ws.save()
+                }
+                res.json(VE.vob({ success: true })).end()
+            } catch ( e ){
+                console.error(RequestError.wrap(req, e).toString())
+                res.status(500).json(VE.eob(PublicError.mask(e, 'Workspace lock write error.')))
+            }
+        }
+    }
+}

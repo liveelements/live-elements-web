@@ -26,9 +26,9 @@ component Workspace{
         this._from = ''
         this._writeBehavior = Workspace.WriteBehavior.Write
         this._canFork = true
-        this._compilation = null
         this._author = null
         this._documents = []
+        this._compilation = null
     }
 
     get path(){ return this._path }
@@ -40,10 +40,11 @@ component Workspace{
     get serverStubData(){ return this.readServerStub() }
     get mainEntryPath(){ return path.join(this._path,this._mainEntry ) }
     get documents(){ return this._documents }
-    get compilation(){ return this._compilation }
     get canFork(){ return this._canFork }
     get author(){ return this._author }
     get writeBehavior(){ return this._writeBehavior }
+    get compilation(){ return this._compilation }
+    set compilation(value:Object){ this._compilation = value ? value : null }
     set writeBehavior(value:number){ 
         if ( value >= 3 )
             throw new Error(`Value ${value} does not represent a write behavior`)
@@ -142,6 +143,7 @@ component Workspace{
         ws._writeBehavior = info.writeBehavior
         ws._canFork = info.canFork
         ws._author = info.author
+        ws._compilation = info.compilation ? info.compilation : null
         ws._loadedOn = new Date()
 
         ws._documents = info.documents.map(d => {
@@ -152,11 +154,6 @@ component Workspace{
                 content = content
             }
         })
-
-        if ( info.compilation ){
-            const compilationPath = path.join(ws._path, 'compiled')
-            ws._compilation = WorkspaceCompilation.fromJSON(info.compilation, compilationPath)
-        }
 
         return ws
     }
@@ -177,9 +174,10 @@ component Workspace{
             from: info.from,
             writeBehavior: info.writeBehavior,
             canFork: info.canFork,
-            compilation: info.compilation,
             documents: info.documents,
-            createdOn: new Date(info.createdOn)
+            createdOn: new Date(info.createdOn),
+            author: info.author,
+            compilation: info.compilation ? info.compilation : null
         }
     }
 
@@ -233,14 +231,6 @@ component Workspace{
         return this._documents.find(d => d.path === filePath)
     }
 
-    async fn compile(workspaceOperations:WorkspaceOperations, baseUrl:string){
-        if ( !this.canWrite() ){
-            throw new PublicError(`Workspace ${this.name} is read only. Can't compile.`)
-        }
-        this._compilation = await workspaceOperations.compile(this, baseUrl)
-        return this._compilation
-    }
-
     fn openDocument(filePath:string, userType:string){
         const fullpath = path.join(this._path, filePath)
         if ( !fs.existsSync(fullpath) ){
@@ -264,22 +254,8 @@ component Workspace{
         return document
     }
 
-    fn saveCompilation(){
-        if ( !this.compilation )
-            return null
-
-        this.compilation.saveToDisk(path.join(this.path, this.compilation.identifier))
-        return this.compilation.toJSON()
-    }
-
     fn save(){
         const infofilePath = path.join(this._path, Workspace.dataFile)
-        let compilation = null
-        if ( this.compilation ){
-            const compilationPath = path.join(this._path, 'compiled')
-            this.compilation.saveToDisk(compilationPath)
-            compilation = this.compilation.toJSON()
-        }
         const saveData = {
             name: this._name,
             entry: this._mainEntry,
@@ -289,8 +265,8 @@ component Workspace{
             writeBehavior: this._writeBehavior,
             canFork: this._canFork,
             author: this._author,
-            compilation: compilation,
             documents: this._documents.map(doc => ({path: doc.path, type: doc.type})),
+            compilation: this._compilation,
             createdOn: this._createdOn.toISOString()
         }
         const saveContent = JSON.stringify(saveData)

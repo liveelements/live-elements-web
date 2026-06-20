@@ -31,6 +31,17 @@ component WorkspaceCompilation{
         return `${randomString}${timestamp}`
     }
 
+    static fn resolveCompilationPath(ws:Workspace, data:Object):string{
+        return path.join(ws.path, 'compiled', String(data.id || ''))
+    }
+
+    static fn stampToString(stamp:Object):string{
+        if ( stamp instanceof Date ){
+            return Number.isNaN(stamp.getTime()) ? '' : stamp.toISOString()
+        }
+        return stamp != null ? String(stamp) : ''
+    }
+
     static fn replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
         const paths = [workspace.path + '/', workspace.path]
         let p = workspace.path
@@ -52,7 +63,18 @@ component WorkspaceCompilation{
         return result
     }
 
-    static fn workspaceData(ws:Workspace):Object{
+    static fn compilationData(compilation:WorkspaceCompilation):Object{
+        if ( !compilation ){
+            return null
+        }
+        return {
+            identifier: compilation.identifier,
+            stamp: WorkspaceCompilation.stampToString(compilation.stamp),
+            errors: compilation.errors.map(error => error?.message || String(error))
+        }
+    }
+
+    static fn workspaceData(ws:Workspace, compilation:WorkspaceCompilation):Object{
         return {
             name: ws.name,
             documents: ws.documents,
@@ -61,12 +83,45 @@ component WorkspaceCompilation{
             serverStub: ws.serverStub,
             serverStubData: ws.serverStubData,
             writeBehavior: ws.writeBehavior,
-            compilation: ws.compilation ? {
-                identifier: ws.compilation.identifier,
-                stamp: ws.compilation.stamp.toISOString(),
-                errors: ws.compilation.errors.map(error => error?.message || String(error))
-            } : null
+            compilation: WorkspaceCompilation.compilationData(compilation)
         }
+    }
+
+    static async fn run(ws:Workspace, operations:WorkspaceOperations, baseUrl:string):WorkspaceCompilation{
+        if ( !ws.canWrite() ){
+            throw new Error(`Workspace ${ws.name} is read only. Can't compile.`)
+        }
+        return operations.compile(ws, baseUrl)
+    }
+
+    static fn save(ws:Workspace, compilation:WorkspaceCompilation):Object{
+        if ( !compilation ){
+            return null
+        }
+
+        const compiledPath = path.join(ws.path, 'compiled')
+        fs.mkdirSync(compiledPath, { recursive: true })
+
+        const outputDir = path.join(compiledPath, String(compilation.identifier || compilation.stamp || 'current'))
+        compilation.saveToDisk(outputDir)
+
+        const json = compilation.toJSON()
+        ws.compilation = json
+        ws.save()
+        return json
+    }
+
+    static fn load(ws:Workspace):WorkspaceCompilation{
+        const data = ws.compilation
+
+        if ( !data ){
+            return null
+        }
+
+        return WorkspaceCompilation.fromJSON(
+            data,
+            WorkspaceCompilation.resolveCompilationPath(ws, data)
+        )
     }
 
     static fn __createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspace:Workspace){
@@ -136,7 +191,7 @@ component WorkspaceCompilation{
             errors: this.errors,
             main: this.mainAsset ? this.mainAsset.name : null,
             usages: this.usageAssignments,
-            stamp: this.stamp.toISOString()
+            stamp: WorkspaceCompilation.stampToString(this.stamp)
         }
     }
 
@@ -174,7 +229,7 @@ component WorkspaceCompilation{
             page = null
             pageContent = pageContent
             identifier = identifier
-            stamp = new Date(data.stamp)
+            stamp = data.stamp
             assets = assets
             errors = data.errors ? data.errors : []
             mainAsset = mainAsset

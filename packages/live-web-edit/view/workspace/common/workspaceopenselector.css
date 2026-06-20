@@ -1,0 +1,25 @@
+&WorkspaceOpenSelector{
+    @apply hidden absolute text-mono-1 dark:text-mono-f border border-mono-b dark:border-mono-4 rounded bg-white dark:bg-mono-1;
+    @apply p-4 pt-0 top-12 left-4 max-h-[80vh] max-w-[80wv] min-w-[16rem];
+    overflow-y: auto;
+}
+
+&WorkspaceOpenSelector&.open{
+    @apply block;
+}
+
+&WorkspaceOpenSelector h3{
+    @apply font-semibold my-2 border-b border-mono-b dark:border-mono-4 my-4 pb-2;
+}
+
+&WorkspaceOpenSelector li{
+    @apply py-1 pl-4;
+}
+
+&WorkspaceOpenSelector li a{
+    @apply text-mono-2 dark:text-mono-c transition-colors duration-300;
+}
+
+&WorkspaceOpenSelector li a:hover{
+    @apply text-mono-1 dark:text-mono-f;
+}

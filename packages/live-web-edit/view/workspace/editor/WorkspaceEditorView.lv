@@ -1,0 +1,245 @@
+import live-web.dom
+import live-web.model
+import live-web.behavior
+import live-elements-web-server.style
+import live-web-view.button
+import live-web-view.content
+import live-web-view.layout
+import live-web-view.navigation
+
+import .view.button
+import .view.codeeditor
+import .view.workspace.common
+
+component WorkspaceEditorView < Div{
+    id: workspaceEditorView
+
+    static any[] use = [
+        IconButton,
+        WriteLockButton,
+        CompileButton,
+        ToggleEditorButton,
+        ForkButton,
+        TopNav,
+        TabLayout,
+        TooltipArea,
+        CodeEditorView,
+        OpenWorkspaceButton,
+        WorkspaceOpenSelector,
+        ScopedStyle{ src: './workspaceeditorview.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    WorkspaceEditorData data
+    Actions actions: Actions.bindFirst(workspaceEditorView.data, workspaceEditorActions)
+
+    boolean forkEnabled: true
+    boolean lockEnabled: true
+    boolean openEnabled: true
+    boolean toggleEditorEnabled: false
+    Object toggleEditorHandler: null
+    Object errorHeader: null
+    Object codeEditorThemes = ({
+        light: CodeEditorView.lightTheme,
+        dark: CodeEditorView.darkTheme
+    })
+
+    string runtimeError: ''
+
+    WorkspaceEditorKeymap keymap = WorkspaceEditorKeymap{
+        prepare: () => {
+            for ( let i = 0; i < tabLayout.children.length; ++i ){
+                if ( tabLayout.children[i] instanceof TabContent ){
+                    const tabcontent = tabLayout.children[i]
+                    for ( let j = 0; j < tabcontent.children.length; ++j ){
+                        const tabpane = tabcontent.children[j]
+                        const editor = tabpane.children[0]
+                        editor.document.content = editor.editor.state.doc.toString()
+                    }
+                }
+            }
+        }
+        actions: workspaceEditorView.actions ? workspaceEditorView.actions.actionMap() : ({})
+    }
+
+    constructor(data:Object){
+        super()
+        this{ data = WorkspaceEditorData.fromJSON(data) }
+    }
+
+    classes: [ScopedStyle.className(WorkspaceEditorView)]
+
+    fn resolvedErrors():Array<Object>{
+        return this.runtimeError
+            ? this.data.errors.concat([this.runtimeError])
+            : this.data.errors
+    }
+
+    Object openWorkspaceHandler = (workspaceEditorView, name) => {
+        workspaceEditorView.actions.forkTemplate(name)
+        workspaceEditorView.data.workspaceSelector = false
+    }
+
+    TopNav{ position: 'static'
+        NavContent{
+            children: [
+                ...(workspaceEditorView.openEnabled
+                    ? [TooltipArea{
+                        OpenWorkspaceButton{ on click: (e) => { e.preventDefault(); workspaceEditorView.actions.toggleWorkspaceOpenSelector() } }
+                        Tooltip`Open Workspace`
+                    }]
+                    : []
+                ),
+                ...(workspaceEditorView.forkEnabled
+                    ? [TooltipArea{
+                        ForkButton{ on click: (e) => { e.preventDefault(); workspaceEditorView.actions.fork() } }
+                        Tooltip`Fork`
+                    }]
+                    : []
+                ),
+                Div{ classes: ['loading', workspaceEditorView.data.loadingStatus ? 'show' : '']
+                    Span{ T{ text: workspaceEditorView.data.loadingStatus && workspaceEditorView.data.loadingStatus.message ? workspaceEditorView.data.loadingStatus.message : '' } }
+                    Div{ classes: ['spinner'] }
+                },
+                TooltipArea{ extraClasses: [workspaceEditorView.data.loadingStatus ? 'hide' : '']
+                    CompileButton{
+                        extraClasses: [workspaceEditorView.data.writeEnabled() ? '' : 'hide']
+                        on click: (e) => {
+                            e.preventDefault()
+                            workspaceEditorView.keymap.prepare()
+                            workspaceEditorView.actions.saveAll()
+                        }
+                    }
+                    Tooltip`Save & Compile`
+                },
+                ...(workspaceEditorView.lockEnabled
+                    ? [TooltipArea{
+                        WriteLockButton{
+                            isLocked: workspaceEditorView.data.writeBehavior !== WorkspaceEditorData.WriteBehavior.Write
+                            on click: () => { workspaceEditorView.actions.lockWrite() }
+                        }
+                        Tooltip`Lock Write`
+                    }]
+                    : []
+                ),
+                ...(workspaceEditorView.toggleEditorEnabled
+                    ? [TooltipArea{
+                        ToggleEditorButton{
+                            on click: (e) => {
+                                e.preventDefault()
+                                if ( workspaceEditorView.toggleEditorHandler ){
+                                    workspaceEditorView.toggleEditorHandler()
+                                }
+                            }
+                        }
+                        Tooltip`Toggle Editor`
+                    }]
+                    : []
+                )
+            ]
+        }
+    }
+
+    Div{ classes: ['editor-body']
+        TabLayout{ extraClasses: ['no-b']
+            id: tabLayout
+
+            on activated: (index) => {
+                workspaceEditorView.data.editors.forEach((editor, i) => {
+                    editor.isActive = i === index
+                })
+                for ( let i = 0; i < tabLayout.children.length; ++i ){
+                    if ( tabLayout.children[i] instanceof TabContent ){
+                        const tabcontent = tabLayout.children[i]
+                        const tabpane = tabcontent.children[index]
+                        const editor = tabpane.children[0]
+                        editor.editor.focus()
+                    }
+                }
+            }
+
+            TabHeader{
+                children: workspaceEditorView.data.editors.map(editor => {
+                    const document = editor.document
+                    const name = document.path.split('/').pop() || document.path
+                    return TabButton{
+                        T{ text: (document.isDirty ? '*' : '') + name }
+                    }
+                })
+            }
+
+            TabContent{ extraClasses: ['no-p', 'bt']
+                children: workspaceEditorView.data.editors.map(editor => {
+                    return TabPane{
+                        CodeEditorView{
+                            id: codeEditorView
+                            Object editorData = editor.editor
+                            Document document = editor.document
+                            readContent: () => { return this.document.content }
+                            themes: workspaceEditorView.codeEditorThemes
+                            number writeBehavior: workspaceEditorView.data.writeBehavior
+                            on writeBehaviorChanged: () => {
+                                if ( this.isReadOnly && codeEditorView.writeBehavior !== WorkspaceEditorData.WriteBehavior.ReadOnly ){
+                                    this.isReadOnly = false
+                                } else if ( !this.isReadOnly && codeEditorView.writeBehavior === WorkspaceEditorData.WriteBehavior.ReadOnly ){
+                                    this.isReadOnly = true
+                                }
+                            }
+                            boolean isReadOnly = codeEditorView.writeBehavior === WorkspaceEditorData.WriteBehavior.ReadOnly
+                            config: {
+                                updateListener: (v) => {
+                                    if ( v.docChanged ){
+                                        editor.document.isDirty = true
+                                    }
+                                },
+                                language: editor.document.path.endsWith('.css') ? 'css' : 'javascript',
+                                readOnly: codeEditorView.isReadOnly,
+                                keymap: workspaceEditorView.keymap.keymap
+                            }
+
+                            fn completed(){
+                                this.document.on('contentReset', () => this.initEditor())
+                            }
+                        }
+                    }
+                })
+            }
+        }
+
+        Div{ classes: ['error-box', workspaceEditorView.resolvedErrors().length ? 'show' : '']
+            Header{
+                children: workspaceEditorView.resolvedErrors().length && workspaceEditorView.errorHeader
+                    ? [workspaceEditorView.errorHeader]
+                    : []
+            }
+            Div{
+                children: workspaceEditorView.resolvedErrors().map(e => {
+                    return Pre{ classes: ['error'] T{ text: e } }
+                })
+            }
+        }
+    }
+
+    WorkspaceOpenSelector{
+        id: workspaceOpenSelector
+        data: ({
+            templates: workspaceEditorView.data.templates
+        })
+        workspaceForkHandler: (name) => {
+            workspaceEditorView.openWorkspaceHandler(workspaceEditorView, name)
+        }
+        isOpen: workspaceEditorView.data.workspaceSelector
+    }
+
+    DOMBehavior{
+        domReady: (d) => {
+            window.onclick = (e) => {
+                if ( workspaceEditorView.data.workspaceSelector ){
+                    const dom = workspaceOpenSelector.dom
+                    if ( dom && !dom.contains(e.target) ){
+                        workspaceEditorView.data.workspaceSelector = false
+                    }
+                }
+            }
+        }
+    }
+}

@@ -5,6 +5,7 @@ component WorkspaceContainer{
     string path: ''
     string templatesPath: ''
     any[] workspaces: []
+    Object compilations: ({})
     number loadLimit: null
     WorkspaceOperations operations: null
 
@@ -59,6 +60,7 @@ component WorkspaceContainer{
 
     fn closeLoadedWorkspace(name:string){
         this.workspaces = this.workspaces.filter(ws => ws.name !== name )
+        delete this.compilations[name]
     }
 
     fn findWorkspace(name:string){
@@ -81,5 +83,40 @@ component WorkspaceContainer{
         this._cleanupOnLimit()
 
         return ws
+    }
+
+    fn compilationFor(name:string){
+        let compilation = this.compilations[name]
+        if ( compilation ){
+            return compilation
+        }
+
+        let ws = this.findWorkspace(name)
+        if ( !ws ){
+            ws = this.loadWorkspace(name)
+        }
+
+        compilation = WorkspaceCompilation.load(ws)
+        if ( compilation ){
+            this.compilations[name] = compilation
+        }
+        return compilation
+    }
+
+    fn setCompilationFor(name:string, compilation:WorkspaceCompilation){
+        if ( compilation ){
+            this.compilations[name] = compilation
+        } else {
+            delete this.compilations[name]
+        }
+        return compilation
+    }
+
+    async fn compileWorkspace(name:string, baseUrl:string){
+        const ws = this.loadWorkspace(name)
+        const compilation = await WorkspaceCompilation.run(ws, this.operations, baseUrl)
+        this.setCompilationFor(name, compilation)
+        WorkspaceCompilation.save(ws, compilation)
+        return compilation
     }
 }

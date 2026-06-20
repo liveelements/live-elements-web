@@ -1,0 +1,104 @@
+import live-elements-web-server.router
+
+import .lib.middle
+
+import {CSSError} from 'live-elements-web-server/shared/errors/css-error.mjs'
+
+component WorkspaceFrameRoute < Route{
+    id: workspaceFrameRoute
+
+    WorkspaceContainer workspaces = null
+    string baseUrl = ''
+
+    constructor(workspaces:WorkspaceContainer){
+        super()
+        this{}
+        this.workspaces = workspaces
+    }
+
+    GetRoute{ url: '/v/:wsname' f: async (req, res) => {
+        try{
+            const ws = workspaceFrameRoute.workspaces.loadWorkspace(req.params.wsname)
+            let compilation = workspaceFrameRoute.workspaces.compilationFor(ws.name)
+            if ( !compilation ){
+                compilation = await workspaceFrameRoute.workspaces.compileWorkspace(ws.name, workspaceFrameRoute.baseUrl || workspaceFrameRoute.url)
+            }
+            if ( compilation.errors.length ){
+                res.send(compilation.errors.map(e => e.message).join(',')).end()
+            } else {
+                res.send(compilation.pageContent).end()
+            }
+        } catch ( e ){
+            console.error(e)
+        }
+    }}
+
+    GetRoute{ url: '/v-scripts/:wsname/ws.bundle.js' f: async (req, res) => {
+        const ws = workspaceFrameRoute.workspaces.loadWorkspace(req.params.wsname)
+        const compilation = ws ? workspaceFrameRoute.workspaces.compilationFor(ws.name) : null
+        if ( compilation ){
+            res.type('application/javascript')
+            res.send(compilation.mainAsset.content).end()
+        } else {
+            res.sendStatus(404)
+        }
+    } }
+
+    GetRoute{ url: '/v-scripts/:wsname/:scriptid' f: async (req, res) => {
+        const ws = workspaceFrameRoute.workspaces.loadWorkspace(req.params.wsname)
+        const compilation = ws ? workspaceFrameRoute.workspaces.compilationFor(ws.name) : null
+        if ( compilation ){
+            const asset = compilation.findAsset(req.params.scriptid)
+            if ( asset ){
+                res.type('application/javascript')
+                res.send(asset.content)
+                return
+            }
+        }
+
+        res.sendStatus(404)
+    } }
+
+    PostRoute{ url: '/v-use/:wsname' f: async (req, res) => {
+        const ws = workspaceFrameRoute.workspaces.loadWorkspace(req.params.wsname)
+        const compilation = ws ? workspaceFrameRoute.workspaces.compilationFor(ws.name) : null
+        if ( compilation ){
+            let assignmentsToSend = null
+            if ( compilation.usageAssignments ){
+                assignmentsToSend = compilation.usageAssignments
+            } else {
+                try{
+                    assignmentsToSend = await workspaceFrameRoute.workspaces.operations.updateCompilationUsages(
+                        compilation, req.body.page, ws.name, workspaceFrameRoute.baseUrl || workspaceFrameRoute.url
+                    )
+                    WorkspaceCompilation.save(ws, compilation)
+                } catch ( e ){
+                    if ( e instanceof CSSError ){
+                        res.json({ error: { message: WorkspaceCompilation.replaceMessageWorkspacePaths(e.message, ws) } })
+                        WorkspaceCompilation.save(ws, compilation)
+                        return
+                    }
+                    throw e
+                }
+            }
+            res.json(assignmentsToSend).end()
+            return
+        }
+        res.sendStatus(404)
+    }}
+
+    GetRoute{ url: '/v/:wsname/styles/:styleid' f: (req, res) => {
+        const ws = workspaceFrameRoute.workspaces.loadWorkspace(req.params.wsname)
+        const compilation = ws ? workspaceFrameRoute.workspaces.compilationFor(ws.name) : null
+        if ( compilation ){
+            const style = compilation.findStyle(req.params.styleid)
+            if ( style ){
+                res.type('text/css')
+                res.send(style.content)
+                res.end()
+                return
+            }
+        }
+        res.sendStatus(404)
+    }}
+}

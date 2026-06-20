@@ -1,0 +1,20 @@
+import live-web.model
+
+instance workspaceFrameActions Actions{
+    fn reload(data:WorkspaceFrameData, workspaceName:string){
+        const frameRoute = data.currentWorkspacePreviewPath()
+        if ( frameRoute !== data.workspaceFrameSrc ){
+            data.workspaceFrameSrc = frameRoute
+            return
+        }
+        data.workspaceFrameRev = data.workspaceFrameRev + 1
+    }
+
+    fn refresh(data:WorkspaceFrameData){
+        return this.reload(data, data.workspaceName)
+    }
+
+    fn clearLog(data:WorkspaceFrameData){
+        data.logMessages = []
+    }
+}

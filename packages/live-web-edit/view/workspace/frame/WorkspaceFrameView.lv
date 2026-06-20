@@ -1,0 +1,165 @@
+import live-web.dom
+import live-web.model
+import live-elements-web-server.style
+import live-web-view.button
+import live-web-view.color
+import live-web-view.content
+import live-web-view.iframe
+import live-web-view.layout
+import live-web-view.navigation
+
+component WorkspaceFrameView < Div{
+    id: workspaceFrameView
+
+    static any[] use = [
+        IconButton,
+        TopNav,
+        Resizable,
+        SplitLayout,
+        TooltipArea,
+        ColorSchemeToggleButton,
+        ScopedStyle{ src: './workspaceframeview.css' process: 'live-web-view/style/CSSProcessor.lv' }
+    ]
+
+    WorkspaceFrameData data
+    Actions actions: Actions.bindFirst(workspaceFrameView.data, workspaceFrameActions)
+    string workspaceName: ''
+    string baseUrl: ''
+    string workspacePreviewPath: ''
+    number previewRevision: 0
+
+    constructor(data:Object){
+        super()
+        this{ data = WorkspaceFrameData.fromJSON(data) }
+    }
+
+    classes: [ScopedStyle.className(WorkspaceFrameView)]
+
+    on workspaceNameChanged: () => {
+        if ( this.data ){
+            this.data.workspaceName = this.workspaceName ? this.workspaceName : this.data.workspaceName
+        }
+    }
+
+    on baseUrlChanged: () => {
+        if ( this.data ){
+            this.data.baseUrl = this.baseUrl != null ? this.baseUrl : this.data.baseUrl
+        }
+    }
+
+    on workspacePreviewPathChanged: () => {
+        if ( this.data ){
+            this.data.workspacePreviewPath = this.workspacePreviewPath ? this.workspacePreviewPath : this.data.workspacePreviewPath
+        }
+    }
+
+    on previewRevisionChanged: () => {
+        if ( !this.data ){
+            return
+        }
+
+        const frameRoute = this.data.currentWorkspacePreviewPath()
+        if ( frameRoute !== this.data.workspaceFrameSrc ){
+            this.data.workspaceFrameSrc = frameRoute
+            return
+        }
+        this.data.workspaceFrameRev = this.previewRevision
+    }
+
+    async fn completed(){
+        window.addEventListener('message', (event) => {
+            if ( !event.data || typeof event.data !== 'object' ){
+                return
+            }
+
+            if ( event.data.type === 'error' ){
+                const stack = event.data.stack ? `\n${event.data.stack}` : ''
+                workspaceFrameView.data.lastRuntimeError = `Client error: ${event.data.message}${stack}`
+            } else if ( event.data.type === 'log' ){
+                workspaceFrameView.data.appendLogMessage(event.data.message.join(' '))
+            }
+        }, false)
+    }
+
+    TopNav{ position: 'static'
+        NavContent{}
+        NavContent{
+            TooltipArea{
+                RefreshButton{ on click: () => { workspaceFrameView.actions.refresh() } }
+                Tooltip`Refresh`
+            }
+
+            TooltipArea{
+                ZoomInButton{ target: frame }
+                Tooltip`Zoom In`
+            }
+
+            TooltipArea{
+                ZoomOutButton{ target: frame }
+                Tooltip`Zoom Out`
+            }
+
+            TooltipArea{
+                ResizableFillButton{ target: resizable isFilled: true }
+                Tooltip`Resize`
+            }
+
+            TooltipArea{
+                ColorSchemeToggleButton{}
+                Tooltip.("Color Scheme"){ extraClasses: ['position-left'] }
+            }
+        }
+    }
+
+    SplitLayout{ vertical: true extraClasses: ['split-3-1', workspaceFrameView.data.logMessages.length === 0 ? 'split-one' : '']
+        panes: [
+            SplitPane{ extraClasses: ['flex-content']
+                Resizable{ id: resizable fill: true border: true
+                    IFrame{
+                        id: frame
+                        classes: [workspaceFrameView.data.frameLoading ? 'frame-loading' : '']
+                        string frameSrc: workspaceFrameView.data.workspaceFrameSrc
+                        on frameSrcChanged: () => { this.src = this.frameSrc }
+                        on srcChanged: () => {
+                            if ( this.dom ){
+                                workspaceFrameView.data.frameLoading = true
+                            }
+                        }
+                        number frameRev: workspaceFrameView.data.workspaceFrameRev
+                        on frameRevChanged: () => {
+                            this.refresh()
+                        }
+                        on load: () => {
+                            workspaceFrameView.data.frameLoading = false
+                        }
+                    }
+                    ResizableHandlePoint{}
+                }
+
+                Div{ classes: ['iframe-loading', workspaceFrameView.data.frameLoading ? 'show' : '']
+                    Div{ classes: ['loader'] }
+                }
+            },
+            SplitPane{
+                Div{ classes: ['log-view']
+                    H2`Console`
+                    Div{ classes: ['log-messages']
+                        boolean manualScroll: false
+                        children: workspaceFrameView.data.logMessages.map(e => {
+                            return Div{ classes: ['log-message'] T{ text: e } }
+                        })
+                        on childrenChanged: () => {
+                            if ( this.dom && !this.manualScroll ){
+                                this.dom.scrollTop = this.dom.scrollHeight
+                            }
+                        }
+                        on scroll: () => {
+                            const atBottom = this.dom.scrollTop + this.dom.clientHeight >= this.dom.scrollHeight - 1
+                            this.manualScroll = !atBottom
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

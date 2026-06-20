@@ -1,111 +1,103 @@
-import .lib.middle
+import .view.workspace.editor
+import .view.workspace.frame
 
 component WorkspaceViewData{
 
-    static Object WriteBehavior = {
-        ReadOnly: 0,
-        Write: 1,
-        Fork: 2
-    }
+    static Object WriteBehavior = WorkspaceEditorData.WriteBehavior
 
-    string baseUrl: ''
-    Array<Document> documents: []
-    Array<Object> editors: []
+    WorkspaceEditorData editor: null
+    WorkspaceFrameData frame: null
+
     string workspaceName: ''
-    number writeBehavior: WorkspaceViewData.WriteBehavior.Write
-    string lastCompilation: null
+    string workspaceId: ''
+    string workspacePagePath: ''
+    string workspacePreviewPath: ''
+    number writeBehavior: WorkspaceViewData.WriteBehavior.ReadOnly
+    Object lastCompilation: null
     bool workspaceSelector: false
     Object loadingStatus: null
-    boolean frameLoading: false
     Array<Object> templates: []
     Array<Object> errors: []
     Array<Object> logMessages: []
     Object serverRoutes: ({})
-
+    boolean frameLoading: false
     string workspaceFrameSrc: ''
     number workspaceFrameRev: 0
 
-    fn writeEnabled():boolean{ 
-        return this.writeBehavior === WorkspaceViewData.WriteBehavior.Write || this.writeBehavior === WorkspaceViewData.WriteBehavior.Fork
+    fn writeEnabled():boolean{
+        return this.editor ? this.editor.writeEnabled() : false
     }
+
     fn lockEnabled():boolean{
-        return this.writeBehavior === WorkspaceViewData.WriteBehavior.Write
+        return this.editor ? this.editor.lockEnabled() : false
     }
-    fn route(url:string):string{ return this.baseUrl + url }
+
+    fn currentWorkspacePagePath():string{
+        return this.editor ? this.editor.currentWorkspacePagePath() : ''
+    }
+
+    fn currentWorkspacePreviewPath():string{
+        return this.frame ? this.frame.currentWorkspacePreviewPath() : ''
+    }
 
     fn appendLogMessage(message:string){
-        while ( this.logMessages.length > 50 ){
-            this.logMessages.shift()
+        if ( this.frame ){
+            this.frame.appendLogMessage(message)
+            this.syncCompatFromStates()
         }
-        this.logMessages.push(message)
-        this.logMessagesChanged.emit()
     }
 
     fn appendHistory(state:Object, route:string){
         window.history.pushState(state, null, route)
     }
 
-    fn updateFromJSON(data:Object){
-        this.baseUrl = data.baseUrl ? data.baseUrl : this.baseUrl
-        this.workspaceName = data.name
-        if ( data.documents ){
-            data.documents.forEach(dataDocument => {
-                const doc = this.documents.find(d => d.path === dataDocument.path)
-                if ( doc ){
-                    const isReset = doc.content !== dataDocument.content
-                    doc.content = dataDocument.content
-                    if ( isReset )
-                        doc.contentReset.emit()
-                } else {
-                    this.documents = this.documents.concat([Document.fromJSON(dataDocument)])
-                }
-            })
-            let toRemove = []
-            this.documents.forEach(thisDocument => {
-                const dataDoc = data.documents.find(d => d.path === thisDocument.path)
-                if ( !dataDoc ){
-                    toRemove.push(dataDoc)
-                }
-            })
-            toRemove.forEach(removeDoc => {
-                this.documents = this.documents.filter(d => d === removeDoc)
-            })
-            this.editors = this.documents.map((doc, i) => ({ document: doc, isActive: i === 0}))
+    fn syncCompatFromStates(){
+        if ( this.editor ){
+            this.workspaceName = this.editor.workspaceName
+            this.workspaceId = this.editor.workspaceId
+            this.workspacePagePath = this.editor.workspacePagePath
+            this.writeBehavior = this.editor.writeBehavior
+            this.lastCompilation = this.editor.lastCompilation
+            this.workspaceSelector = this.editor.workspaceSelector
+            this.loadingStatus = this.editor.loadingStatus
+            this.templates = this.editor.templates
+            this.errors = this.editor.errors
+            this.serverRoutes = this.editor.serverRoutes
         }
-        this.writeBehavior = data.writeBehavior ? data.writeBehavior : this.writeBehavior
-        this.lastCompilation = data.compilation ? data.compilation : this.lastCompilation
-        this.templates = data.templates ? data.templates : this.templates
-        this.errors = data.errors 
-            ? data.errors 
-            : data.error ? [data.error] 
-                : data.compilation && data.compilation.errors ? data.compilation.errors 
-                : this.errors
+
+        if ( this.frame ){
+            this.workspacePreviewPath = this.frame.workspacePreviewPath
+            this.logMessages = this.frame.logMessages
+            this.frameLoading = this.frame.frameLoading
+            this.workspaceFrameSrc = this.frame.workspaceFrameSrc
+            this.workspaceFrameRev = this.frame.workspaceFrameRev
+        }
+    }
+
+    fn updateFromJSON(data:Object){
+        if ( this.editor ){
+            this.editor.updateFromJSON(data)
+        }
+        if ( this.frame ){
+            this.frame.updateFromJSON(data)
+        }
+        this.syncCompatFromStates()
+    }
+
+    on serverRoutesChanged: () => {
+        if ( this.editor ){
+            this.editor.serverRoutes = this.serverRoutes
+        }
     }
 
     static fn fromJSON(data:Object):WorkspaceViewData{
-        const baseUrl = data.baseUrl ? data.baseUrl : ''
-        return WorkspaceViewData{    
-            baseUrl = data.baseUrl ? data.baseUrl : ''
-            workspaceName = data.name
-            documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
-            writeBehavior = data.writeBehavior ? data.writeBehavior : WorkspaceViewData.WriteBehavior.ReadOnly
-            lastCompilation = data.compilation ? data.compilation : null
-            templates = data.templates ? data.templates : []
-            serverRoutes = ({
-                load: `${baseUrl}/w-load`,
-                save: `${baseUrl}/w-document/save/:workspace`,
-                compile: `${baseUrl}/w-compile/:workspace`,
-                lockWrite: `${baseUrl}/w-lockwrite/:workspace`,
-                fork: `${baseUrl}/w-fork/:workspace`
-            })
-            workspaceFrameSrc = ''
-            workspaceFrameRev = 0
-            errors = data.errors 
-                ? data.errors 
-                : data.error ? [data.error] 
-                    : data.compilation && data.compilation.errors 
-                        ? data.compilation.errors 
-                        : []
+        const editor = WorkspaceEditorData.fromJSON(data ? data : {})
+        const frame = WorkspaceFrameData.fromJSON(data ? data : {})
+        const result = WorkspaceViewData{
+            editor = editor
+            frame = frame
         }
+        result.syncCompatFromStates()
+        return result
     }
 }
