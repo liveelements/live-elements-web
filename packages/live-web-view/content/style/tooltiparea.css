@@ -5,13 +5,13 @@
 }
   
 &TooltipArea &Tooltip {
-    @apply p-2 px-4 rounded text-xs text-mono-1 dark:text-white bg-white dark:bg-mono-1 border border-mono-c dark:border-mono-4;
+    @apply p-0 rounded text-xs text-mono-1 dark:text-white bg-white dark:bg-mono-1 border border-mono-c dark:border-mono-4;
     visibility: hidden;
     opacity: 0;
     position: fixed;
     top: 100%;
     margin-top: 5px;
-    z-index: 1000;
+    z-index: 10000;
     transition: opacity 0.3s;
 }
 
@@ -23,8 +23,5 @@
 }
   
 &TooltipArea&.active &Tooltip {
-    position: absolute;
-    display: block;
-    visibility: visible;
-    opacity: 0.9;
+    @apply absolute block visible opacity-[0.9] p-2 px-4;
 }

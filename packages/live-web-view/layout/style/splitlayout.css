@@ -18,7 +18,7 @@
 &SplitLayout&.no-break &SplitPane&:is(.dark *){
     scrollbar-color: #414141 transparent;
 }
-&SplitLayout&.vertical &SplitPane{
+&SplitLayout&.vertical > &SplitPane{
     @apply overflow-auto w-auto h-1/2;
 }
 &SplitPane&.pad{
@@ -30,7 +30,7 @@
 &SplitLayout&.no-break .handle{
     @apply w-[1px] h-full;
 }
-&SplitLayout&.vertical .handle{
+&SplitLayout&.vertical > .handle{
     @apply w-full h-[1px];
 }
 .handle-pointer{
@@ -39,7 +39,7 @@
 &SplitLayout&.no-break .handle-pointer{
     @apply w-[3px] h-full left-[-1px] cursor-ew-resize;
 }
-&SplitLayout&.vertical .handle-pointer{
+&SplitLayout&.vertical > .handle .handle-pointer{
     @apply h-[3px] w-full top-[-1px] cursor-ns-resize;
 }
 .overlay{
