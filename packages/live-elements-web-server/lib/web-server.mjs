@@ -296,15 +296,18 @@ export default class WebServer extends EventEmitter{
         const viewAssignmentsSource = JSON.stringify(viewLoaderData.assignments)
         const viewAssignmentsStyles = viewLoaderData.assignments.scopedStyleLinks
 
-        const clientLoader = ClassInfo.extends(view, ComponentRegistry.Components.PageView) ? clientPageViewLoader : clientApplicationLoader
+        const isPageView = ClassInfo.extends(view, ComponentRegistry.Components.PageView)
+        const clientLoader = isPageView ? clientPageViewLoader : clientApplicationLoader
+        const clientLoaderExport = isPageView ? 'ClientPageViewLoader' : 'ClientApplicationLoader'
         const moduleVirtualLoader = path.join(path.dirname(viewLoaderData.path), bundleName + '.loader.mjs')
         const moduleVirtualLoaderContent = [
-            `import Loader from "${clientLoader}"`,
+            `import { ${clientLoaderExport} as Loader } from "${clientLoader}"`,
             `Loader.loadAwaitingModuleAndReport(import("./${viewLoaderData.fileName}"), "${viewLoaderData.name}", ${placementSource}, ${viewAssignmentsSource})`
         ].join('\n')
         return {
             bundleName: bundleName,
             loaderType: clientLoader,
+            loaderExport: clientLoaderExport,
             virtualLoader: moduleVirtualLoader,
             virtualLoaderContent: moduleVirtualLoaderContent,
             virtualLoaderPlacementContent: placementSource,

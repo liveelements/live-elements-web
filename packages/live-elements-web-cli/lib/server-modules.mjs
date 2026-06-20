@@ -48,7 +48,7 @@ export async function loadBundleWithView(bundleData, view, config){
     const viewLoader = server.createViewLoader(ViewComponent)
 
     const newViewLoaderContent = [
-        `import Loader from "${viewLoader.loaderType}"`,
+        `import { ${viewLoader.loaderExport} as Loader } from "${viewLoader.loaderType}"`,
         `Loader.loadAwaitingModuleAndReport(import("./${ViewComponent.Meta.sourceFileName}"), "*", ${viewLoader.virtualLoaderPlacementContent}, ${viewLoader.virtualLoaderViewAssignments})`
     ].join('\n')
     virtualModules.writeModule(viewLoader.virtualLoader, newViewLoaderContent)

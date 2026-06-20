@@ -1,6 +1,6 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
 
-export default class ClientApplicationLoader{
+export class ClientApplicationLoader{
     static loadAwaitingModuleAndReport(awaitingModule, componentName){
         awaitingModule.then(module => {
             const c = module[componentName]
