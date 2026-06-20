@@ -1,8 +1,8 @@
 import {StandardError} from "./standard-error.mjs"
 
 export class PublicError extends StandardError{
-    constructor(message, internal){
-        super(message)
+    constructor(message, internal, code){
+        super(message, code ?? internal?.code)
         this._internal = internal
         this.name = this.constructor.name
     }
@@ -17,12 +17,12 @@ export class PublicError extends StandardError{
         if ( error instanceof PublicError ){
             return error
         } else {
-             return new PublicError(message, error)
+             return new PublicError(message, error, error?.code)
         }
     }
 
     static fromInternal(error){
-        return new PublicError(error.message, error)
+        return new PublicError(error.message, error, error?.code)
     }
 
     static fromJSON(json) {
