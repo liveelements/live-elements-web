@@ -1,9 +1,9 @@
 const path = require('path')
 const fs = require('fs')
 
-function compileModule(compiler, compilerConfig, modulePath){
+function compileModule(compiler, compilerOptions, modulePath){
     return new Promise((resolve, reject) => {
-        compiler.default.compileModule(modulePath, compilerConfig.read(), (result, err) => {
+        compiler.default.compileModule(modulePath, compilerOptions, (result, err) => {
             if ( result ){
                 resolve(result)
             } else if ( err ){
@@ -28,6 +28,7 @@ function compileModule(compiler, compilerConfig, modulePath){
 async function run(){
     var compiler = await import('live-elements-js-compiler')
     var compilerConfig = await import('live-elements-core/compilerconfig.mjs')
+    var compilerOptions = await compilerConfig.load()
 
     let livePackageFile = path.resolve(__dirname + '/../live.package.json')
     let contents = fs.readFileSync(livePackageFile)
@@ -39,9 +40,9 @@ async function run(){
     }
 
     try{
-        const templatesResult = await compileModule(compiler, compilerConfig, path.resolve(__dirname + '/../templates/'))
+        const templatesResult = await compileModule(compiler, compilerOptions, path.resolve(__dirname + '/../templates/'))
         console.log("Compiled at: " + templatesResult)
-        const bundlesDemoResult = await compileModule(compiler, compilerConfig, path.resolve(__dirname + '/../templates/bundles/demo'))
+        const bundlesDemoResult = await compileModule(compiler, compilerOptions, path.resolve(__dirname + '/../templates/bundles/demo'))
         console.log("Compiled at: " + bundlesDemoResult)
 
         let livePackageFile = path.resolve(__dirname + '/../live.package.json')
