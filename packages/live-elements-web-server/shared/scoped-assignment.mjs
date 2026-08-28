@@ -26,14 +26,21 @@ export class ScopedAssignment{
         } else { 
             return { value: undefined, error: `Undefined style for ${c.name}` }
         }
-        if ( c.use ){
-            for ( let i = 0; i < c.use.length && i < scopedStyles.use.length; ++i ){
-                if ( typeof c.use[i] === 'function' && c.use[i].name ){
-                    const result = ScopedAssignment.populateViewComponentStyles(scopedStyles.use[i], c.use[i], assertionSupport)
+        
+        const use = c.hasOwnProperty('use') ? c.use : null
+        if ( use ){
+            for ( let i = 0; i < use.length && i < scopedStyles.use.length; ++i ){
+                if ( typeof use[i] === 'function' && use[i].name ){
+                    const result = ScopedAssignment.populateViewComponentStyles(scopedStyles.use[i], use[i], assertionSupport)
                     if ( !result.value )
                         return result
                 }
             }
+        }
+        if ( scopedStyles.inh ){
+            const result = ScopedAssignment.populateViewComponentStyles(scopedStyles.inh, Object.getPrototypeOf(c), assertionSupport)
+            if ( !result.value )
+                return result
         }
         return { value: true }
     }

@@ -1,5 +1,6 @@
 import { BaseElement } from "live-elements-core/baseelement.js"
 import { ScopedComponentScanner } from 'live-elements-web-server/build/shared/ScopedComponentScanner.lv.mjs'
+import { ScopedAssignment } from '../shared/scoped-assignment.mjs'
 
 export class ClientPageViewLoader{
 
@@ -49,7 +50,7 @@ export class ClientPageViewLoader{
                     throw new Error(`Failed to find PageView component.`)
                 }
 
-                const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
+                const result = ScopedAssignment.populateViewComponentStyles(serverData.scopedStyles, c, serverData.scopedStyleAssertionSupport)
                 if ( !result.value ){
                     if ( serverData.scopedStyleAssertionSupport && window.clientBundleSocket ){
                         const collection = ScopedComponentScanner.scanAndCollect(c)
@@ -57,7 +58,7 @@ export class ClientPageViewLoader{
                         const usages = sc.toJSON()
                         window.clientBundleSocket.sendActionToServer('update-use', usages)
                         window.clientBundleSocket.onAction('reload-use', (serverData) => {
-                            const result = ClientPageViewLoader.__populateScopedStyles(serverData.scopedStyles, c, true)
+                            const result = ScopedAssignment.populateViewComponentStyles(serverData.scopedStyles, c, true)
                             if ( !result.value ){
                                 throw new Error(result.error)
                             }
@@ -133,34 +134,6 @@ export class ClientPageViewLoader{
                 return null
             }) : null
         }
-    }
-
-    static __populateScopedStyles(scopedStyles, c, assertionSupport){
-        if ( scopedStyles ){
-            if ( assertionSupport ){
-                if ( scopedStyles.renderProperties.name !== c.name ){
-                    return { value: undefined, error: `${scopedStyles.renderProperties.name} !== ${c.name}` }
-                }
-            }
-            c.renderProperties = scopedStyles.renderProperties
-        } else { 
-            return { value: undefined, error: `Undefined style for ${c.name}` }
-        }
-        if ( c.use ){
-            for ( let i = 0; i < c.use.length && i < scopedStyles.use.length; ++i ){
-                if ( typeof c.use[i] === 'function' && c.use[i].name ){
-                    const result = ClientPageViewLoader.__populateScopedStyles(scopedStyles.use[i], c.use[i], assertionSupport)
-                    if ( !result.value )
-                        return result
-                }
-            }
-        }
-        if ( scopedStyles.inh ){
-            const result = ClientPageViewLoader.__populateScopedStyles(scopedStyles.inh, Object.getPrototypeOf(c), assertionSupport)
-            if ( !result.value )
-                return result
-        }
-        return { value: true }
     }
 
 }
