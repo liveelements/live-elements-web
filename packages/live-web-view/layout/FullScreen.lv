@@ -24,7 +24,7 @@ component FullScreen < Div{
         Rect{ props: ({width: '1200', height: '1200', fill: '#ddd'})
         }
         Path{
-            props: ({d: 'M600 0L0 600h1200L600 0zm0 1200l600-600H0l600 600z', fill: '#999', fill: { opacity: '.4' } })
+            props: ({d: 'M600 0L0 600h1200L600 0zm0 1200l600-600H0l600 600z', fill: { _: '#999', opacity: '.4' } })
         }
     }
 }
