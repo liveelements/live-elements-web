@@ -1,0 +1,18 @@
+{
+    "name": "live-elements-flow",
+    "version": "0.1.15",
+    "description": "Live Elements shared compiler-facing flow helpers.",
+    "keywords": [
+        "live",
+        "elements",
+        "flow",
+        "live-elements-flow"
+    ],
+    "author": "Dinu SV",
+    "license": "MIT",
+    "type": "module",
+    "dependencies": {
+        "live-elements-core": "^0.1.15",
+        "live-elements-web-server": "^0.1.15"
+    }
+}
