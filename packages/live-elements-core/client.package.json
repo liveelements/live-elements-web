@@ -1,5 +1,8 @@
 {
   "exports": [
-    "baseelement.js"
+    "baseelement.js",
+    "types.mjs",
+    "type-codec.mjs",
+    "!compiler/type-resolver.mjs"
   ]
 }

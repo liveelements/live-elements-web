@@ -19,7 +19,8 @@
     "shared/scoped-component-collection.mjs",
     "shared/scoped-component-style.mjs",
     "shared/scoped-component.mjs",
-    "build/style/ScopedStyle.lv.mjs",
+    "build/style/**/*.lv.mjs",
+    "!build/style/processors/**",
     "build/view/**/*.lv.mjs",
     "build/shared/**/*.lv.mjs"
   ]

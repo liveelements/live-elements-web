@@ -1,0 +1,7 @@
+{
+  "exports": [
+    "build/view/**/*.lv.mjs",
+    "build/lib/middle/**/*.lv.mjs",
+    "view/lib/**/*.mjs"
+  ]
+}
