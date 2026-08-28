@@ -1,4 +1,6 @@
 import {StandardError} from "../errors/standard-error.mjs";
+import { TypeCodec } from 'live-elements-core/type-codec.mjs'
+import { Type } from 'live-elements-core/types.mjs'
 
 export class ValueOrError{
     constructor(value, error){
@@ -36,6 +38,11 @@ export class ValueOrError{
     }
 
     toJSON(valueCb, errorCb){
+        if (arguments.length === 0) {
+            return this._value !== undefined
+                ? { value: TypeCodec.encode(this._value) }
+                : { error: TypeCodec.encode(this._error) }
+        }
         if ( this._value !== undefined ){
             return valueCb 
                 ? { value: valueCb(this._value ) }
@@ -62,6 +69,17 @@ export class ValueOrError{
     }
 
     static fromJSON(ob, valueCb, errorCb){
+        if (arguments.length >= 2 && valueCb && typeof valueCb === 'object') {
+            const type = valueCb
+            const typeLookup = arguments[2] ?? null
+            const valueType = type?.params?.[0]
+            if ( ob.hasOwnProperty('value') ){
+                return new ValueOrError(TypeCodec.decode(ob.value, valueType, typeLookup))
+            } else if ( ob.hasOwnProperty('error') ){
+                return new ValueOrError(undefined, TypeCodec.decode(ob.error, Type.for(Error), typeLookup))
+            }
+            return new ValueOrError(undefined, new Error('ValueOrError: Object missing value or error key.'))
+        }
         if ( ob.hasOwnProperty('value') ){
             return valueCb
                 ? new ValueOrError(valueCb(ob.value))
