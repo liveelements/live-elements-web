@@ -1,6 +1,8 @@
 /build
 /dist
 packages/live-web/build
+packages/live-web-edit/build
+packages/live-elements-flow/build
 packages/live-testspec/build
 samples/customstyle/build
 samples/slider/build
