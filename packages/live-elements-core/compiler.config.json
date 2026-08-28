@@ -9,6 +9,17 @@
         "RangeError", "ReferenceError", "SyntaxError", "TypeError", "AsyncFunction", "Promise", "setTimeout", "setInterval", "clearInterval", "clearTimeout", "isNaN",
         "encodeURIComponent", "decodeURIComponent", "encodeURI", "decodeURI"
     ],
+    "flowModulePath": "live-elements-flow/shared/flow.mjs",
+    "flowModuleName": "Flow",
+    "typesModulePath": "live-elements-core/types.mjs",
+    "resolveTypesModule": "live-elements-core/compiler/type-resolver.mjs",
+    "flowCalls": {
+        "create": "Flow.create",
+        "call": "Flow.call",
+        "return": "Flow.ret",
+        "ref": "Flow.ref",
+        "member": "Flow.member"
+    },
     "importLocalPath" : "node_modules",
     "packageBuildPath" : "build",
     "outputExtension" : "mjs",

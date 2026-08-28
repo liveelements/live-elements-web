@@ -11,23 +11,25 @@ import * as compilerConfig from './compilerconfig.mjs'
 
 export default function(path){
     return new Promise((resolve, reject) => {
-        compiler.default.compile(path, compilerConfig.read(), (result, err) => {    
-            if ( result )
-                lvjsimport(result).then(res => resolve(res)).catch( err => reject(err) )
-            else if ( err ){
-                if ( err instanceof Error ){
-                    reject(err)
-                } else if ( err.error ){
-                    if ( err.source ){
-                        err.error.source = err.source
-                        err.error.message += ' At file ' + err.error.source.file + ':' + err.error.source.line + ':' + err.error.source.column
+        compilerConfig.load().then(config => {
+            compiler.default.compile(path, config, (result, err) => {
+                if ( result )
+                    lvjsimport(result).then(res => resolve(res)).catch( err => reject(err) )
+                else if ( err ){
+                    if ( err instanceof Error ){
+                        reject(err)
+                    } else if ( err.error ){
+                        if ( err.source ){
+                            err.error.source = err.source
+                            err.error.message += ' At file ' + err.error.source.file + ':' + err.error.source.line + ':' + err.error.source.column
+                        }
+                        reject(err.error)
+                    } else {
+                        reject(err)
                     }
-                    reject(err.error)
-                } else {
-                    reject(err)
-                }
-            } else
-                reject(new Error("Internal lvimport error at path: " + path))
-        })
+                } else
+                    reject(new Error("Internal lvimport error at path: " + path))
+            })
+        }).catch(reject)
     })
 }
