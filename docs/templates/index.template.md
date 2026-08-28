@@ -5,7 +5,6 @@ This repository contains the core frameworks and libraries for building web appl
 ## Modules
 
 *   **live-elements-core**: Fundamental base elements, components, and standard configurations forming the core infrastructure.
-*   **live-elements-loader**: Lightweight dynamic loading framework for importing submodules securely.
 *   **live-web**: The main component library containing foundational UI layout wrappers and primitives.
 *   **live-web-view**: Rendering algorithms handling tree structures and client-side hydration pipelines.
 

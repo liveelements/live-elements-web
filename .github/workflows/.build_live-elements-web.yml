@@ -40,9 +40,6 @@ jobs:
           cd packages/live-elements-core
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public
-          cd ../live-elements-loader
-          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
-          npm publish --access=public
           cd ../live-elements-web
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
           npm publish --access=public

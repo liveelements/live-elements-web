@@ -26,7 +26,6 @@ FileGeneratorContent```
   \"license\": \"UNLICENSED\",
   \"dependencies\": {
     \"live-elements-web-server\": \"^0.1.15\",
-    \"live-elements-loader\": \"^0.1.15\",
     \"live-elements-core\": \"^0.1.15\",
     \"live-elements-web-cli\": \"^0.1.15\",
     \"live-elements-web\": \"^0.1.15\",
@@ -73,4 +72,4 @@ component Demo < PageView{
 ```
 }
 
-} // webpackBundle Generator
+} // bundle Generator

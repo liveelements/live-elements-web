@@ -33,7 +33,6 @@ npx lvweb serve # serve playground
 ## Packages
 
  * live-elements-core
- * live-elements-loader
  * live-elements-web
  * live-elements-web-cli
  * live-elements-web-server
