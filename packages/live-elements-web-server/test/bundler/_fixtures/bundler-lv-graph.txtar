@@ -1,0 +1,20 @@
+-- bundler-lv-graph/package.json --
+{ "name": "bundler-lv-graph", "type": "module" }
+-- bundler-lv-graph/live.package.json --
+{ "name": "bundler-lv-graph", "version": "0.0.0" }
+-- bundler-lv-graph/lib/Marker.lv --
+@fn marker(): string{
+    return 'marker:B'
+}
+-- bundler-lv-graph/Entry.lv --
+import .lib
+
+component Entry{
+    constructor(){
+        super()
+        Entry.prototype.__initialize.call(this)
+        window.__probe__ = (window.__probe__ || []).concat(marker())
+    }
+}
+
+instance entry Entry{}

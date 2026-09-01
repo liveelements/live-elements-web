@@ -44,16 +44,13 @@ export async function loadBundleWithView(bundleData, view, config){
     const server = await WebServer.loadBundle(bundleData, config)
 
     // overwrite loader to support any view name, in case the view name changes
-    const virtualModules = server.webpack.virtualModulesPlugin
     const viewLoader = server.createViewLoader(ViewComponent)
 
     const newViewLoaderContent = [
         `import { ${viewLoader.loaderExport} as Loader } from "${viewLoader.loaderType}"`,
         `Loader.loadAwaitingModuleAndReport(import("./${ViewComponent.Meta.sourceFileName}"), "*", ${viewLoader.virtualLoaderPlacementContent}, ${viewLoader.virtualLoaderViewAssignments})`
     ].join('\n')
-    virtualModules.writeModule(viewLoader.virtualLoader, newViewLoaderContent)
+    server.clientBundler.writeModule(viewLoader.virtualLoader, newViewLoaderContent)
 
     return server
 }
-
-

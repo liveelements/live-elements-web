@@ -1,0 +1,180 @@
+import live-testspec
+
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import vm from 'node:vm'
+import { createRequire } from 'node:module'
+
+import ClientBundler from '../../lib/bundler/client-bundler.mjs'
+import { Watcher } from '../../lib/watcher.mjs'
+import Txtar from '../../lib/core/txtar.mjs'
+
+instance clientBundlerTest Spec{
+    describe: 'ClientBundler'
+
+    fn extractFixture(){
+        const packageRoot = path.dirname(createRequire(import.meta.url).resolve('live-elements-web-server/package.json'))
+        const fixturePath = path.resolve(packageRoot, 'test/bundler/_fixtures/bundler-lv-graph.txtar')
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'client-bundler-'))
+        const root = fs.realpathSync(tempRoot)
+        const packageDir = path.join(root, 'bundler-lv-graph')
+        const nodeModulesDir = path.join(root, 'node_modules')
+        const liveElementsCorePath = path.resolve(packageRoot, '../live-elements-core')
+
+        Txtar.parseFile(fixturePath).extract(root)
+        fs.mkdirSync(nodeModulesDir, { recursive: true })
+        fs.symlinkSync(liveElementsCorePath, path.join(nodeModulesDir, 'live-elements-core'), 'dir')
+
+        return {
+            root,
+            packageDir,
+            entryPath: path.join(packageDir, 'Entry.lv'),
+            markerPath: path.join(packageDir, 'lib', 'Marker.lv')
+        }
+    }
+
+    Scenario{
+        name: 'compiles an lv graph into a single entry bundle'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixture()
+            const outputPath = path.join(fixture.packageDir, 'dist')
+
+            try {
+                const result = await ClientBundler.compile([
+                    ClientBundler.Entry.create('main', [{ path: fixture.entryPath }])
+                ], ClientBundler.Config.create({
+                    outputPath,
+                    publicPath: '/app',
+                    sourcemap: false
+                }))
+
+                expect(result.hasErrors).toBe(false)
+                expect(result.value.assets.length).toBe(1)
+
+                const asset = result.value.assets[0]
+                expect(asset.isMainEntry).toBe(true)
+                expect(asset.entryName).toBe('main')
+
+                const context = { window: {}, console, setTimeout, clearTimeout }
+                vm.runInNewContext(asset.content, context)
+                expect(context.window.__probe__).toEqual(['marker:B'])
+
+                expect(fs.existsSync(path.join(fixture.packageDir, 'build', 'Entry.lv.mjs'))).toBe(true)
+                expect(fs.existsSync(path.join(fixture.packageDir, 'build', 'lib', 'Marker.lv.mjs'))).toBe(true)
+            } finally {
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'surfaces an lv compile error against the source file'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixture()
+            const outputPath = path.join(fixture.packageDir, 'dist')
+
+            try {
+                fs.writeFileSync(fixture.markerPath, "@fn marker(): string{\n    ???\n}\n")
+
+                const result = await ClientBundler.compile([
+                    ClientBundler.Entry.create('main', [{ path: fixture.entryPath }])
+                ], ClientBundler.Config.create({
+                    outputPath,
+                    publicPath: '/app',
+                    sourcemap: false
+                }))
+
+                expect(result.hasErrors).toBe(true)
+                expect(result.errors[0].message).toContain('Syntax error')
+                expect(result.errors[0].message).toContain('Marker.lv:')
+            } finally {
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'createAndBuild assigns lv sources to the manual watcher group'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixture()
+            const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
+            const bundler = await ClientBundler.createAndBuild(
+                { main: [fixture.entryPath] },
+                path.join(fixture.packageDir, 'dist'),
+                { publicPath: '/app', sourcemap: false, watcher }
+            )
+
+            try {
+                expect(watcher.files[fixture.entryPath]?.name).toBe('client-bundler-manual')
+                expect(watcher.files[fixture.markerPath]?.name).toBe('client-bundler-manual')
+
+                const watchedFiles = Object.keys(watcher.files)
+                expect(watchedFiles.some((file) => file.endsWith('.lv.mjs'))).toBe(false)
+
+                const bundledPlainInputs = watchedFiles.filter((file) => watcher.files[file]?.name === 'client-bundler')
+                expect(bundledPlainInputs.some((file) => file.endsWith(path.join('live-elements-core', 'baseelement.js')))).toBe(true)
+                expect(bundledPlainInputs.some((file) => file.endsWith(path.join('live-elements-core', 'types.mjs')))).toBe(true)
+            } finally {
+                await bundler.dispose()
+                watcher.close()
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'a write to a watched lv source rebuilds the served asset'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixture()
+            const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
+            const bundler = await ClientBundler.createAndBuild(
+                { main: [fixture.entryPath] },
+                path.join(fixture.packageDir, 'dist'),
+                { publicPath: '/app', sourcemap: false, watcher }
+            )
+
+            try {
+                let resolveChange = null
+                const changed = new Promise((resolve) => {
+                    resolveChange = resolve
+                })
+                watcher.findGroup('client-bundler-manual').onFileChange = async (file) => {
+                    await bundler.rebuild()
+                    resolveChange(file)
+                }
+
+                // A write landing too soon after the watcher attaches can be folded into chokidar's
+                // baseline for the file, so the change event is never emitted. Nothing observable
+                // distinguishes that state up front, so re-touch the source until the event arrives.
+                const markerSource = "@fn marker(): string{\n    return 'marker:WATCHED'\n}\n"
+                const deadline = Date.now() + 10000
+                let changedFile = null
+
+                while ( changedFile === null ){
+                    if ( Date.now() > deadline )
+                        throw new Error('watcher never fired')
+
+                    fs.writeFileSync(fixture.markerPath, markerSource)
+
+                    changedFile = await Promise.race([
+                        changed,
+                        new Promise((resolve) => {
+                            setTimeout(() => resolve(null), 1000)
+                        })
+                    ])
+                }
+
+                expect(changedFile).toBe(fixture.markerPath)
+
+                const context = { window: {}, console, setTimeout, clearTimeout }
+                vm.runInNewContext(bundler.assetForUrl('/scripts/main.bundle.js').content, context)
+                expect(context.window.__probe__).toEqual(['marker:WATCHED'])
+            } finally {
+                await bundler.dispose()
+                watcher.close()
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+}

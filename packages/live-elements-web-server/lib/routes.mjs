@@ -7,7 +7,7 @@ import log from './server-log.mjs'
 
 import path from 'path'
 import url from 'url'
-import WebpackBundler from "./bundle-webpack.mjs"
+import ClientBundler from "./bundler/client-bundler.mjs"
 
 export class ServerRoute{
     constructor(url, userMiddleware, f, name){
@@ -71,6 +71,7 @@ export class ServerViewRoute extends ServerRoute{
         this._scripts      = []
         this._styles       = []
         this._bundleScript = null
+        this._bundleScriptType = ''
         this._pageInfo     = null
     }
 
@@ -83,10 +84,14 @@ export class ServerViewRoute extends ServerRoute{
     get scripts(){ return this._scripts }
     get styles(){ return this._styles }
     get bundleScript(){ return this._bundleScript }
+    get bundleScriptType(){ return this._bundleScriptType }
 
     addStyle(style){ this._styles.push(style) }
     addScript(script){ this._scripts.push(script) }
-    setBundleScript(script){ this._bundleScript = script }
+    setBundleScript(script, type = ''){
+        this._bundleScript = script
+        this._bundleScriptType = type
+    }
 
     static isType(ob){ return ob instanceof ServerViewRoute }
     typeString(){ return 'view' }
@@ -116,6 +121,7 @@ export class ServerViewRoute extends ServerRoute{
         await ComponentRegistry.update()
 
         page.entryScript = route.bundleScript ? '/scripts/' + route.bundleScript : null
+        page.entryScriptModule = route.bundleScriptType === 'module'
         const pageDOM = page.captureDOM(domEmulator)
         const insertionDOM = page.constructor.findInsertionElement(pageDOM.window.document)
 
@@ -178,15 +184,15 @@ export class ServerViewRoute extends ServerRoute{
             ServerRenderer.assignBehaviorsToDom(behaviors)
             const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
 
-            const compiledBundlesResult = await WebpackBundler.compile(
+            const compiledBundlesResult = await ClientBundler.compile(
                 [
-                    WebpackBundler.Entry.create('main', [
+                    ClientBundler.Entry.create('main', [
                         { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
                         { path: clientBehaviorEvents }
                     ])
                 ],
-                WebpackBundler.Config.create({
-                    mode: 'production',
+                ClientBundler.Config.create({
+                    sourcemap: false,
                     outputFileName: `${path.parse(viewPath).name.toLowerCase()}.[name].bundle.js`,
                     publicPath: behaviorScriptsUrl,
                     outputPath: path.join(distPath, 'behaviors')

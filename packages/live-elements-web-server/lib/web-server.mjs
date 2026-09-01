@@ -11,7 +11,7 @@ import {ClassInfo} from './class-info.mjs'
 import StyleContainer from './style-container.mjs'
 import ErrorHandler from './error-handler.mjs'
 import { Watcher, WatcherGroup } from './watcher.mjs'
-import WebpackBundler from './bundle-webpack.mjs'
+import ClientBundler from './bundler/client-bundler.mjs'
 import  { ServerBundleSocket} from './server-bundle-socket.mjs'
 import log from './server-log.mjs'
 import chalk from 'chalk'
@@ -108,7 +108,7 @@ export default class WebServer extends EventEmitter{
             : bundle.packagePath
 
         this._watcher = this._config.watch
-            ? Watcher.createFromGroups(['server', 'style', 'webpack', 'webpack-manual'])
+            ? Watcher.createFromGroups(['server', 'style', 'client-bundler', 'client-bundler-manual'])
             : null
         
         this._domEmulator = new LvDOMEmulator({beautify: true})
@@ -118,7 +118,7 @@ export default class WebServer extends EventEmitter{
         this._app = express()
         this._app.use(express.json(bundle.bundle.config && bundle.bundle.config.json ? bundle.bundle.config.json : {} ))
 
-        this._webpack = null
+        this._clientBundler = null
         this._serverSocket = null
         if ( this._config.useSocket ){
             this._serverSocket = new ServerBundleSocket(this._app)
@@ -137,7 +137,7 @@ export default class WebServer extends EventEmitter{
     get config(){ return this._config }
     get bundleFile(){ return this._bundle.file }
     get bundleLookupPath(){ return this._bundleLookupPath }
-    get webpack(){ return this._webpack }
+    get clientBundler(){ return this._clientBundler }
     get watcher(){ return this._watcher }
     get app(){ return this._app }
 
@@ -246,7 +246,7 @@ export default class WebServer extends EventEmitter{
 
         try{ await webServer._styles.addScopedStyles(webServer._scopedStyles, null, webServer._themes) } catch ( e ) { throw e }  
 
-        webServer.addWebpack()
+        await webServer.addClientBundler()
 
         return webServer
     }
@@ -317,8 +317,10 @@ export default class WebServer extends EventEmitter{
 
     clientBundleSocketLoader(){
         const clientBundleSocket = 'live-elements-web-server/client/client-bundle-socket.mjs'
-        const clientBundleSocketImporter = clientBundleSocket.substring(0, clientBundleSocket.length - 4) + '.loader.mjs'
-        const clientBundleSocketImporterAbsolute = path.join(WebServer.currentDir(), clientBundleSocketImporter)
+        
+        const clientBundleSocketImporterAbsolute = path.join(
+            path.dirname(WebServer.currentDir()), 'client', 'client-bundle-socket.loader.mjs'
+        )
         const clientBundleSocketImporterContent = [
             `import {ClientBundleSocket} from "${clientBundleSocket}"`,
             `window.clientBundleSocket = new ClientBundleSocket("${this.config.socketUrl}")`
@@ -326,15 +328,23 @@ export default class WebServer extends EventEmitter{
         return new VirtualScript(clientBundleSocketImporterAbsolute, clientBundleSocketImporterContent)
     }
 
-    addWebpack(){
+    async addClientBundler(){
         const views = this._routes.viewRoutes()
-        const entries = {}, virtualModules = {}
+        const entries = {}, virtualScripts = []
+        const bundleFormat = ClientBundler.Format.Classic
+        const bundleConfig = ClientBundler.Config.create({
+            watcher: this._watcher,
+            sourcemap: this.config.runMode !== WebServer.RunMode.Production,
+            publicPath: this.config.baseUrl,
+            virtualScripts,
+            format: bundleFormat
+        })
 
         let extraScripts = []
         if ( this._serverSocket ){
             const socketLoader = this.clientBundleSocketLoader()
             extraScripts.push(socketLoader)
-            virtualModules[socketLoader.location] = socketLoader.content
+            virtualScripts.push(socketLoader)
         }
 
         for ( let i = 0; i < views.length; ++i ){
@@ -349,25 +359,19 @@ export default class WebServer extends EventEmitter{
             if ( renderMode === ComponentRegistry.Components.ViewRoute.CSR ){
                 const viewLoader = this.createViewLoader(view, viewRoute.placement)
                 const viewLoaderScript = new VirtualScript(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
-                virtualModules[viewLoader.virtualLoader] = viewLoader.virtualLoaderContent
+                virtualScripts.push(viewLoaderScript)
                 viewRoute.addScript(viewLoaderScript)
             }
             if ( viewRoute.scripts.length ){
                 entries[bundleName] = viewRoute.scripts.map(script => script.location)
-                viewRoute.setBundleScript(`${bundleName}.bundle.js`)
+                viewRoute.setBundleScript(bundleConfig.bundleFileNameFor(bundleName), bundleFormat.entryScriptType)
             }
         }
 
-        this._webpack = new WebpackBundler(
-            entries, 
-            this._bundlePath, 
+        this._clientBundler = await ClientBundler.create(
+            entries,
             this._distPath,
-            { 
-                watcher: this._watcher,
-                mode: this.config.runMode === WebServer.RunMode.Production ? 'production' : 'development',
-                publicPath: this.config.baseUrl,
-                virtualModules
-            }
+            bundleConfig
         )
     }
 
@@ -389,13 +393,12 @@ export default class WebServer extends EventEmitter{
         const viewRoute = viewRoutes.find(vr => vr.c === viewsc.component)
         if ( viewRoute ){
             const viewLoader = this.createViewLoader(viewsc.component, viewRoute.placement)
-            const virtualModules = this._webpack.virtualModulesPlugin
-            virtualModules.writeModule(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
+            this._clientBundler.writeModule(viewLoader.virtualLoader, viewLoader.virtualLoaderContent)
         }
     }
 
     async compile(){
-        if ( !this._webpack ){
+        if ( !this._clientBundler ){
             return
         }
         
@@ -475,15 +478,14 @@ export default class WebServer extends EventEmitter{
         }
 
 
-        this._webpack.compiler.run((error, stats) => {
+        try{
+            const result = await this._clientBundler.build()
+            log.i(`Compilation succeeded at: ${distPath} (${Object.keys(result?.metafile?.outputs ?? {}).length} outputs)`)
+        } catch (error) {
+            log.e('Compilation failed:', error)
+        } finally {
             StyleChainProcessor.terminateWorkers()
-            if (error) {
-                log.e('Compilation failed:', error)
-            } else {
-                log.d(`Webpack Stats: ${stats.toString({}).split('\n').join('\n    ')}`)
-                log.i(`Compilation succeeded at: ${distPath}`)
-            }
-        })
+        }
     }
 
     findPageByOutput(output){
@@ -492,7 +494,8 @@ export default class WebServer extends EventEmitter{
 
     async renderRouteCSR(route, req, res, next){
         let head = []
-        let body = [`<script src="/scripts/${route.bundleScript}"></script>`]
+        const scriptType = route.bundleScriptType ? ` type="${route.bundleScriptType}"` : ''
+        let body = [`<script${scriptType} src="/scripts/${route.bundleScript}"></script>`]
 
         if ( route.data ){
             let data = null
@@ -548,10 +551,7 @@ export default class WebServer extends EventEmitter{
             scopedStyleLinks, 
             viewStyles
         )
-        const render = renderResult.unwrapAnd(
-            errors => errors.forEach(WebServer.logError), 
-            warnings => warnings.forEach(WebServer.logWarning)
-        )
+        const render = renderResult.unwrapAnd((report) => report.forEach(WebServer.logError))
         return render
     }
 
@@ -630,8 +630,9 @@ export default class WebServer extends EventEmitter{
     async serve(){
         let routes = this._routes
         
-        this._webpack.createMiddleware()
-        this._app.use( this._webpack.middleware )
+        await this._clientBundler.rebuild()
+        this._clientBundler.createMiddleware()
+        this._app.use(this._clientBundler.middleware)
 
         if ( this._watcher ){
             const styleGroup = this._watcher.findGroup('style')
@@ -641,6 +642,25 @@ export default class WebServer extends EventEmitter{
                 })
             }
             this._watcher.assignFiles(this._styles.inputFiles(), styleGroup)
+
+            const clientBundlerGroup = this._watcher.findGroup('client-bundler')
+            if ( clientBundlerGroup ){
+                clientBundlerGroup.onFileChange = async () => {
+                    await this._clientBundler.rebuild()
+                }
+            }
+
+            const clientBundlerManualGroup = this._watcher.findGroup('client-bundler-manual')
+            if ( clientBundlerManualGroup ){
+                clientBundlerManualGroup.onFileChange = async (file) => {
+                    try{
+                        await lvimport(file)
+                    } catch ( e ){
+                        log.e(e)
+                    }
+                    await this._clientBundler.rebuild()
+                }
+            }
             
             if ( this._serverSocket ){
                 this._styles.on('change', (outputs) => {
@@ -650,14 +670,14 @@ export default class WebServer extends EventEmitter{
             }
         }
 
-        if ( this._webpack ){
-            this._webpack.on('compileReady', () => {
+        if ( this._clientBundler ){
+            this._clientBundler.on('compileReady', () => {
                 if ( this._serverSocket ){
                     this._serverSocket.sendActionToClients('reload', [])
                 }
             })
         }
-    
+
         /// Handle styles
     
         for ( let i = 0; i < this._styles.outputs.length; ++i ){
