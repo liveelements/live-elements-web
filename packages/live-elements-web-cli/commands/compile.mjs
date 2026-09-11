@@ -37,8 +37,9 @@ export default async function compile(bundle, _options){
         })
 
         let server = await WebServer.loadBundle(bundleData, webServerConfig)
-        server.compile()
+        await server.compile()
     } catch ( e ){
         console.error(e)
+        process.exitCode = 1
     }
 }

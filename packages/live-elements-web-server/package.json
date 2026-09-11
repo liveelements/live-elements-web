@@ -17,6 +17,9 @@
     },
     "author": "Dinu SV",
     "license": "MIT",
+    "engines": {
+        "node": ">=22"
+    },
     "dependencies": {
         "chalk": "^5.0.1",
         "glob": "^10.3.10",

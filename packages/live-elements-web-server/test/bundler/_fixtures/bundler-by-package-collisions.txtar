@@ -1,0 +1,12 @@
+-- example/package.json --
+{"name":"@pkg/example","type":"module"}
+-- example/live.package.json --
+{"name":"@pkg/example","version":"0.0.0"}
+-- example/client.package.json --
+{"exports":["views/Alpha.lv","views/Beta.lv"]}
+-- example/views/Alpha.lv --
+@fn shared(): string{ return 'alpha' }
+-- example/views/Beta.lv --
+@fn shared(): string{ return 'beta' }
+-- example/shared.mjs --
+export function shared() { return 'mjs' }

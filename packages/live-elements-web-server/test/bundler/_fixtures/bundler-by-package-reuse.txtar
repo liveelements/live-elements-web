@@ -1,0 +1,9 @@
+-- main.mjs --
+import { reused } from '@pkg/example/lib/client/root.mjs'
+window.__reuse__ = reused
+-- node_modules/@pkg/example/package.json --
+{"name":"@pkg/example","type":"module"}
+-- node_modules/@pkg/example/client.package.json --
+{"exports":["lib/client/root.mjs"]}
+-- node_modules/@pkg/example/lib/client/root.mjs --
+export const reused = true

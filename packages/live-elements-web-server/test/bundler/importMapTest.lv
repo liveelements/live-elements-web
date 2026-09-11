@@ -1,0 +1,87 @@
+import live-testspec
+
+import path from 'node:path'
+import { parseHTML } from 'linkedom'
+
+import { ImportMap } from '../../lib/import-map.mjs'
+
+instance importMapTest Spec{
+    describe: 'ImportMap'
+
+    Scenario{
+        name: 'maps package bundles under the scripts output path using posix urls'
+        run: (expect) => {
+            const outputPath = path.join('/tmp', 'site', 'dist', 'scripts')
+            const map = ImportMap.build([{
+                    packageName: '@scope/package',
+                    bundleAbsolutePath: path.join(outputPath, 'packages', 'scope-package', 'index.js')
+                }], '/scripts/', outputPath)
+
+            expect(map.imports).toEqual({ '@scope/package': '/scripts/packages/scope-package/index.js' })
+            expect(map.modulepreloads).toEqual(['/scripts/packages/scope-package/index.js'])
+        }
+    }
+
+    Scenario{
+        name: 'uses the configured scripts base url for imports and preloads without duplicates'
+        run: (expect) => {
+            const outputPath = path.join('/tmp', 'site', 'dist', 'scripts')
+            const bundleAbsolutePath = path.join(outputPath, 'packages', 'shared', 'index.js')
+            const map = ImportMap.build([
+                    { packageName: '@scope/one', bundleAbsolutePath },
+                    { packageName: '@scope/two', bundleAbsolutePath }
+                ], 'https://example.test/scripts/', outputPath)
+
+            expect(map.imports).toEqual({
+                '@scope/one': 'https://example.test/scripts/packages/shared/index.js',
+                '@scope/two': 'https://example.test/scripts/packages/shared/index.js'
+            })
+            expect(map.modulepreloads).toEqual(['https://example.test/scripts/packages/shared/index.js'])
+        }
+    }
+
+    Scenario{
+        name: 'emits the same imports in markup and a document, and round-trips json'
+        run: (expect) => {
+            const map = new ImportMap(
+                { '@scope/package': '/scripts/packages/package/index.js' },
+                ['/scripts/packages/package/index.js']
+            )
+            const { document } = parseHTML('<html><head><meta charset="utf-8"></head><body></body></html>')
+
+            map.expandTo(document)
+
+            expect(document.querySelector('script[type="importmap"]').textContent).toBe(JSON.stringify({ imports: map.imports }))
+            expect(document.querySelector('link[rel="modulepreload"]').getAttribute('href')).toBe('/scripts/packages/package/index.js')
+            expect(ImportMap.fromJSON(map.toJSON()).toJSON()).toEqual(map.toJSON())
+            expect(map.headMarkup()).toContain(JSON.stringify({ imports: map.imports }))
+        }
+    }
+
+    Scenario{
+        name: 'rebases persisted root-relative urls for a serving base url'
+        run: (expect) => {
+            const map = ImportMap.fromJSON({
+                imports: { '@scope/package': '/scripts/packages/package/index.js' },
+                modulepreloads: ['/scripts/packages/package/index.js']
+            }).withUrlPrefix('https://example.test/')
+
+            expect(map.imports).toEqual({ '@scope/package': 'https://example.test/scripts/packages/package/index.js' })
+            expect(map.modulepreloads).toEqual(['https://example.test/scripts/packages/package/index.js'])
+        }
+    }
+
+    Scenario{
+        name: 'does not emit markup or document nodes for an empty map'
+        run: (expect) => {
+            const map = new ImportMap({}, [])
+            const { document } = parseHTML('<html><head><meta charset="utf-8"></head><body></body></html>')
+
+            map.expandTo(document)
+
+            expect(map.headMarkup()).toBe('')
+            expect(document.querySelector('script[type="importmap"]')).toBeNull()
+            expect(document.querySelector('link[rel="modulepreload"]')).toBeNull()
+        }
+    }
+}

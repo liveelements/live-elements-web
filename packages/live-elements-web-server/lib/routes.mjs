@@ -110,7 +110,7 @@ export class ServerViewRoute extends ServerRoute{
         return filename
     }
 
-    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, distPath, scopedStyleLinks, viewStyles){
+    static async createRender(route, data, req, page, domEmulator, baseUrl, bundleLookupPath, distPath, scopedStyleLinks, viewStyles, clientBundlerOutput, importMap){
         const currentDir = path.dirname(url.fileURLToPath(import.meta.url)) 
         const packageDir = path.dirname(currentDir)
 
@@ -120,9 +120,11 @@ export class ServerViewRoute extends ServerRoute{
         })
         await ComponentRegistry.update()
 
-        page.entryScript = route.bundleScript ? '/scripts/' + route.bundleScript : null
+        const scriptsBaseUrl = baseUrl === '/' ? '/scripts/' : `${baseUrl}/scripts/`
+        page.entryScript = route.bundleScript ? scriptsBaseUrl + route.bundleScript : null
         page.entryScriptModule = route.bundleScriptType === 'module'
         const pageDOM = page.captureDOM(domEmulator)
+        importMap.expandTo(pageDOM.window.document)
         const insertionDOM = page.constructor.findInsertionElement(pageDOM.window.document)
 
         const placements = route.placement ? route.placement : []
@@ -184,26 +186,26 @@ export class ServerViewRoute extends ServerRoute{
             ServerRenderer.assignBehaviorsToDom(behaviors)
             const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
 
-            const compiledBundlesResult = await ClientBundler.compile(
-                [
-                    ClientBundler.Entry.create('main', [
+            const bundler = await ClientBundler.create(
+                [ClientBundler.FileEntry.create('main', [
                         { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
                         { path: clientBehaviorEvents }
-                    ])
-                ],
+                    
+                ])],
                 ClientBundler.Config.create({
+                    outputPath: path.join(distPath, 'behaviors'),
                     sourcemap: false,
                     outputFileName: `${path.parse(viewPath).name.toLowerCase()}.[name].bundle.js`,
-                    publicPath: behaviorScriptsUrl,
-                    outputPath: path.join(distPath, 'behaviors')
+                    output: clientBundlerOutput,
+                    workingDir: bundleLookupPath
                 })
             )
 
-            const compiledBundles = compiledBundlesResult.unwrapAnd((_errors, warning) => {
-                warning.forEach(w => log.w(w.message))
-            })
-            
-            if ( !compiledBundlesResult.hasErrors ){
+            try{
+                await bundler.build()
+                bundler.currentRun.result.warnings.forEach(w => log.w(w.message))
+                const compiledBundles = { assets: bundler.currentRun.result.assets }
+
                 route.behaviors = {
                     bundles: compiledBundles.assets
                 }
@@ -211,7 +213,7 @@ export class ServerViewRoute extends ServerRoute{
                 const document = pageDOM.window.document
                 const scripts = route.behaviors.bundles.filter(cbu => cbu.isMainEntry).map(cbu => {
                     const script = document.createElement('script')
-                    script.src = `${behaviorScriptsUrl}${cbu.name}`
+                    script.src = `${behaviorScriptsUrl}${cbu.outputName}`
                     return script
                 })
            
@@ -229,8 +231,8 @@ export class ServerViewRoute extends ServerRoute{
         
                 const content = domEmulator.serializeDOM(pageDOM)
                 return new ValueWithReport(content, behaviorReport)
-            } else {
-                return compiledBundlesResult
+            } catch ( error ){
+                return ValueWithReport.fromError(error)
             }
         }
 

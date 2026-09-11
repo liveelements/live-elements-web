@@ -1,0 +1,6 @@
+-- node_modules/@pkg/b/package.json --
+{"name":"@pkg/b","type":"module"}
+-- node_modules/@pkg/b/client.package.json --
+{"exports":["lib/client/root.mjs"]}
+-- node_modules/@pkg/b/lib/client/root.mjs --
+export const broken =

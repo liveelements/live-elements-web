@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { defineConfig } from 'vitest/config'
 
-import liveElements from 'live-testspec/lib/vite-plugin-live-elements.mjs'
+import liveElements from '../live-testspec/lib/vite-plugin-live-elements.mjs'
 
 const includeFor = (dir) => [
     `test/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`,

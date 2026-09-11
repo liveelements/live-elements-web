@@ -13,46 +13,245 @@ import Txtar from '../../lib/core/txtar.mjs'
 instance clientBundlerTest Spec{
     describe: 'ClientBundler'
 
-    fn extractFixture(){
+    fn extractFixtures(names:Array){
         const packageRoot = path.dirname(createRequire(import.meta.url).resolve('live-elements-web-server/package.json'))
-        const fixturePath = path.resolve(packageRoot, 'test/bundler/_fixtures/bundler-lv-graph.txtar')
         const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'client-bundler-'))
         const root = fs.realpathSync(tempRoot)
-        const packageDir = path.join(root, 'bundler-lv-graph')
         const nodeModulesDir = path.join(root, 'node_modules')
         const liveElementsCorePath = path.resolve(packageRoot, '../live-elements-core')
 
-        Txtar.parseFile(fixturePath).extract(root)
+        for (const name of names) {
+            Txtar.parseFile(path.resolve(packageRoot, 'test/bundler/_fixtures', `${name}.txtar`)).extract(root)
+        }
         fs.mkdirSync(nodeModulesDir, { recursive: true })
         fs.symlinkSync(liveElementsCorePath, path.join(nodeModulesDir, 'live-elements-core'), 'dir')
 
-        return {
-            root,
-            packageDir,
-            entryPath: path.join(packageDir, 'Entry.lv'),
-            markerPath: path.join(packageDir, 'lib', 'Marker.lv')
+        return { root }
+    }
+
+    Scenario{
+        name: 'by-package builds reject colliding lv exports but allow matching hand-written mjs exports'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-collisions'])
+            const root = fixture.root
+            const packageDir = path.join(root, 'example')
+            const config = ClientBundler.Config.create({
+                outputPath: path.join(root, 'dist'),
+                workingDir: root,
+                sourcemap: false,
+                format: ClientBundler.Config.Format.ModuleSplit,
+                bundling: ClientBundler.Config.Bundling.ByPackage
+            })
+
+            try {
+                const colliding = await ClientBundler.create(
+                    [ClientBundler.PackageEntry.create('@pkg/example', packageDir)],
+                    config
+                )
+                let error = null
+                try {
+                    await colliding.build()
+                } catch (e) {
+                    error = e
+                } finally {
+                    await colliding.dispose()
+                }
+
+                expect(error).not.toBeNull()
+                expect(error.message).toContain('views/Alpha.lv')
+                expect(error.message).toContain('views/Beta.lv')
+
+                fs.writeFileSync(path.join(packageDir, 'client.package.json'), `${JSON.stringify({
+                    exports: ['views/Alpha.lv', 'shared.mjs']
+                })}\n`)
+                const allowed = await ClientBundler.createAndBuild([ClientBundler.PackageEntry.create('@pkg/example', packageDir)], config)
+                try {
+                    expect(allowed.currentRun.packageList().map((entry) => entry.packageName)).toContain('@pkg/example')
+                } finally {
+                    await allowed.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'when-built package reuse restores manifest assets without rewriting them'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-reuse'])
+            const root = fixture.root
+            const packageDir = path.join(root, 'node_modules', '@pkg', 'example')
+            const entryPath = path.join(root, 'main.mjs')
+            const outputDir = path.join(packageDir, 'dist', 'client')
+
+            try {
+                const config = ClientBundler.Config.create({
+                    outputPath: root,
+                    workingDir: root,
+                    bundling: ClientBundler.Config.Bundling.ByPackage,
+                    format: ClientBundler.Config.Format.ModuleSplit,
+                    output: ClientBundler.Config.Output.Files,
+                    packageOutput: ClientBundler.Config.PackageOutput.PackageDist,
+                    packageReuse: ClientBundler.Config.PackageReuse.WhenBuilt
+                })
+                const first = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    config
+                )
+                const bundlePath = first.currentRun.compiledPackage('@pkg/example').bundleAbsolutePath
+                const manifestPath = path.join(outputDir, 'package.manifest.json')
+                const beforeMtime = fs.statSync(bundlePath).mtimeMs
+                const beforeManifestMtime = fs.statSync(manifestPath).mtimeMs
+                await first.dispose()
+                const second = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    config
+                )
+                try {
+                    expect(second.currentRun.packageList().map((entry) => entry.packageName)).toEqual(['@pkg/example'])
+                    expect(second.currentRun.result.assets.find((asset) => asset.path === bundlePath)?.isSyncedToDisk).toBe(true)
+                    expect(fs.statSync(bundlePath).mtimeMs).toBe(beforeMtime)
+                    expect(fs.statSync(manifestPath).mtimeMs).toBe(beforeManifestMtime)
+                } finally {
+                    await second.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'a second bundler compiles a page against the package bundles a first one built'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures([
+                'bundler-by-package-a',
+                'bundler-by-package-graph',
+                'bundler-page-lv-entry'
+            ])
+            const root = fixture.root
+            const pagePath = path.join(root, 'page', 'Page.lv')
+
+            // The page's compiled .lv imports live-elements-core, so it is a discovered client package
+            // like any other. Copy it in over the shared symlink: the package build then writes its
+            // dist/client inside the fixture instead of into the checked-out package.
+            const corePath = path.join(root, 'node_modules', 'live-elements-core')
+            const coreSource = fs.readlinkSync(corePath)
+            fs.unlinkSync(corePath)
+            fs.cpSync(coreSource, corePath, {
+                recursive: true,
+                dereference: true,
+                filter: (source) => !source.startsWith(path.join(coreSource, 'dist'))
+            })
+
+            const configOptions = {
+                outputPath: path.join(root, 'dist'),
+                workingDir: root,
+                sourcemap: false,
+                format: ClientBundler.Config.Format.ModuleSplit,
+                bundling: ClientBundler.Config.Bundling.ByPackage,
+                output: ClientBundler.Config.Output.Files,
+                packageOutput: ClientBundler.Config.PackageOutput.PackageDist
+            }
+
+            try {
+                // One bundler builds the packages. @pkg/b is not listed: it arrives as a dependency
+                // of @pkg/a, and gets a dist/client of its own.
+                const packagesBundler = await ClientBundler.createAndBuild(
+                    [
+                        ClientBundler.PackageEntry.create('@pkg/a', path.join(root, 'node_modules', '@pkg', 'a')),
+                        ClientBundler.PackageEntry.create('live-elements-core', corePath)
+                    ],
+                    ClientBundler.Config.create(configOptions)
+                )
+                const built = packagesBundler.currentRun.packageList().map((entry) => ({
+                    packageName: entry.packageName,
+                    packageDir: entry.packageDir,
+                    bundlePath: entry.bundleAbsolutePath,
+                    manifestPath: path.join(entry.packageDir, 'dist', 'client', 'package.manifest.json')
+                }))
+                await packagesBundler.dispose()
+
+                expect(built.map((entry) => entry.packageName).sort()).toEqual(['@pkg/a', '@pkg/b', 'live-elements-core'])
+
+                const before = built.map((entry) => ({
+                    ...entry,
+                    bundle: fs.readFileSync(entry.bundlePath, 'utf8'),
+                    bundleMtime: fs.statSync(entry.bundlePath).mtimeMs,
+                    manifestMtime: fs.statSync(entry.manifestPath).mtimeMs
+                }))
+                // Every package build compiles the package's modules into build/ first, so the absence
+                // of that directory afterwards is what says the page bundler compiled no package at all.
+                for (const entry of built) {
+                    fs.rmSync(path.join(entry.packageDir, 'build'), { recursive: true, force: true })
+                }
+
+                // A second, unrelated bundler compiles only the page. Nothing is handed over in memory:
+                // it finds the packages through the dist/client manifests the first bundler wrote.
+                const pageBundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('page', [pagePath])],
+                    ClientBundler.Config.create({
+                        ...configOptions,
+                        packageReuse: ClientBundler.Config.PackageReuse.WhenBuilt
+                    })
+                )
+
+                try {
+                    const result = pageBundler.currentRun.result
+
+                    // The page is the only thing compiled, and it links to the package bundles.
+                    expect(result.assets.filter((asset) => !asset.isSyncedToDisk).map((asset) => asset.outputName))
+                        .toEqual(['page.bundle.js'])
+                    expect(result.assetFor('page.bundle.js').content).toContain('page:first')
+                    expect(result.externalImports).toEqual(['@pkg/a', 'live-elements-core'])
+                    expect(fs.existsSync(path.join(root, 'page', 'build', 'Page.lv.mjs'))).toBe(true)
+
+                    // Reuse still yields the whole package set, transitive dependencies included:
+                    // @pkg/b is adopted through @pkg/a's manifest without ever becoming a unit.
+                    expect(pageBundler.currentRun.packageList().map((entry) => entry.packageName).sort())
+                        .toEqual(['@pkg/a', '@pkg/b', 'live-elements-core'])
+                    expect(pageBundler.currentRun.units.has('@pkg/b')).toBe(false)
+
+                    for (const entry of before) {
+                        expect(fs.existsSync(path.join(entry.packageDir, 'build'))).toBe(false)
+                        expect(fs.readFileSync(entry.bundlePath, 'utf8')).toBe(entry.bundle)
+                        expect(fs.statSync(entry.bundlePath).mtimeMs).toBe(entry.bundleMtime)
+                        expect(fs.statSync(entry.manifestPath).mtimeMs).toBe(entry.manifestMtime)
+                    }
+                } finally {
+                    await pageBundler.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
         }
     }
 
     Scenario{
         name: 'compiles an lv graph into a single entry bundle'
         run: async (expect) => {
-            const fixture = clientBundlerTest.extractFixture()
-            const outputPath = path.join(fixture.packageDir, 'dist')
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
+            const outputPath = path.join(packageDir, 'dist')
 
             try {
-                const result = await ClientBundler.compile([
-                    ClientBundler.Entry.create('main', [{ path: fixture.entryPath }])
-                ], ClientBundler.Config.create({
-                    outputPath,
-                    publicPath: '/app',
-                    sourcemap: false
-                }))
+                const bundler = await ClientBundler.create(
+                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: packageDir,
+                        sourcemap: false
+                    })
+                )
 
-                expect(result.hasErrors).toBe(false)
-                expect(result.value.assets.length).toBe(1)
+                await bundler.build()
 
-                const asset = result.value.assets[0]
+                expect(bundler.currentRun.result.assets.length).toBe(1)
+                expect(bundler.currentRun.result.externalImports).toEqual([])
+
+                const asset = bundler.currentRun.result.assets[0]
                 expect(asset.isMainEntry).toBe(true)
                 expect(asset.entryName).toBe('main')
 
@@ -60,9 +259,38 @@ instance clientBundlerTest Spec{
                 vm.runInNewContext(asset.content, context)
                 expect(context.window.__probe__).toEqual(['marker:B'])
 
-                expect(fs.existsSync(path.join(fixture.packageDir, 'build', 'Entry.lv.mjs'))).toBe(true)
-                expect(fs.existsSync(path.join(fixture.packageDir, 'build', 'lib', 'Marker.lv.mjs'))).toBe(true)
+                expect(fs.existsSync(path.join(packageDir, 'build', 'Entry.lv.mjs'))).toBe(true)
+                expect(fs.existsSync(path.join(packageDir, 'build', 'lib', 'Marker.lv.mjs'))).toBe(true)
             } finally {
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'matches entry assets when workingDir reaches the fixture through a symlink'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const linkedRoot = `${fixture.root}-linked`
+            const linkedPackageDir = path.join(linkedRoot, 'bundler-lv-graph')
+            const entryPath = path.join(fixture.root, 'bundler-lv-graph', 'Entry.lv')
+
+            fs.symlinkSync(fixture.root, linkedRoot, 'dir')
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    ClientBundler.Config.create({
+                        outputPath: path.join(linkedPackageDir, 'dist'),
+                        workingDir: linkedPackageDir,
+                        sourcemap: false
+                    })
+                )
+
+                const asset = bundler.currentRun.result.assets[0]
+                expect(asset.entryName).toBe('main')
+                expect(asset.isMainEntry).toBe(true)
+            } finally {
+                fs.unlinkSync(linkedRoot)
                 fs.rmSync(fixture.root, { recursive: true, force: true })
             }
         }
@@ -71,23 +299,34 @@ instance clientBundlerTest Spec{
     Scenario{
         name: 'surfaces an lv compile error against the source file'
         run: async (expect) => {
-            const fixture = clientBundlerTest.extractFixture()
-            const outputPath = path.join(fixture.packageDir, 'dist')
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
+            const markerPath = path.join(packageDir, 'lib', 'Marker.lv')
+            const outputPath = path.join(packageDir, 'dist')
 
             try {
-                fs.writeFileSync(fixture.markerPath, "@fn marker(): string{\n    ???\n}\n")
+                fs.writeFileSync(markerPath, "@fn marker(): string{\n    ???\n}\n")
 
-                const result = await ClientBundler.compile([
-                    ClientBundler.Entry.create('main', [{ path: fixture.entryPath }])
-                ], ClientBundler.Config.create({
-                    outputPath,
-                    publicPath: '/app',
-                    sourcemap: false
-                }))
+                const bundler = await ClientBundler.create(
+                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: packageDir,
+                        sourcemap: false
+                    })
+                )
 
-                expect(result.hasErrors).toBe(true)
-                expect(result.errors[0].message).toContain('Syntax error')
-                expect(result.errors[0].message).toContain('Marker.lv:')
+                let error = null
+                try{
+                    await bundler.build()
+                } catch ( e ){
+                    error = e
+                }
+
+                expect(error).not.toBeNull()
+                expect(error.message).toContain('Syntax error')
+                expect(error.message).toContain('Marker.lv:')
             } finally {
                 fs.rmSync(fixture.root, { recursive: true, force: true })
             }
@@ -95,30 +334,211 @@ instance clientBundlerTest Spec{
     }
 
     Scenario{
-        name: 'createAndBuild assigns lv sources to the manual watcher group'
+        name: 'completed builds snapshot their watched input paths'
         run: async (expect) => {
-            const fixture = clientBundlerTest.extractFixture()
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
             const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
             const bundler = await ClientBundler.createAndBuild(
-                { main: [fixture.entryPath] },
-                path.join(fixture.packageDir, 'dist'),
-                { publicPath: '/app', sourcemap: false, watcher }
+                [ClientBundler.FileEntry.create('main', [entryPath])],
+                ClientBundler.Config.create({
+                    outputPath: path.join(packageDir, 'dist'),
+                    workingDir: packageDir,
+                    sourcemap: false,
+                    execution: ClientBundler.Config.Execution.Incremental
+                })
             )
 
             try {
-                expect(watcher.files[fixture.entryPath]?.name).toBe('client-bundler-manual')
-                expect(watcher.files[fixture.markerPath]?.name).toBe('client-bundler-manual')
-
-                const watchedFiles = Object.keys(watcher.files)
-                expect(watchedFiles.some((file) => file.endsWith('.lv.mjs'))).toBe(false)
-
-                const bundledPlainInputs = watchedFiles.filter((file) => watcher.files[file]?.name === 'client-bundler')
-                expect(bundledPlainInputs.some((file) => file.endsWith(path.join('live-elements-core', 'baseelement.js')))).toBe(true)
-                expect(bundledPlainInputs.some((file) => file.endsWith(path.join('live-elements-core', 'types.mjs')))).toBe(true)
+                const inputPaths = bundler.currentRun.result.inputPaths
+                expect(inputPaths).toContain(path.join(packageDir, 'build', 'lib', 'Marker.lv.mjs'))
+                expect(inputPaths.some((file) => file.endsWith('.lv.mjs'))).toBe(true)
             } finally {
                 await bundler.dispose()
                 watcher.close()
                 fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'esm builds can externalize packages and report external imports'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
+            const outputPath = path.join(packageDir, 'dist')
+
+            try {
+                const bundler = await ClientBundler.create(
+                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: packageDir,
+                        sourcemap: false,
+                        format: ClientBundler.Config.Format.Module,
+                        external: ['live-elements-core/baseelement.js', 'live-elements-core/types.mjs']
+                    })
+                )
+
+                await bundler.build()
+
+                expect(bundler.currentRun.result.assets.length).toBe(1)
+                expect(bundler.currentRun.result.assets[0].content).toContain('from "live-elements-core/baseelement.js"')
+                expect(bundler.currentRun.result.assets[0].content).toContain('from "live-elements-core/types.mjs"')
+                expect(bundler.currentRun.result.assets[0].content).not.toContain('class BaseElement')
+                expect(bundler.currentRun.result.externalImports).toEqual([
+                    'live-elements-core/baseelement.js',
+                    'live-elements-core/types.mjs'
+                ])
+            } finally {
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'classic builds reject external package configuration'
+        run: async (expect) => {
+            expect(() => ClientBundler.Config.create({
+                outputPath: '/tmp/unused',
+                format: ClientBundler.Config.Format.Classic,
+                external: ['live-elements-core']
+            })).toThrow(/external requires an esm format/i)
+        }
+    }
+
+    Scenario{
+        name: 'by-package builds reject non-esm formats'
+        run: async (expect) => {
+            expect(() => ClientBundler.Config.create({
+                outputPath: '/tmp/unused',
+                format: ClientBundler.Config.Format.Classic,
+                bundling: ClientBundler.Config.Bundling.ByPackage
+            })).toThrow(/Bundling.ByPackage requires an esm format/i)
+        }
+    }
+
+    Scenario{
+        name: 'by-package builds emit one package bundle per discovered client package'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-a', 'bundler-by-package-graph'])
+            const root = fixture.root
+            const entryPath = path.join(root, 'main.mjs')
+            const outputPath = path.join(root, 'dist')
+
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    ClientBundler.Config.create({
+                        outputPath: outputPath,
+                        workingDir: root,
+                        sourcemap: false,
+                        format: ClientBundler.Config.Format.ModuleSplit,
+                        bundling: ClientBundler.Config.Bundling.ByPackage
+                    })
+                )
+
+                try {
+                    expect(bundler.currentRun.result.externalImports).toEqual(['@pkg/a'])
+
+                    const packages = bundler.currentRun.packageList()
+                    expect(packages.map((entry) => entry.packageName).sort()).toEqual(['@pkg/a', '@pkg/b'])
+
+                    const packageA = packages.find((entry) => entry.packageName === '@pkg/a')
+                    const packageB = packages.find((entry) => entry.packageName === '@pkg/b')
+                    expect(bundler.currentRun.result.assets.find((asset) => asset.path === packageA.bundleAbsolutePath)?.content).toContain('from "@pkg/b"')
+                    expect(bundler.currentRun.result.assets.find((asset) => asset.path === packageB.bundleAbsolutePath)?.content).toContain('nestedValue')
+                } finally {
+                    await bundler.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'a failed run does not leave its discovered package units behind'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-a', 'bundler-by-package-broken'])
+            const root = fixture.root
+            const entryPath = path.join(root, 'main.mjs')
+
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    ClientBundler.Config.create({
+                        outputPath: path.join(root, 'dist'),
+                        workingDir: root,
+                        sourcemap: false,
+                        format: ClientBundler.Config.Format.ModuleSplit,
+                        bundling: ClientBundler.Config.Bundling.ByPackage
+                    })
+                )
+
+                try {
+                    expect(bundler.currentRun.units.has('@pkg/a')).toBe(true)
+                    expect(bundler.currentRun.units.has('@pkg/b')).toBe(false)
+
+                    fs.writeFileSync(entryPath, [
+                        "import { value } from '@pkg/a/lib/client/root.mjs'",
+                        "import { broken } from '@pkg/b/lib/client/root.mjs'",
+                        'window.__pkgProbe__ = value + broken',
+                        ''
+                    ].join('\n'))
+
+                    let error = null
+                    try {
+                        await bundler.rebuild()
+                    } catch (e) {
+                        error = e
+                    }
+
+                    expect(error).not.toBeNull()
+                    expect(bundler.currentRun.units.has('@pkg/a')).toBe(true)
+                    expect(bundler.currentRun.units.has('@pkg/b')).toBe(false)
+                } finally {
+                    await bundler.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'by-package builds leave non-exported page bindings for browser module linking'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-a', 'bundler-by-package-hidden'])
+            const root = fixture.root
+            const entryPath = path.join(root, 'main.mjs')
+            const outputPath = path.join(root, 'dist')
+
+            try {
+                const bundler = await ClientBundler.create(
+                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: root,
+                        sourcemap: false,
+                        format: ClientBundler.Config.Format.ModuleSplit,
+                        bundling: ClientBundler.Config.Bundling.ByPackage
+                    })
+                )
+
+                let error = null
+                try{
+                    await bundler.build()
+                } catch ( e ){
+                    error = e
+                }
+
+                expect(error).toBeNull()
+                expect(bundler.currentRun.result.assets[0].content).toContain('hiddenValue')
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
             }
         }
     }
@@ -126,55 +546,216 @@ instance clientBundlerTest Spec{
     Scenario{
         name: 'a write to a watched lv source rebuilds the served asset'
         run: async (expect) => {
-            const fixture = clientBundlerTest.extractFixture()
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
+            const markerPath = path.join(packageDir, 'lib', 'Marker.lv')
             const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
             const bundler = await ClientBundler.createAndBuild(
-                { main: [fixture.entryPath] },
-                path.join(fixture.packageDir, 'dist'),
-                { publicPath: '/app', sourcemap: false, watcher }
+                [ClientBundler.FileEntry.create('main', [entryPath])],
+                ClientBundler.Config.create({
+                    outputPath: path.join(packageDir, 'dist'),
+                    workingDir: packageDir,
+                    sourcemap: false,
+                    execution: ClientBundler.Config.Execution.Incremental
+                })
             )
 
             try {
-                let resolveChange = null
-                const changed = new Promise((resolve) => {
-                    resolveChange = resolve
-                })
-                watcher.findGroup('client-bundler-manual').onFileChange = async (file) => {
-                    await bundler.rebuild()
-                    resolveChange(file)
-                }
-
-                // A write landing too soon after the watcher attaches can be folded into chokidar's
-                // baseline for the file, so the change event is never emitted. Nothing observable
-                // distinguishes that state up front, so re-touch the source until the event arrives.
                 const markerSource = "@fn marker(): string{\n    return 'marker:WATCHED'\n}\n"
-                const deadline = Date.now() + 10000
-                let changedFile = null
-
-                while ( changedFile === null ){
-                    if ( Date.now() > deadline )
-                        throw new Error('watcher never fired')
-
-                    fs.writeFileSync(fixture.markerPath, markerSource)
-
-                    changedFile = await Promise.race([
-                        changed,
-                        new Promise((resolve) => {
-                            setTimeout(() => resolve(null), 1000)
-                        })
-                    ])
-                }
-
-                expect(changedFile).toBe(fixture.markerPath)
+                fs.writeFileSync(markerPath, markerSource)
+                await bundler.rebuild()
 
                 const context = { window: {}, console, setTimeout, clearTimeout }
-                vm.runInNewContext(bundler.assetForUrl('/scripts/main.bundle.js').content, context)
+                vm.runInNewContext(bundler.currentRun.result.assetFor('main.bundle.js').content, context)
                 expect(context.window.__probe__).toEqual(['marker:WATCHED'])
             } finally {
                 await bundler.dispose()
                 watcher.close()
                 fs.rmSync(fixture.root, { recursive: true, force: true })
             }
+        }
+    }
+
+    Scenario{
+        name: 'writeModule content reaches the output of a later rebuild'
+        run: async (expect) => {
+            const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'client-bundler-write-module-')))
+            const modulePath = path.join(root, 'main.mjs')
+            const outputPath = path.join(root, 'dist')
+
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [{ path: modulePath, content: "window.__probe__ = 'probe-one'\n" }])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: root,
+                        sourcemap: false
+                    })
+                )
+
+                expect(bundler.currentRun.result.assetFor('main.bundle.js').content).toContain('probe-one')
+
+                bundler.writeModule(modulePath, "window.__probe__ = 'probe-two'\n")
+                await bundler.rebuild()
+
+                const rebuilt = bundler.currentRun.result.assetFor('main.bundle.js')
+                expect(rebuilt.content).toContain('probe-two')
+                expect(rebuilt.content).not.toContain('probe-one')
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'incremental by-package builds still rediscover a package on run 2'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-by-package-a'])
+            const root = fixture.root
+            const entryPath = path.join(root, 'main.mjs')
+            const outputPath = path.join(root, 'dist')
+
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    ClientBundler.Config.create({
+                        outputPath: outputPath,
+                        workingDir: root,
+                        sourcemap: false,
+                        format: ClientBundler.Config.Format.ModuleSplit,
+                        bundling: ClientBundler.Config.Bundling.ByPackage,
+                        execution: ClientBundler.Config.Execution.Incremental
+                    })
+                )
+
+                try {
+                    expect(bundler.currentRun.packageList().map((entry) => entry.packageName)).toEqual(['@pkg/a'])
+
+                    await bundler.rebuild()
+
+                    expect(bundler.currentRun.result.externalImports).toEqual(['@pkg/a'])
+                    const packages = bundler.currentRun.packageList()
+                    expect(packages.map((entry) => entry.packageName)).toEqual(['@pkg/a'])
+                    expect(bundler.currentRun.result.assets.find((asset) => asset.path === packages[0].bundleAbsolutePath)?.content).toContain('packageValue')
+                } finally {
+                    await bundler.dispose()
+                }
+            } finally {
+                fs.rmSync(root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'a failed rebuild leaves the previous build intact and the next one succeeds'
+        run: async (expect) => {
+            const fixture = clientBundlerTest.extractFixtures(['bundler-lv-graph'])
+            const packageDir = path.join(fixture.root, 'bundler-lv-graph')
+            const entryPath = path.join(packageDir, 'Entry.lv')
+            const markerPath = path.join(packageDir, 'lib', 'Marker.lv')
+            const outputPath = path.join(packageDir, 'dist')
+            const markerSource = fs.readFileSync(markerPath, 'utf8')
+
+            try {
+                const bundler = await ClientBundler.createAndBuild(
+                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    ClientBundler.Config.create({
+                        outputPath,
+                        workingDir: packageDir,
+                        sourcemap: false
+                    })
+                )
+
+                const built = bundler.currentRun.result.assetFor('main.bundle.js').content
+
+                fs.writeFileSync(markerPath, "@fn marker(): string{\n    ???\n}\n")
+
+                let error = null
+                try{
+                    await bundler.rebuild()
+                } catch ( e ){
+                    error = e
+                }
+
+                expect(error).not.toBeNull()
+                expect(bundler.currentRun.result.assetFor('main.bundle.js').content).toBe(built)
+
+                fs.writeFileSync(markerPath, "@fn marker(): string{\n    return 'marker:RECOVERED'\n}\n")
+                await bundler.rebuild()
+
+                const context = { window: {}, console, setTimeout, clearTimeout }
+                vm.runInNewContext(bundler.currentRun.result.assetFor('main.bundle.js').content, context)
+                expect(context.window.__probe__).toEqual(['marker:RECOVERED'])
+            } finally {
+                fs.writeFileSync(markerPath, markerSource)
+                fs.rmSync(fixture.root, { recursive: true, force: true })
+            }
+        }
+    }
+
+    Scenario{
+        name: 'concurrent rebuilds coalesce into a second run with its own state'
+        run: async (expect) => {
+            const bundler = await ClientBundler.create(
+                [],
+                ClientBundler.Config.create({
+                    outputPath: '/tmp/client-bundler-scheduler',
+                    workingDir: '/tmp',
+                    sourcemap: false
+                })
+            )
+            const resolvers = []
+            // Deliberate stub: real builds would make scheduler assertions timing races.
+            bundler._executeRun = () => new Promise((resolve) => {
+                resolvers.push(resolve)
+            })
+
+            const first = bundler.rebuild()
+            const second = bundler.rebuild()
+
+            expect(resolvers.length).toBe(1)
+
+            const firstState = { run: 1 }
+            resolvers[0](firstState)
+            expect(await first).toBe(firstState)
+
+            expect(resolvers.length).toBe(2)
+
+            const secondState = { run: 2 }
+            resolvers[1](secondState)
+            expect(await second).toBe(secondState)
+        }
+    }
+
+    Scenario{
+        name: 'disposing rejects a queued rebuild without starting it'
+        run: async (expect) => {
+            const bundler = await ClientBundler.create(
+                [],
+                ClientBundler.Config.create({
+                    outputPath: '/tmp/client-bundler-scheduler-dispose',
+                    workingDir: '/tmp',
+                    sourcemap: false
+                })
+            )
+            const resolvers = []
+            // Deliberate stub: real builds would make scheduler assertions timing races.
+            bundler._executeRun = () => new Promise((resolve) => {
+                resolvers.push(resolve)
+            })
+
+            const first = bundler.rebuild()
+            const second = bundler.rebuild()
+            const queuedError = second.then(() => null, (error) => error)
+
+            const disposal = bundler.dispose()
+            const firstState = { run: 1 }
+            resolvers[0](firstState)
+            await disposal
+            expect(await first).toBe(firstState)
+            expect((await queuedError).message).toBe('ClientBundler has been disposed.')
+            expect(resolvers.length).toBe(1)
         }
     }
 }

@@ -16,42 +16,15 @@ export function virtualModulesPlugin(scripts) {
                 const resolvedPath = path.resolve(path.isAbsolute(args.path)
                     ? args.path
                     : path.resolve(args.resolveDir, args.path))
-                const absPath = (fs.existsSync(resolvedPath)
-                    ? fs.realpathSync(resolvedPath)
-                    : (() => {
-                        const dirPath = path.dirname(resolvedPath)
-                        return fs.existsSync(dirPath)
-                            ? path.join(fs.realpathSync(dirPath), path.basename(resolvedPath))
-                            : resolvedPath
-                    })()).replace(/\\/g, '/')
+                const absPath = path.resolve('/', resolvedPath).replace(/\\/g, '/')
 
-                return scripts.some((script) => {
-                    const scriptPath = path.resolve(script.location)
-                    return (fs.existsSync(scriptPath)
-                        ? fs.realpathSync(scriptPath)
-                        : (() => {
-                            const dirPath = path.dirname(scriptPath)
-                            return fs.existsSync(dirPath)
-                                ? path.join(fs.realpathSync(dirPath), path.basename(scriptPath))
-                                : scriptPath
-                        })()).replace(/\\/g, '/') === absPath
-                })
+                return scripts.some((script) => path.resolve('/', script.location).replace(/\\/g, '/') === absPath)
                     ? { path: absPath, namespace: 'le-virtual' }
                     : null
             })
 
             build.onLoad({ filter: /.*/, namespace: 'le-virtual' }, (args) => {
-                const script = scripts.find((entry) => {
-                    const entryPath = path.resolve(entry.location)
-                    return (fs.existsSync(entryPath)
-                        ? fs.realpathSync(entryPath)
-                        : (() => {
-                            const dirPath = path.dirname(entryPath)
-                            return fs.existsSync(dirPath)
-                                ? path.join(fs.realpathSync(dirPath), path.basename(entryPath))
-                                : entryPath
-                        })()).replace(/\\/g, '/') === args.path
-                })
+                const script = scripts.find((entry) => path.resolve('/', entry.location).replace(/\\/g, '/') === args.path)
                 if (!script) {
                     throw new Error(`Virtual module has no content registered for "${args.path}".`)
                 }

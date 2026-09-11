@@ -26,7 +26,7 @@ This guide covers setup in any package, the basic test shape, and patterns for v
 To run `.lv` tests, your repository needs:
 
 - **Vitest** as the test runner.
-- A **Vite plugin for `.lv` imports**, so Vitest can resolve `.lv` modules. The plugin compiles `.lv` via `live-elements-js-compiler` and re-exports the result. A reference implementation lives in `live-testspec/lib/vite-plugin-live-elements.mjs`; or you can write your own — it's ~30 lines.
+- A **Vite plugin for `.lv` imports**, so Vitest can resolve `.lv` modules. The plugin compiles `.lv` via `live-elements-js-compiler` and re-exports the result. A reference implementation lives in `live-elements-web-server/test/vite-plugin-live-elements.mjs`; or you can write your own — it's ~30 lines.
 - A **monorepo or installable workspace** that exposes `live-testspec` to your package.
 
 `live-testspec` itself depends on:
@@ -54,7 +54,7 @@ Create `vitest.config.mjs` at your package root:
 
 ```js
 import { defineConfig } from 'vitest/config'
-import liveElements from 'live-testspec/lib/vite-plugin-live-elements.mjs'
+import liveElements from 'live-elements-web-server/test/vite-plugin-live-elements.mjs'
 
 export default defineConfig({
     plugins: [liveElements()],

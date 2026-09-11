@@ -1,0 +1,13 @@
+-- main.mjs --
+import { packageValue } from '@pkg/a/lib/client/root.mjs'
+window.__pkgProbe__ = packageValue()
+-- node_modules/@pkg/a/package.json --
+{"name":"@pkg/a","type":"module"}
+-- node_modules/@pkg/a/client.package.json --
+{"exports":["lib/client/root.mjs"]}
+-- node_modules/@pkg/a/lib/client/root.mjs --
+export const value = 'a'
+
+export function packageValue() {
+    return 'A'
+}

@@ -1,0 +1,16 @@
+-- page/package.json --
+{ "name": "bundler-page-lv-entry", "type": "module" }
+-- page/live.package.json --
+{ "name": "bundler-page-lv-entry", "version": "0.0.0" }
+-- page/Page.lv --
+import { packageValue } from '@pkg/a/lib/client/root.mjs'
+
+component Page{
+    constructor(){
+        super()
+        Page.prototype.__initialize.call(this)
+        window.__pageProbe__ = 'page:first' + packageValue()
+    }
+}
+
+instance page Page{}

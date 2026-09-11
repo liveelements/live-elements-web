@@ -1,0 +1,7 @@
+-- main.mjs --
+import { hiddenValue } from '@pkg/a/lib/client/hidden.mjs'
+window.__pkgProbe__ = hiddenValue()
+-- node_modules/@pkg/a/lib/client/hidden.mjs --
+export function hiddenValue() {
+    return 'hidden'
+}

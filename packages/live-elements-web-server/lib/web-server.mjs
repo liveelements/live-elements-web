@@ -26,6 +26,7 @@ import BundleData from './bundle-data.mjs'
 import PageNotFoundError from './page-not-found-error.mjs'
 import Memory from './memory/memory.mjs'
 import StyleChainProcessor from './style-chain-processor.mjs'
+import { ImportMap } from './import-map.mjs'
 
 class WebServerInit{
 
@@ -74,11 +75,8 @@ class WebServerConfiguration{
     get scriptsUrl(){ return this._scripstUrl }
     get styles(){ return this._styles }
     get entryScriptName(){ return this._entryScriptName }
-    get entryScriptUrl(){
-        return this._baseUrl === '/'
-            ? `${this._scripstUrl}/${this._entryScriptName}`
-            : `${this._baseUrl}${this._scripstUrl}/${this._entryScriptName}`
-    }
+    get scriptsBaseUrl(){ return this._baseUrl === '/' ? `${this._scripstUrl}/` : `${this._baseUrl}${this._scripstUrl}/` }
+    get entryScriptUrl(){ return `${this.scriptsBaseUrl}${this._entryScriptName}` }
     get userBundleLookupPath(){ return this._userBundleLookupPath }
     get socketUrl(){
         const host = this.baseUrl === '/' ? 'localhost' : (new URL(this.baseUrl)).hostname
@@ -119,6 +117,7 @@ export default class WebServer extends EventEmitter{
         this._app.use(express.json(bundle.bundle.config && bundle.bundle.config.json ? bundle.bundle.config.json : {} ))
 
         this._clientBundler = null
+        this._pageImportMap = null
         this._serverSocket = null
         if ( this._config.useSocket ){
             this._serverSocket = new ServerBundleSocket(this._app)
@@ -140,6 +139,32 @@ export default class WebServer extends EventEmitter{
     get clientBundler(){ return this._clientBundler }
     get watcher(){ return this._watcher }
     get app(){ return this._app }
+
+    clientBundling(){ return this._bundle.bundle.config?.clientBundling ?? ClientBundler.Config.Bundling.Inline }
+
+    pageImportMap(){
+        if ( !this._pageImportMap ){
+            const run = this._clientBundler?.currentRun ?? null
+            if ( run?.result ){
+                this._pageImportMap = ImportMap.build(
+                    run.packageList(), this.config.scriptsBaseUrl, this._clientBundler.config.outputPath
+                )
+            } else {
+                const importMapPath = path.join(this.distPath, 'scripts', ImportMap.OutputFile)
+                if ( fs.existsSync(importMapPath) ){
+                    this._pageImportMap = ImportMap.fromJSON(JSON.parse(fs.readFileSync(importMapPath, 'utf8')))
+                        .withUrlPrefix(this.config.baseUrl)
+                } else {
+                    if ( this._clientBundler?.config.bundling === ClientBundler.Config.Bundling.ByPackage ){
+                        log.w(`No ${ImportMap.OutputFile} in ${path.dirname(importMapPath)}: package specifiers `
+                            + 'will not resolve in the browser. Recompile this bundle with the current CLI.')
+                    }
+                    this._pageImportMap = new ImportMap({}, [])
+                }
+            }
+        }
+        return this._pageImportMap
+    }
 
     get distPath(){ return this._distPath }
     establishedDistPath(){ 
@@ -240,7 +265,7 @@ export default class WebServer extends EventEmitter{
         
         webServer._themes = bundleScan.themes
         if ( webServer._themes.length > 1 ){
-            webServer._watcher.close()
+            webServer._watcher?.close()
             throw new Error(`Theme conflict: Multiple uncorrelated themes (${webServer._themes.length}) found accross the bundle. Create a single theme to extend all of them.`)
         }
 
@@ -249,12 +274,6 @@ export default class WebServer extends EventEmitter{
         await webServer.addClientBundler()
 
         return webServer
-    }
-
-    sendDynamicFile(res, type, content){
-        const seconds = Math.floor(maxAgeMs / 1000)
-        res.setHeader('Cache-Control', `public, max-age=${seconds}`)
-        res.type(type).send(content)
     }
 
     sendFile(req, res, file){
@@ -330,14 +349,23 @@ export default class WebServer extends EventEmitter{
 
     async addClientBundler(){
         const views = this._routes.viewRoutes()
-        const entries = {}, virtualScripts = []
-        const bundleFormat = ClientBundler.Format.Classic
+        const entries = [], virtualScripts = []
+        const bundling = this.clientBundling()
         const bundleConfig = ClientBundler.Config.create({
-            watcher: this._watcher,
+            outputPath: path.join(this.distPath, 'scripts'),
+            workingDir: this.bundleLookupPath,
             sourcemap: this.config.runMode !== WebServer.RunMode.Production,
-            publicPath: this.config.baseUrl,
             virtualScripts,
-            format: bundleFormat
+            format: bundling === ClientBundler.Config.Bundling.ByPackage
+                ? ClientBundler.Config.Format.Module
+                : ClientBundler.Config.Format.Classic,
+            bundling,
+            output: this.config.runMode === WebServer.RunMode.Production
+                ? ClientBundler.Config.Output.Files
+                : ClientBundler.Config.Output.Memory,
+            execution: this._watcher
+                ? ClientBundler.Config.Execution.Incremental
+                : ClientBundler.Config.Execution.Single
         })
 
         let extraScripts = []
@@ -353,7 +381,7 @@ export default class WebServer extends EventEmitter{
 
             const view = viewRoute.c
             const viewToBundle = view.name.toLowerCase()
-            const bundleName = entries.hasOwnProperty(viewToBundle) ? viewRoute.urlPathToFileName() : viewToBundle
+            const bundleName = entries.some((entry) => entry.name === viewToBundle) ? viewRoute.urlPathToFileName() : viewToBundle
             
             const renderMode = this.config.renderMode === WebServer.RenderMode.Production ? viewRoute.render : ComponentRegistry.Components.ViewRoute.CSR
             if ( renderMode === ComponentRegistry.Components.ViewRoute.CSR ){
@@ -363,16 +391,18 @@ export default class WebServer extends EventEmitter{
                 viewRoute.addScript(viewLoaderScript)
             }
             if ( viewRoute.scripts.length ){
-                entries[bundleName] = viewRoute.scripts.map(script => script.location)
-                viewRoute.setBundleScript(bundleConfig.bundleFileNameFor(bundleName), bundleFormat.entryScriptType)
+                entries.push(ClientBundler.FileEntry.create(bundleName, viewRoute.scripts.map(script => script.location)))
+                viewRoute.setBundleScript(bundleConfig.bundleFileNameFor(bundleName), bundleConfig.format.entryScriptType)
             }
         }
 
         this._clientBundler = await ClientBundler.create(
             entries,
-            this._distPath,
             bundleConfig
         )
+        this._clientBundler.on('compileReady', () => {
+            this._pageImportMap = null
+        })
     }
 
     async updateUse(rootView){
@@ -427,6 +457,25 @@ export default class WebServer extends EventEmitter{
             fs.writeFileSync(assetOutputPath, fs.readFileSync(this._assets[i].src))
             log.i(`Asset written: ${path.relative(distPath, assetOutputPath)}`)
         }
+
+        try{
+            const result = await this._clientBundler.build()
+            const scriptsPath = path.join(distPath, 'scripts')
+            fs.mkdirSync(scriptsPath, { recursive: true })
+            const persistedImportMap = ImportMap.build(
+                this._clientBundler.currentRun.packageList(),
+                `${this.config.scriptsUrl}/`,
+                this._clientBundler.config.outputPath
+            )
+            fs.writeFileSync(
+                path.join(scriptsPath, ImportMap.OutputFile),
+                `${JSON.stringify(persistedImportMap.toJSON(), null, 2)}\n`
+            )
+            log.i(`Bundle written at: ${scriptsPath} (${result.result.assets.length} assets)`)
+        } catch (error) {
+            log.e('Compilation failed:', error)
+            throw error
+        }
         
         let collectedBehaviors = []
 
@@ -456,7 +505,7 @@ export default class WebServer extends EventEmitter{
                 
                 if ( route.behaviors ){
                     route.behaviors.bundles.forEach(bundle => {
-                        if ( !collectedBehaviors.find(cb => cb.name === bundle.name) ){
+                        if ( !collectedBehaviors.find(cb => cb.outputName === bundle.outputName) ){
                             collectedBehaviors.push(bundle)
                         }
                     })
@@ -471,21 +520,13 @@ export default class WebServer extends EventEmitter{
 
             for ( let j = 0; j < collectedBehaviors.length; ++j ){
                 const behavior = collectedBehaviors[j]
-                const behaviorPath = `${behaviorsPath}/${behavior.name}`
+                const behaviorPath = `${behaviorsPath}/${behavior.outputName}`
                 fs.writeFileSync(behaviorPath, behavior.content)
-                log.i(`Behavior script written: scripts/behavior/${behavior.name}`)
+                log.i(`Behavior script written: scripts/behavior/${behavior.outputName}`)
             }
         }
-
-
-        try{
-            const result = await this._clientBundler.build()
-            log.i(`Compilation succeeded at: ${distPath} (${Object.keys(result?.metafile?.outputs ?? {}).length} outputs)`)
-        } catch (error) {
-            log.e('Compilation failed:', error)
-        } finally {
-            StyleChainProcessor.terminateWorkers()
-        }
+        StyleChainProcessor.terminateWorkers()
+        log.i(`Compilation succeeded at: ${distPath}`)
     }
 
     findPageByOutput(output){
@@ -495,7 +536,10 @@ export default class WebServer extends EventEmitter{
     async renderRouteCSR(route, req, res, next){
         let head = []
         const scriptType = route.bundleScriptType ? ` type="${route.bundleScriptType}"` : ''
-        let body = [`<script${scriptType} src="/scripts/${route.bundleScript}"></script>`]
+        let body = [`<script${scriptType} src="${this.config.scriptsBaseUrl}${route.bundleScript}"></script>`]
+        const importMapMarkup = this.pageImportMap().headMarkup()
+        if ( importMapMarkup ) 
+            head.push(importMapMarkup)
 
         if ( route.data ){
             let data = null
@@ -549,13 +593,18 @@ export default class WebServer extends EventEmitter{
             this.bundleLookupPath, 
             this._distPath,
             scopedStyleLinks, 
-            viewStyles
+            viewStyles,
+            this.config.runMode === WebServer.RunMode.Production
+                ? ClientBundler.Config.Output.Files
+                : ClientBundler.Config.Output.Memory,
+            this.pageImportMap()
         )
         const render = renderResult.unwrapAnd((report) => report.forEach(WebServer.logError))
         return render
     }
 
     async renderRouteSSR(route, req, res, next, cacheDir, render){
+        await this._clientBundler?.currentBuild
         if ( route.data ){
             if ( render && cacheDir && render === ComponentRegistry.Components.ViewRoute.SSC ){
                 const cachePath = path.join(cacheDir, WebServer.urlToFileName(route.url))
@@ -627,12 +676,34 @@ export default class WebServer extends EventEmitter{
         }
     }
 
+    static async refreshWatchedBundlerFiles(watcher, run){
+        if (!watcher) {
+            return
+        }
+        const clientBundlerGroup = watcher.findGroup('client-bundler')
+        const clientBundlerManualGroup = watcher.findGroup('client-bundler-manual')
+        const lvSources = []
+        const plainInputs = []
+        for (const input of run.result.inputPaths) {
+            const sourcePath = await ClientBundler.lvSourceForBuildOutput(input)
+            ;(sourcePath ? lvSources : plainInputs).push(sourcePath ?? input)
+        }
+        watcher.assignFiles(plainInputs, clientBundlerGroup)
+        watcher.assignFiles(lvSources, clientBundlerManualGroup)
+    }
+
     async serve(){
         let routes = this._routes
+        this._clientBundler.on('compileReady', (run) => {
+            WebServer.refreshWatchedBundlerFiles(this._watcher, run).catch((error) => log.e(error))
+            if ( this._serverSocket ){
+                this._serverSocket.sendActionToClients('reload', [])
+            }
+        })
         
-        await this._clientBundler.rebuild()
-        this._clientBundler.createMiddleware()
-        this._app.use(this._clientBundler.middleware)
+        const initialRun = await this._clientBundler.rebuild()
+        await WebServer.refreshWatchedBundlerFiles(this._watcher, initialRun)
+        this._app.use(this._clientBundler.createMiddleware())
 
         if ( this._watcher ){
             const styleGroup = this._watcher.findGroup('style')
@@ -646,7 +717,11 @@ export default class WebServer extends EventEmitter{
             const clientBundlerGroup = this._watcher.findGroup('client-bundler')
             if ( clientBundlerGroup ){
                 clientBundlerGroup.onFileChange = async () => {
-                    await this._clientBundler.rebuild()
+                    try{
+                        await this._clientBundler.rebuild()
+                    } catch ( e ){
+                        log.e(e)
+                    }
                 }
             }
 
@@ -658,7 +733,11 @@ export default class WebServer extends EventEmitter{
                     } catch ( e ){
                         log.e(e)
                     }
-                    await this._clientBundler.rebuild()
+                    try{
+                        await this._clientBundler.rebuild()
+                    } catch ( e ){
+                        log.e(e)
+                    }
                 }
             }
             
@@ -668,14 +747,6 @@ export default class WebServer extends EventEmitter{
                     this._serverSocket.sendActionToClients('reload-style', [outputs])
                 })
             }
-        }
-
-        if ( this._clientBundler ){
-            this._clientBundler.on('compileReady', () => {
-                if ( this._serverSocket ){
-                    this._serverSocket.sendActionToClients('reload', [])
-                }
-            })
         }
 
         /// Handle styles
@@ -705,7 +776,7 @@ export default class WebServer extends EventEmitter{
                     if ( viewRoutes[i].behaviors ){
                         for ( let j = 0; j < viewRoutes[i].behaviors.bundles.length; ++j ){
                             const bundle = viewRoutes[i].behaviors.bundles[j]
-                            if ( `/scripts/behavior/${bundle.name}` === req.url){
+                            if ( `/scripts/behavior/${bundle.outputName}` === req.url){
                                 res.setHeader('Content-Type', 'application/javascript')
                                 res.send(bundle.content)
                                 return
