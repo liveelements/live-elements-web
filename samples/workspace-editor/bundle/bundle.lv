@@ -12,14 +12,12 @@ instance bundle Bundle{
     string liveWebEdit = PackagePath.find('live-web-edit', path.resolve('.'))
     string templatesPath = path.join(this.liveWebEdit, 'resources', 'templates')
     string examplesTemplatesPath = path.join(this.liveWebEdit, 'resources', 'templates-examples')
-    WorkspaceContainer workspaces = WorkspaceContainer.create(path.join(this.currentPackage, 'workspaces'), path.join(this.liveWebEdit, 'resources', 'templates'), WorkspaceOperations{})
-
     Array<Object> templates = [
         { path: path.join(this.templatesPath, 'default'), name: 'page', section: 'New', label: 'New Page' },
         { path: path.join(this.templatesPath, 'application-console'), name: 'application', section: 'Templates', label: 'Application (Console)' }
     ].concat(WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath))
 
-    WorkspaceEditorRoute.(this.workspaces, this.templates){
+    WorkspaceRoute.(path.join(this.currentPackage, 'workspaces'), this.templates){
         view: Main
     }
 }

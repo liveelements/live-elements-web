@@ -1,3 +1,4 @@
-component WorkspaceAsset < WorkspaceFile{
-    
+component WorkspaceAsset{
+    string name: ''
+    string content: ''
 }

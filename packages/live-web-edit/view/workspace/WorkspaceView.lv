@@ -15,7 +15,7 @@ component WorkspaceView < Div{
         ScopedStyle{ src: './style/workspaceview.css' process: 'live-web-view/style/CSSProcessor.lv' }
     ]
 
-    WorkspaceViewData data: WorkspaceViewData{}
+    WorkspaceViewData data
 
     boolean forkEnabled: true
     boolean lockEnabled: true
@@ -94,8 +94,9 @@ component WorkspaceView < Div{
         const prevSegment = pathSegments[pathSegments.length - 2]
         const lastSegment = pathSegments[pathSegments.length - 1]
 
-        return this.data.editor.workspaceName
-            ? this.data.editor.workspaceName
+        const currentName = this.data?.editor?.workspaceName
+        return currentName
+            ? currentName
             : (
                 prevSegment === 'w'
                     ? lastSegment
@@ -147,7 +148,8 @@ component WorkspaceView < Div{
 
     on workspacePagePathBindingChanged: () => {
         const nextPath = this.workspacePagePathBinding
-        if ( !this.syncHistoryOnWorkspaceChanged || !nextPath || this.data.editor.workspaceName === '-' ){
+        const currentName = this.data?.editor?.workspaceName
+        if ( !this.syncHistoryOnWorkspaceChanged || !nextPath || !currentName || currentName === '-' ){
             return
         }
 

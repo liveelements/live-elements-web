@@ -1,0 +1,180 @@
+import live-elements-web-server.router
+
+import APIResponse from 'live-elements-web-server/lib/core/api-response.mjs'
+import { ValueOrError, VE } from 'live-elements-web-server/shared/core/value-or-error.mjs'
+import { PublicError } from 'live-elements-web-server/shared/errors/public-error.mjs'
+
+type WorkspaceDocumentInput = { path: string, content: string }
+
+type WorkspaceDataResponse = {
+    name: string
+    documents: Array<Object>
+    entry: string
+    entryData: string | null
+    serverStub: string | null
+    writeBehavior: number
+    compilation: Object | null
+}
+
+type SaveResponse = WorkspaceDataResponse | { success: boolean }
+
+instance workspaceRouteEditHandlers RouteHandlers{
+    async fn load(input: {
+        params: { wsname: string }
+    }, context: {
+        storage: WorkspaceStorage
+        defaultProject: string
+    }):APIResponse<ValueOrError<WorkspaceDataResponse>>{
+        try{
+            const name = input.params.wsname
+            let ws = null
+
+            if ( name === '-' ){
+                ws = await context.storage.hasWorkspace(context.defaultProject)
+                    ? await context.storage.loadWorkspace(context.defaultProject)
+                    : await context.storage.createWorkspaceFrom('default', null)
+            } else {
+                ws = await context.storage.loadWorkspace(name)
+            }
+
+            return APIResponse.ok(VE.vob(
+                ws.workspaceData(await context.storage.loadCompilation(ws))
+            ))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Workspace loading error.'))
+            )
+        }
+    }
+
+    async fn documents(input: {
+        params: { wsname: string }
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<Array<Object>>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            return APIResponse.ok(ws.documents.map(document => document.toJSON()))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Workspace documents error.'))
+            )
+        }
+    }
+
+    async fn fork(input: {
+        params: { wsname: string }
+    }, context: {
+        storage: WorkspaceStorage
+        templates: Array<Object>
+    }):APIResponse<ValueOrError<WorkspaceDataResponse>>{
+        try{
+            let source = input.params.wsname
+            if ( source !== 'default' ){
+                const template = (context.templates || []).find(item => item.name === source)
+                if ( template ){
+                    source = template.path
+                }
+            }
+
+            const ws = await context.storage.createWorkspaceFrom(source, null)
+            return APIResponse.ok(VE.vob(
+                ws.workspaceData(await context.storage.loadCompilation(ws))
+            ))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Workspace fork error.'))
+            )
+        }
+    }
+
+    async fn save(input: {
+        params: { wsname: string }
+        body: { document: WorkspaceDocumentInput }
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<ValueOrError<SaveResponse>>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            const document = input.body.document
+
+            if ( ws.writeBehavior === Workspace.WriteBehavior.ReadOnly ){
+                return APIResponse.ok(VE.eob(new PublicError('Workspace is read-only.')))
+            }
+
+            let target = ws
+            if ( ws.writeBehavior === Workspace.WriteBehavior.Fork ){
+                target = await context.storage.createWorkspaceFrom(ws.name, null)
+            }
+
+            const opened = target.isDocumentOpened(document.path)
+            if ( opened ){
+                opened.content = document.content
+            }
+            await context.storage.writeWorkspaceDocument(target, document.path, document.content)
+
+            const response = target === ws
+                ? { success: true }
+                : target.workspaceData(await context.storage.loadCompilation(target))
+            return APIResponse.ok(VE.vob(response))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Document save error.'))
+            )
+        }
+    }
+
+    async fn compile(input: {
+        params: { wsname: string }
+    }, context: {
+        storage: WorkspaceStorage
+        compiler: PageWorkspaceCompiler
+        baseUrl: string
+    }):APIResponse<ValueOrError<{ compilation: string }>>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            if ( !ws.canWrite() ){
+                throw new Error(`Workspace ${ws.name} is read only. Can't compile.`)
+            }
+
+            const compilation = await context.compiler.compileWorkspace(ws, context.storage, {
+                baseUrl: context.baseUrl
+            })
+            await context.storage.saveCompilation(ws, compilation)
+
+            if ( compilation.hasErrors() ){
+                throw new PublicError(compilation.errors.map(error => error.message))
+            }
+            return APIResponse.ok(VE.vob({ compilation: compilation.identifier }))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Workspace compilation error.'))
+            )
+        }
+    }
+
+    async fn lockWrite(input: {
+        params: { wsname: string }
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<ValueOrError<{ success: boolean }>>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            if ( ws.writeBehavior !== Workspace.WriteBehavior.ReadOnly ){
+                ws.writeBehavior = Workspace.WriteBehavior.ReadOnly
+                await context.storage.saveWorkspace(ws)
+            }
+            return APIResponse.ok(VE.vob({ success: true }))
+        } catch ( e ){
+            return APIResponse.errorValue(
+                500,
+                ValueOrError.fromError(PublicError.mask(e, 'Workspace lock write error.'))
+            )
+        }
+    }
+}

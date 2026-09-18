@@ -1,0 +1,103 @@
+component CachedWorkspaceStorage < WorkspaceStorage{
+
+    static fn create(storage:WorkspaceStorage, options:Object = null){
+        return CachedWorkspaceStorage.(storage, options){}
+    }
+    
+    WorkspaceStorage storage: null
+    Array<Workspace> workspaces: []
+    Object compilations: ({})
+    number loadLimit: null
+
+    constructor(storage:WorkspaceStorage, options:Object = null){
+        super()
+        this{}
+        this.storage = storage
+        this.loadLimit = Number.isFinite(options?.loadLimit)
+            ? Number(options.loadLimit)
+            : null
+    }
+
+    fn cleanup(){
+        while ( this.loadLimit && this.workspaces.length > this.loadLimit ){
+            this.workspaces.shift()
+        }
+    }
+
+    fn closeLoadedWorkspace(name:string){
+        this.workspaces = this.workspaces.filter(ws => ws.name !== name)
+        delete this.compilations[name]
+    }
+
+    async fn hasWorkspace(name:string):boolean{
+        return this.storage.hasWorkspace(name)
+    }
+
+    async fn loadWorkspace(name:string):Workspace{
+        let ws = this.workspaces.find(item => item.name === name)
+        if ( ws ){
+            return ws
+        }
+
+        ws = await this.storage.loadWorkspace(name)
+        this.workspaces = this.workspaces.concat([ws])
+        this.cleanup()
+        return ws
+    }
+
+    async fn createWorkspace(name:string, files:Array<Object>, mainEntry:string, author:string):Workspace{
+        const ws = await this.storage.createWorkspace(name, files, mainEntry, author)
+        this.workspaces = this.workspaces.concat([ws])
+        this.cleanup()
+        return ws
+    }
+
+    async fn createWorkspaceFrom(source:string, author:string):Workspace{
+        const ws = await this.storage.createWorkspaceFrom(source, author)
+        this.workspaces = this.workspaces.concat([ws])
+        this.cleanup()
+        return ws
+    }
+
+    async fn saveWorkspace(ws:Workspace){
+        return this.storage.saveWorkspace(ws)
+    }
+
+    async fn readWorkspaceFile(ws:Workspace, filePath:string):string{
+        return this.storage.readWorkspaceFile(ws, filePath)
+    }
+
+    async fn writeWorkspaceDocument(ws:Workspace, filePath:string, content:string){
+        return this.storage.writeWorkspaceDocument(ws, filePath, content)
+    }
+
+    async fn listWorkspaces(options:Object):Array<Object>{
+        return this.storage.listWorkspaces(options)
+    }
+
+    async fn pruneWorkspaces(names:Array<string>):Array<string>{
+        return this.storage.pruneWorkspaces(names.concat(this.workspaces.map(ws => ws.name)))
+    }
+
+    async fn loadCompilation(ws:Workspace):WorkspaceCompilation{
+        if ( this.compilations[ws.name] ){
+            return this.compilations[ws.name]
+        }
+
+        const compilation = await this.storage.loadCompilation(ws)
+        if ( compilation ){
+            this.compilations[ws.name] = compilation
+        }
+        return compilation
+    }
+
+    async fn saveCompilation(ws:Workspace, compilation:WorkspaceCompilation):Object{
+        if ( compilation ){
+            this.compilations[ws.name] = compilation
+        } else {
+            delete this.compilations[ws.name]
+        }
+        return this.storage.saveCompilation(ws, compilation)
+    }
+
+}

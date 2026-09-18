@@ -44,6 +44,9 @@ component WorkspaceEditorView < Div{
     })
 
     string runtimeError: ''
+    Array<Object> allErrors: (workspaceEditorView.data?.errors ?? []).concat(
+        workspaceEditorView.runtimeError ? [workspaceEditorView.runtimeError] : []
+    )
 
     WorkspaceEditorKeymap keymap = WorkspaceEditorKeymap{
         prepare: () => {
@@ -69,9 +72,7 @@ component WorkspaceEditorView < Div{
     classes: [ScopedStyle.className(WorkspaceEditorView)]
 
     fn resolvedErrors():Array<Object>{
-        return this.runtimeError
-            ? this.data.errors.concat([this.runtimeError])
-            : this.data.errors
+        return this.allErrors
     }
 
     Object openWorkspaceHandler = (workspaceEditorView, name) => {
@@ -205,14 +206,14 @@ component WorkspaceEditorView < Div{
             }
         }
 
-        Div{ classes: ['error-box', workspaceEditorView.resolvedErrors().length ? 'show' : '']
+        Div{ classes: ['error-box', workspaceEditorView.allErrors.length ? 'show' : '']
             Header{
-                children: workspaceEditorView.resolvedErrors().length && workspaceEditorView.errorHeader
+                children: workspaceEditorView.allErrors.length && workspaceEditorView.errorHeader
                     ? [workspaceEditorView.errorHeader]
                     : []
             }
             Div{
-                children: workspaceEditorView.resolvedErrors().map(e => {
+                children: workspaceEditorView.allErrors.map(e => {
                     return Pre{ classes: ['error'] T{ text: e } }
                 })
             }

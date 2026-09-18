@@ -1,0 +1,9 @@
+component WorkspaceCompiler{
+    async fn compileWorkspace(ws:Workspace, storage:WorkspaceStorage, options:Object):WorkspaceCompilation{
+        throw new Error('WorkspaceCompiler.compileWorkspace is not implemented.')
+    }
+
+    async fn updateCompilationUsages(compilation:WorkspaceCompilation, usageStructure:Object, ws:Workspace, options:Object):Object{
+        throw new Error('WorkspaceCompiler.updateCompilationUsages is not implemented.')
+    }
+}

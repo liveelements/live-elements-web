@@ -1,19 +1,6 @@
 import live-elements-web-server.page.index
-import LvDOMEmulator from 'live-elements-web-server/lib/lvdomemulator.mjs'
-import WebpackBundler from 'live-elements-web-server/lib/bundle-webpack.mjs'
-import {VirtualScript} from 'live-elements-web-server/lib/scripts.mjs'
-import ScopedAssignmentControl from 'live-elements-web-server/lib/scoped-assignment-control.mjs'
-import ScopedComponentPaths from 'live-elements-web-server/lib/scoped-component-paths.mjs'
-import StyleContainer from 'live-elements-web-server/lib/style-container.mjs'
-import {ScopedComponentCollection} from 'live-elements-web-server/shared/scoped-component-collection.mjs'
-
-import generateLoader from '../../resources/loader/generate-loader.mjs'
-
-import path from 'path'
-import fs from 'fs'
 
 component WorkspaceCompilation{
-
     Page page: null
     string pageContent: ''
     string identifier: ''
@@ -24,15 +11,8 @@ component WorkspaceCompilation{
     Array<string> styles: []
     WorkspaceAsset mainAsset: null
     Object usageAssignments: null
-
     static fn generateid(){
-        const timestamp = Date.now().toString(36)
-        const randomString = Math.random().toString(36).substring(2, 15)
-        return `${randomString}${timestamp}`
-    }
-
-    static fn resolveCompilationPath(ws:Workspace, data:Object):string{
-        return path.join(ws.path, 'compiled', String(data.id || ''))
+        return `${Math.random().toString(36).substring(2, 15)}${Date.now().toString(36)}`
     }
 
     static fn stampToString(stamp:Object):string{
@@ -42,25 +22,10 @@ component WorkspaceCompilation{
         return stamp != null ? String(stamp) : ''
     }
 
-    static fn replaceMessageWorkspacePaths(message:string, workspace:Workspace):string{
-        const paths = [workspace.path + '/', workspace.path]
-        let p = workspace.path
-        while ( p ){
-            const parentPath = path.dirname(p)
-            if ( fs.existsSync(path.join(p, 'package.json'))){
-                paths.push(p + '/')
-                paths.push(p)
-            }
-            if ( parentPath === p )
-                break
-            p = parentPath
-        }
-
-        let result = String(message ? message : '')
-        for ( let i = 0; i < paths.length; ++i ){
-            result = result.replaceAll(paths[i], '')
-        }
-        return result
+    static fn replaceMessageWorkspacePaths(message:string, workspacePath:string):string{
+        return String(message ? message : '')
+            .replaceAll(workspacePath + '/', '')
+            .replaceAll(workspacePath, '')
     }
 
     static fn compilationData(compilation:WorkspaceCompilation):Object{
@@ -74,63 +39,14 @@ component WorkspaceCompilation{
         }
     }
 
-    static fn workspaceData(ws:Workspace, compilation:WorkspaceCompilation):Object{
-        return {
-            name: ws.name,
-            documents: ws.documents,
-            entry: ws.mainEntry,
-            entryData: ws.mainEntryData,
-            serverStub: ws.serverStub,
-            serverStubData: ws.serverStubData,
-            writeBehavior: ws.writeBehavior,
-            compilation: WorkspaceCompilation.compilationData(compilation)
+    static fn createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspacePath:string){
+        return WorkspaceCompilation{
+            errors: errors.map(error => ({
+                message: WorkspaceCompilation.replaceMessageWorkspacePaths(error.message, workspacePath)
+            }))
+            identifier: identifier
+            stamp: stamp
         }
-    }
-
-    static async fn run(ws:Workspace, operations:WorkspaceOperations, baseUrl:string):WorkspaceCompilation{
-        if ( !ws.canWrite() ){
-            throw new Error(`Workspace ${ws.name} is read only. Can't compile.`)
-        }
-        return operations.compile(ws, baseUrl)
-    }
-
-    static fn save(ws:Workspace, compilation:WorkspaceCompilation):Object{
-        if ( !compilation ){
-            return null
-        }
-
-        const compiledPath = path.join(ws.path, 'compiled')
-        fs.mkdirSync(compiledPath, { recursive: true })
-
-        const outputDir = path.join(compiledPath, String(compilation.identifier || compilation.stamp || 'current'))
-        compilation.saveToDisk(outputDir)
-
-        const json = compilation.toJSON()
-        ws.compilation = json
-        ws.save()
-        return json
-    }
-
-    static fn load(ws:Workspace):WorkspaceCompilation{
-        const data = ws.compilation
-
-        if ( !data ){
-            return null
-        }
-
-        return WorkspaceCompilation.fromJSON(
-            data,
-            WorkspaceCompilation.resolveCompilationPath(ws, data)
-        )
-    }
-
-    static fn __createFromErrors(errors:Array<Object>, identifier:string, stamp:Date, workspace:Workspace){
-        const errs = errors.map(error => {
-            return {
-                message: WorkspaceCompilation.replaceMessageWorkspacePaths(error.message, workspace)
-            }
-        })
-        return WorkspaceCompilation{ errors = errs identifier = identifier stamp = stamp }
     }
 
     fn hasResult(){
@@ -153,41 +69,12 @@ component WorkspaceCompilation{
         return this.styles.find(style => style.file === file)
     }
 
-    fn saveToDisk(wscp:string){
-        if ( !fs.existsSync(wscp) ){
-            fs.mkdirSync(wscp, { recursive: true })
-        }
-
-        const assetDirectory = path.join(wscp, 'assets')
-        if ( !fs.existsSync(assetDirectory) ){
-            fs.mkdirSync(assetDirectory)
-        }
-        const stylesDirectory = path.join(wscp, 'styles')
-        if ( !fs.existsSync(stylesDirectory) ){
-            fs.mkdirSync(stylesDirectory)
-        }
-
-        for ( let i = 0; i < this.styles.length; ++i ){
-            const style = this.styles[i]
-            const stylePath = path.join(stylesDirectory, style.file)
-            fs.writeFileSync(stylePath, style.content)
-        }
-        for ( let i = 0; i < this.assets.length; ++i ){
-            const asset = this.assets[i]
-            const assetPath = path.join(assetDirectory, asset.name)
-            fs.writeFileSync(assetPath, asset.content)
-        }
-
-        const pagePath = path.join(wscp, 'wsindex.html')
-        fs.writeFileSync(pagePath, this.pageContent)
-    }
-
     fn toJSON():Object{
         return {
             id: this.identifier,
             page: 'wsindex.html',
-            styles: this.styles.map(s => s.file),
-            assets: this.assets.map(a => a.name),
+            styles: this.styles.map(style => style.file),
+            assets: this.assets.map(asset => asset.name),
             errors: this.errors,
             main: this.mainAsset ? this.mainAsset.name : null,
             usages: this.usageAssignments,
@@ -195,47 +82,24 @@ component WorkspaceCompilation{
         }
     }
 
-    static fn fromJSON(data:Object, wscp:string){
-        const identifier = data.id
-        const assetsDirectory = path.join(wscp, 'assets')
-        const stylesDirectory = path.join(wscp, 'styles')
-        const pagePath = path.join(wscp, data.page)
+    static fn fromJSON(data:Object, content:Object = ({})){
+        const assets = (data.assets || []).map(name => WorkspaceAsset{
+            name: name
+            content: content.assets?.[name] || ''
+        })
 
-        const styles = []
-        const assets = []
-        const pageContent = fs.readFileSync(pagePath, 'utf8')
-        let mainAsset = null
-
-        for ( let i = 0; i < data.styles.length; ++i ){
-            const style = data.styles[i]
-            const stylePath = path.join(stylesDirectory, style)
-            styles.push({file: style, content: fs.readFileSync(stylePath, 'utf8')})
+        return WorkspaceCompilation{
+            pageContent: content.page || ''
+            identifier: data.id
+            stamp: data.stamp ? new Date(data.stamp) : null
+            assets: assets
+            errors: data.errors || []
+            mainAsset: assets.find(asset => asset.name === data.main)
+            usageAssignments: data.usages
+            styles: (data.styles || []).map(file => ({
+                file: file,
+                content: content.styles?.[file] || ''
+            }))
         }
-
-        for ( let i = 0; i < data.assets.length; ++i ){
-            const asset = data.assets[i]
-            const assetPath = path.join(assetsDirectory, asset)
-            const wsAsset = WorkspaceAsset{
-                name: asset
-                content: fs.readFileSync(assetPath, 'utf8')
-            }
-            assets.push(wsAsset)
-            if (asset === data.main){
-                mainAsset = wsAsset
-            }
-        }
-        
-        const compilation = WorkspaceCompilation{
-            page = null
-            pageContent = pageContent
-            identifier = identifier
-            stamp = data.stamp
-            assets = assets
-            errors = data.errors ? data.errors : []
-            mainAsset = mainAsset
-            usageAssignments = data.usages
-            styles = styles
-        }
-        return compilation
     }
 }

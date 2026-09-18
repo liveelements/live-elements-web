@@ -66,10 +66,10 @@ async function run(){
 
     try{
         const modules = scan(path.resolve(__dirname + '/..'))
-        modules.forEach(async (module) => {
+        for (const module of modules) {
             const result = await compileModule(compiler, compilerOptions, module)
             console.log("Compiled at: " + result)
-        })
+        }
 
         let livePackageFile = path.resolve(__dirname + '/../live.package.json')
         let contents = fs.readFileSync(livePackageFile)

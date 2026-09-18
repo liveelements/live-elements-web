@@ -1,6 +1,6 @@
 import { ClientPageViewLoader as Loader } from "live-elements-web-server/client/client-pageview-loader.mjs"
 import { BaseElement } from "live-elements-core/baseelement.js"
-import { ScopedComponentScanner } from 'live-elements-web-server/shared/ScopedComponentScanner.lv'
+import { ScopedComponentScanner } from 'live-elements-web-server/build/shared/ScopedComponentScanner.lv.mjs'
 import ky from 'ky'
 
 const importer = import('<<<mainEntry>>>')

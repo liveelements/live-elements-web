@@ -1,0 +1,237 @@
+import fs from 'fs'
+import path from 'path'
+import { PublicError } from 'live-elements-web-server/shared/errors/public-error.mjs'
+import .lib.middle
+
+component FileWorkspaceStorage < WorkspaceStorage{
+
+    static fn create(location:string, templatePath:string = '', options:Object = null){
+        return FileWorkspaceStorage.(location, templatePath, options){}
+    }
+
+    static fn validateWorkspaceName(value:Object, description:string = 'workspace'):string{
+        const label = String(description || 'workspace')
+        const name = String(value ?? '').trim()
+
+        if ( !name ){
+            throw new PublicError(`Missing ${label} name.`)
+        }
+        if (
+            name.includes('..') ||
+            path.isAbsolute(name) ||
+            name.includes(path.posix.sep) ||
+            name.includes(path.win32.sep)
+        ){
+            throw new PublicError(`Invalid ${label} name.`)
+        }
+        return name
+    }
+
+    string path: ''
+    string templatesPath: ''
+    number storedWorkspaceLimit: null
+    
+    constructor(location:string, templatePath:string = '', options:Object = null){
+        super()
+        this{}
+        if ( location && !fs.existsSync(location) ){
+            fs.mkdirSync(location, { recursive: true })
+        }
+        if ( templatePath && !fs.existsSync(templatePath) ){
+            throw new Error(`Failed to find templates path: ${templatePath}`)
+        }
+        this.path = location
+        this.templatesPath = templatePath
+        this.storedWorkspaceLimit = Number.isFinite(options?.storedWorkspaceLimit)
+            ? Number(options.storedWorkspaceLimit)
+            : null
+    }
+
+    fn workspacePath(name:string){
+        return path.join(this.path, FileWorkspaceStorage.validateWorkspaceName(name))
+    }
+
+    async fn hasWorkspace(name:string):boolean{
+        return fs.existsSync(path.join(this.workspacePath(name), Workspace.dataFile))
+    }
+    async fn loadWorkspace(name:string):Workspace{
+        const validName = FileWorkspaceStorage.validateWorkspaceName(name)
+        const workspacePath = this.workspacePath(validName)
+        const infoPath = path.join(workspacePath, Workspace.dataFile)
+        if ( !fs.existsSync(infoPath) ){
+            throw new PublicError(`Workspace '${validName}' doesn't exist.`)
+        }
+        const info = JSON.parse(fs.readFileSync(infoPath, 'utf8'))
+        const contents = ({})
+        for ( const document of (info.documents || []) ){
+            contents[document.path] = fs.readFileSync(path.join(workspacePath, document.path), 'utf8')
+        }
+        return Workspace.fromJSON(info, workspacePath, contents)
+    }
+    async fn createWorkspace(name:string, files:Array<Object>, mainEntry:string, author:string):Workspace{
+        const validName = FileWorkspaceStorage.validateWorkspaceName(name)
+        const workspacePath = this.workspacePath(validName)
+        if ( fs.existsSync(workspacePath) ){
+            throw new Error(`Failed to create workspace. Path already exists: ${workspacePath}`)
+        }
+        for ( let i = 0; i < files.length; ++i ){
+            if ( !files[i].path ){
+                throw new Error(`File argument with empty path given when creating workspace: ${validName}`)
+            }
+        }
+        fs.mkdirSync(workspacePath, { recursive: true })
+        for ( let i = 0; i < files.length; ++i ){
+            const target = path.join(workspacePath, files[i].path)
+            fs.mkdirSync(path.dirname(target), { recursive: true })
+            fs.writeFileSync(target, files[i].content || '')
+        }
+        if ( mainEntry && !fs.existsSync(path.join(workspacePath, mainEntry)) ){
+            throw new Error(`Failed to create workspace ${validName}. Main entry '${mainEntry}' not found.`)
+        }
+        const ws = Workspace.create(validName, workspacePath, mainEntry, author)
+        await this.saveWorkspace(ws)
+        return ws
+    }
+    async fn _copyContents(src:string, dst:string){
+        const entries = await fs.promises.readdir(src, { withFileTypes: true })
+
+        for ( const entry of entries ){
+            const from = path.join(src, entry.name)
+            const to = path.join(dst, entry.name)
+
+            if ( entry.isDirectory() ){
+                await fs.promises.mkdir(to, { recursive: true })
+                await this._copyContents(from, to)
+            } else if ( entry.isFile() ){
+                await fs.promises.copyFile(from, to)
+            }
+        }
+    }
+
+    async fn createWorkspaceFrom(source:string, author:string):Workspace{
+        let templatePath = source
+        if ( !path.isAbsolute(source) ){
+            const configured = this.templatesPath ? path.join(this.templatesPath, source) : ''
+            templatePath = fs.existsSync(configured)
+                ? configured
+                : path.join(this.path, source)
+        }
+        if ( !fs.existsSync(templatePath) ){
+            throw new Error(`Failed to find template: ${source}`)
+        }
+
+        const name = Workspace.generateName()
+        const workspacePath = this.workspacePath(name)
+        fs.mkdirSync(workspacePath, { recursive: true })
+        await this._copyContents(templatePath, workspacePath)
+
+        const info = JSON.parse(fs.readFileSync(path.join(workspacePath, Workspace.dataFile), 'utf8'))
+        const contents = ({})
+        for ( const document of (info.documents || []) ){
+            contents[document.path] = fs.readFileSync(path.join(workspacePath, document.path), 'utf8')
+        }
+        const ws = Workspace.fromJSON({
+            ...info,
+            name: name,
+            from: info.name || '',
+            author: author || null,
+            compilation: null,
+            createdOn: new Date().toISOString()
+        }, workspacePath, contents)
+        await this.saveWorkspace(ws)
+        return ws
+    }
+
+    async fn saveWorkspace(ws:Workspace){
+        fs.writeFileSync(path.join(ws.path, Workspace.dataFile), JSON.stringify(ws.toJSON()))
+    }
+
+    async fn readWorkspaceFile(ws:Workspace, filePath:string):string{
+        const fullPath = path.join(ws.path, filePath)
+        if ( !fs.existsSync(fullPath) ){
+            throw new Error(`Can't read file, path doesn't exist: ${filePath}`)
+        }
+        return fs.readFileSync(fullPath, 'utf8')
+    }
+
+    async fn writeWorkspaceDocument(ws:Workspace, filePath:string, content:string){
+        if ( !ws.canWrite() ){
+            throw new PublicError(`Workspace ${ws.name} is read-only.`)
+        }
+        const fullPath = path.join(ws.path, filePath)
+        fs.mkdirSync(path.dirname(fullPath), { recursive: true })
+        fs.writeFileSync(fullPath, content || '')
+    }
+
+    async fn listWorkspaces(options:Object = ({})):Array<Object>{
+        if ( !fs.existsSync(this.path) ){
+            return []
+        }
+        return fs.readdirSync(this.path, { withFileTypes: true })
+            .filter(entry => entry.isDirectory() && fs.existsSync(path.join(this.path, entry.name, Workspace.dataFile)))
+            .map(entry => ({ name: entry.name, path: path.join(this.path, entry.name) }))
+    }
+
+    async fn pruneWorkspaces(excludeNames:Array<string> = []):Array<string>{
+        if ( !this.storedWorkspaceLimit ){
+            return []
+        }
+        const entries = await this.listWorkspaces({})
+        const protectedNames = new Set(excludeNames)
+        entries.sort((left, right) => fs.statSync(right.path).mtimeMs - fs.statSync(left.path).mtimeMs)
+
+        const removed = []
+        while ( entries.length - removed.length > this.storedWorkspaceLimit ){
+            const entry = entries.pop()
+            if ( entry && !protectedNames.has(entry.name) ){
+                fs.rmSync(entry.path, { recursive: true, force: true })
+                removed.push(entry.name)
+            } else {
+                break
+            }
+        }
+        return removed
+    }
+
+    async fn loadCompilation(ws:Workspace):WorkspaceCompilation{
+        if ( !ws.compilation ){
+            return null
+        }
+        const root = path.join(ws.path, 'compiled', String(ws.compilation.id || ''))
+        const content = {
+            page: fs.readFileSync(path.join(root, ws.compilation.page), 'utf8'),
+            styles: ({}),
+            assets: ({})
+        }
+        for(const name of (ws.compilation.styles || [])){
+            content.styles[name] = fs.readFileSync(path.join(root, 'styles', name), 'utf8')
+        }
+        for(const name of (ws.compilation.assets || [])){
+            content.assets[name] = fs.readFileSync(path.join(root, 'assets', name), 'utf8')
+        }
+        return WorkspaceCompilation.fromJSON(ws.compilation, content)
+    }
+
+    async fn saveCompilation(ws:Workspace, compilation:WorkspaceCompilation):Object{
+        if ( !compilation ){
+            return null
+        }
+        const root = path.join(ws.path, 'compiled', String(compilation.identifier || compilation.stamp || 'current'))
+        fs.mkdirSync(path.join(root, 'assets'), { recursive: true })
+        fs.mkdirSync(path.join(root, 'styles'), { recursive: true })
+
+        for(const style of compilation.styles){
+            fs.writeFileSync(path.join(root, 'styles', style.file), style.content)
+        }
+        for(const asset of compilation.assets){
+            fs.writeFileSync(path.join(root, 'assets', asset.name), asset.content)
+        }
+        fs.writeFileSync(path.join(root, 'wsindex.html'), compilation.pageContent)
+
+        const json = compilation.toJSON()
+        ws.compilation = json
+        await this.saveWorkspace(ws)
+        return json
+    }
+
+}

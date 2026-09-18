@@ -13,7 +13,13 @@ component WorkspaceFrameData{
     }
 
     fn currentWorkspacePreviewPath():string{
-        return this.workspacePreviewPath ? this.workspacePreviewPath : this.route(`/v/${this.workspaceName}`)
+        if ( this.workspacePreviewPath ){
+            return this.workspacePreviewPath
+        }
+        if ( !this.workspaceName || this.workspaceName === '-' ){
+            return ''
+        }
+        return this.route(`/v/${this.workspaceName}`)
     }
 
     fn appendLogMessage(message:string){
@@ -40,7 +46,7 @@ component WorkspaceFrameData{
         return WorkspaceFrameData{
             baseUrl = baseUrl
             workspaceName = workspaceId ? workspaceId : ''
-            workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : `${baseUrl}/v/${data.name ? data.name : ''}`
+            workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : ''
             frameLoading = false
             logMessages = []
             workspaceFrameSrc = ''

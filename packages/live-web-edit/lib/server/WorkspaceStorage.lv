@@ -1,0 +1,35 @@
+component WorkspaceStorage{
+    async fn hasWorkspace(name:string):boolean{
+        throw new Error('WorkspaceStorage.hasWorkspace is not implemented.')
+    }
+    async fn loadWorkspace(name:string):Workspace{
+        throw new Error('WorkspaceStorage.loadWorkspace is not implemented.')
+    }
+    async fn createWorkspace(name:string, files:Array<Object>, mainEntry:string, author:string):Workspace{
+        throw new Error('WorkspaceStorage.createWorkspace is not implemented.')
+    }
+    async fn createWorkspaceFrom(source:string, author:string):Workspace{
+        throw new Error('WorkspaceStorage.createWorkspaceFrom is not implemented.')
+    }
+    async fn saveWorkspace(ws:Workspace){
+        throw new Error('WorkspaceStorage.saveWorkspace is not implemented.')
+    }
+    async fn readWorkspaceFile(ws:Workspace, filePath:string):string{
+        throw new Error('WorkspaceStorage.readWorkspaceFile is not implemented.')
+    }
+    async fn writeWorkspaceDocument(ws:Workspace, filePath:string, content:string){
+        throw new Error('WorkspaceStorage.writeWorkspaceDocument is not implemented.')
+    }
+    async fn listWorkspaces(options:Object):Array<Object>{ 
+        return [] 
+    }
+    async fn pruneWorkspaces(excludeNames:Array<string>):Array<string>{ 
+        return [] 
+    }
+    async fn loadCompilation(ws:Workspace):WorkspaceCompilation{ 
+        return null 
+    }
+    async fn saveCompilation(ws:Workspace, compilation:WorkspaceCompilation):Object{ 
+        return null 
+    }
+}

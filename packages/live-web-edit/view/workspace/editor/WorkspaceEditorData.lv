@@ -39,12 +39,22 @@ component WorkspaceEditorData{
         return this.baseUrl + url
     }
 
+    fn hasResolvedWorkspace():boolean{
+        return this.workspaceName ? this.workspaceName !== '-' : false
+    }
+
     fn currentWorkspacePagePath():string{
-        return this.workspacePagePath ? this.workspacePagePath : this.route(`/w/${this.workspaceName}`)
+        if ( this.workspacePagePath ){
+            return this.workspacePagePath
+        }
+        return this.hasResolvedWorkspace() ? this.route(`/w/${this.workspaceName}`) : ''
     }
 
     fn currentWorkspacePreviewPath():string{
-        return this.workspacePreviewPath ? this.workspacePreviewPath : this.route(`/v/${this.workspaceName}`)
+        if ( this.workspacePreviewPath ){
+            return this.workspacePreviewPath
+        }
+        return this.hasResolvedWorkspace() ? this.route(`/v/${this.workspaceName}`) : ''
     }
 
     fn invalidatePreview(){
@@ -81,7 +91,7 @@ component WorkspaceEditorData{
 
     fn updateFromJSON(data:Object){
         this.baseUrl = data.baseUrl != null ? data.baseUrl : this.baseUrl
-        this.workspaceId = data.workspaceId ? data.workspaceId : (this.workspaceId ? this.workspaceId : data.name)
+        this.workspaceId = data.workspaceId ? data.workspaceId : (data.name ? data.name : this.workspaceId)
         this.workspaceName = this.workspaceId
         this.workspacePagePath = data.workspacePagePath ? data.workspacePagePath : this.workspacePagePath
         this.workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : this.workspacePreviewPath
@@ -138,7 +148,7 @@ component WorkspaceEditorData{
             baseUrl = baseUrl
             workspaceName = workspaceId ? workspaceId : ''
             workspaceId = workspaceId ? workspaceId : ''
-            workspacePagePath = data.workspacePagePath ? data.workspacePagePath : `${baseUrl}/w/${data.name ? data.name : ''}`
+            workspacePagePath = data.workspacePagePath ? data.workspacePagePath : ''
             documents = data.documents ? data.documents.map(ddoc => Document.fromJSON(ddoc)) : []
             writeBehavior = data.writeBehavior != null ? data.writeBehavior : WorkspaceEditorData.WriteBehavior.ReadOnly
             lastCompilation = data.compilation ? data.compilation : null
@@ -148,7 +158,7 @@ component WorkspaceEditorData{
                 : data.error ? [data.error]
                     : data.compilation && data.compilation.errors ? data.compilation.errors
                         : []
-            workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : `${baseUrl}/v/${data.name ? data.name : ''}`
+            workspacePreviewPath = data.workspacePreviewPath ? data.workspacePreviewPath : ''
         }
 
         result.updateServerRoutes()

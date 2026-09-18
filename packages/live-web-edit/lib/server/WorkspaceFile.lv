@@ -1,4 +1,0 @@
-component WorkspaceFile{
-    string name: ''
-    string content: ''
-}

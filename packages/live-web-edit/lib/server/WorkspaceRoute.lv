@@ -1,7 +1,5 @@
 import live-elements-web-server.router
 
-import .lib.middle
-
 import PackagePath from 'live-elements-web-server/lib/package-path.cjs'
 import path from 'path'
 import fs from 'fs'
@@ -9,10 +7,11 @@ import fs from 'fs'
 component WorkspaceRoute < Route{
     id: workspaceRoute
 
+    WorkspaceStorage storage: null
+    WorkspaceCompiler compiler: null
     string workspacesPath = ''
     string templatesPath = ''
     string defaultProject = 'page'
-    WorkspaceContainer workspaces = null
     string baseUrl = ''
     Object view = null
     Object placement
@@ -20,54 +19,60 @@ component WorkspaceRoute < Route{
     Array<Object> templates = []
     boolean forkOnLoad = false
 
-    constructor(workspacesPath:string, templates:Array<Object>, operations:WorkspaceOperations){
+    constructor(workspacesPath:string, templates:Array<Object>, storage:WorkspaceStorage = null, compiler:WorkspaceCompiler = null){
         super()
         this{}
-
         this.workspacesPath = workspacesPath
-        this.templatesPath = path.join(PackagePath.find('live-web-edit', path.resolve('.')), 'resources', 'templates')
+        this.templatesPath = path.join(
+            PackagePath.find('live-web-edit', path.resolve('.')),
+            'resources',
+            'templates'
+        )
         this.templates = templates
-        this.workspaces = WorkspaceContainer.create(this.workspacesPath, this.templatesPath, operations)
+        this.storage = storage || CachedWorkspaceStorage.create(
+            FileWorkspaceStorage.create(workspacesPath, this.templatesPath)
+        )
+        this.compiler = compiler || PageWorkspaceCompiler.create()
     }
 
     static fn findWorkspacesIn(lookupDir:string){
         if ( !fs.existsSync(lookupDir) ){
             return []
         }
-        const examples = fs.readdirSync(lookupDir).filter(file => {
-            const fullpath = path.join(lookupDir, file)
-            const isdir = fs.lstatSync(fullpath).isDirectory()
-            if ( !isdir ){
-                return false
-            }
-            const wsjson = path.join(fullpath, 'workspace.json')
-            return fs.existsSync(wsjson)
-        })
 
-        return examples.map(example => {
-            const fullpath = path.join(lookupDir, example)
-            const wsjson = path.join(fullpath, 'workspace.json')
-            const data = fs.readFileSync(wsjson, 'utf8')
-            const json = JSON.parse(data)
-            return {
-                path: fullpath,
-                name: json.name,
-                section: json.section,
-                label: json.label ? json.label : json.name
-            }
-        })
+        return fs.readdirSync(lookupDir)
+            .filter(file => {
+                const fullPath = path.join(lookupDir, file)
+                return fs.lstatSync(fullPath).isDirectory()
+                    && fs.existsSync(path.join(fullPath, 'workspace.json'))
+            })
+            .map(name => {
+                const fullPath = path.join(lookupDir, name)
+                const json = JSON.parse(fs.readFileSync(path.join(fullPath, 'workspace.json'), 'utf8'))
+                return {
+                    path: fullPath,
+                    name: json.name,
+                    section: json.section,
+                    label: json.label || json.name
+                }
+            })
     }
 
-    WorkspaceEditorRoute.(workspaceRoute.workspaces, workspaceRoute.templates){
-        defaultProject: workspaceRoute.defaultProject
+    WorkspaceEditorRoute{
+        storage: workspaceRoute.storage
+        compiler: workspaceRoute.compiler
         baseUrl: workspaceRoute.baseUrl
+        defaultProject: workspaceRoute.defaultProject
         view: workspaceRoute.view
         placement: workspaceRoute.placement
         viewsEnabled: workspaceRoute.viewsEnabled
+        templates: workspaceRoute.templates
         forkOnLoad: workspaceRoute.forkOnLoad
     }
 
-    WorkspaceFrameRoute.(workspaceRoute.workspaces){
+    WorkspaceFrameRoute{
+        storage: workspaceRoute.storage
+        compiler: workspaceRoute.compiler
         baseUrl: workspaceRoute.baseUrl
     }
 }

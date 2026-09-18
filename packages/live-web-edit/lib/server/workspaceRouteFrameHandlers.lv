@@ -1,0 +1,130 @@
+import live-elements-web-server.router
+
+import APIResponse from 'live-elements-web-server/lib/core/api-response.mjs'
+import { CSSError } from 'live-elements-web-server/shared/errors/css-error.mjs'
+
+type WorkspaceFrameParams = { wsname: string }
+
+instance workspaceRouteFrameHandlers RouteHandlers{
+    
+    async fn page(input: {
+        params: WorkspaceFrameParams
+    }, context: {
+        storage: WorkspaceStorage
+        compiler: PageWorkspaceCompiler
+        baseUrl: string
+    }):APIResponse<Object>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            let compilation = await context.storage.loadCompilation(ws)
+            if ( !compilation ){
+                compilation = await context.compiler.compileWorkspace(ws, context.storage, {
+                    baseUrl: context.baseUrl
+                })
+                await context.storage.saveCompilation(ws, compilation)
+            }
+
+            const content = compilation.errors.length
+                ? compilation.errors.map(error => error.message).join(',')
+                : compilation.pageContent
+            return APIResponse.content(200, content, 'text/html')
+        } catch ( e ){
+            return APIResponse.content(500, String(e.message || e), 'text/plain')
+        }
+    }
+
+    async fn mainScript(input: {
+        params: WorkspaceFrameParams
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<Object>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            const compilation = await context.storage.loadCompilation(ws)
+            if ( compilation?.mainAsset ){
+                return APIResponse.content(200, compilation.mainAsset.content, 'application/javascript')
+            }
+            return APIResponse.content(404, '', 'text/plain')
+        } catch ( e ){
+            return APIResponse.content(404, '', 'text/plain')
+        }
+    }
+
+    async fn script(input: {
+        params: { wsname: string, scriptid: string }
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<Object>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            const compilation = await context.storage.loadCompilation(ws)
+            const asset = compilation?.findAsset(input.params.scriptid)
+            if ( asset ){
+                return APIResponse.content(200, asset.content, 'application/javascript')
+            }
+            return APIResponse.content(404, '', 'text/plain')
+        } catch ( e ){
+            return APIResponse.content(404, '', 'text/plain')
+        }
+    }
+
+    async fn use(input: {
+        params: WorkspaceFrameParams
+        body: { page: Object }
+    }, context: {
+        storage: WorkspaceStorage
+        compiler: PageWorkspaceCompiler
+        baseUrl: string
+    }):APIResponse<Object>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            const compilation = await context.storage.loadCompilation(ws)
+            if ( !compilation ){
+                return APIResponse.content(404, '', 'text/plain')
+            }
+
+            if ( !compilation.usageAssignments ){
+                try{
+                    await context.compiler.updateCompilationUsages(
+                        compilation,
+                        input.body.page,
+                        ws,
+                        { baseUrl: context.baseUrl }
+                    )
+                    await context.storage.saveCompilation(ws, compilation)
+                } catch ( e ){
+                    if ( e instanceof CSSError ){
+                        return APIResponse.ok({
+                            error: {
+                                message: WorkspaceCompilation.replaceMessageWorkspacePaths(e.message, ws.path)
+                            }
+                        })
+                    }
+                    throw e
+                }
+            }
+
+            return APIResponse.ok(compilation.usageAssignments)
+        } catch ( e ){
+            return APIResponse.content(500, String(e.message || e), 'text/plain')
+        }
+    }
+
+    async fn style(input: {
+        params: { wsname: string, styleid: string }
+    }, context: {
+        storage: WorkspaceStorage
+    }):APIResponse<Object>{
+        try{
+            const ws = await context.storage.loadWorkspace(input.params.wsname)
+            const compilation = await context.storage.loadCompilation(ws)
+            const style = compilation?.findStyle(input.params.styleid)
+            if ( style ){
+                return APIResponse.content(200, style.content, 'text/css')
+            }
+            return APIResponse.content(404, '', 'text/plain')
+        } catch ( e ){
+            return APIResponse.content(404, '', 'text/plain')
+        }
+    }
+}

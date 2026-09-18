@@ -1,0 +1,124 @@
+import live-elements-web-server.page.index
+import LvDOMEmulator from 'live-elements-web-server/lib/lvdomemulator.mjs'
+import ClientBundler from 'live-elements-web-server/lib/bundler/client-bundler.mjs'
+import ScopedAssignmentControl from 'live-elements-web-server/lib/scoped-assignment-control.mjs'
+import ScopedComponentPaths from 'live-elements-web-server/lib/scoped-component-paths.mjs'
+import StyleContainer from 'live-elements-web-server/lib/style-container.mjs'
+import {ScopedComponentCollection} from 'live-elements-web-server/shared/scoped-component-collection.mjs'
+import generateLoader from '../../resources/loader/generate-loader.mjs'
+import path from 'path'
+import fs from 'fs'
+
+component PageWorkspaceCompiler < WorkspaceCompiler{
+    Object pageContentCache: ({})
+
+    static fn create(){
+        return PageWorkspaceCompiler{}
+    }
+
+    fn pageContentBeforeData(page:Page, workspace:Workspace, baseUrl:string):string{
+        const cacheKey = `${baseUrl}\u0000${workspace.name}`
+        const cached = this.pageContentCache[cacheKey]
+        if ( cached ){
+            return cached
+        }
+
+        const dom = new LvDOMEmulator({ beautify: true })
+        const content = dom.serializeDOM(page.captureDOM(dom))
+        this.pageContentCache[cacheKey] = content
+        return content
+    }
+
+    async fn compileWorkspace(workspace:Workspace, storage:WorkspaceStorage, options:Object):WorkspaceCompilation{
+        const baseUrl = options?.baseUrl || ''
+        const page = IndexPage{}
+        page.entryScript = `${baseUrl}/v-scripts/${workspace.name}/ws.bundle.js`
+
+        let pageContent = this.pageContentBeforeData(page, workspace, baseUrl)
+        const id = WorkspaceCompilation.generateid()
+        const stamp = new Date()
+        const workingDir = workspace.path
+
+        if ( workspace.mainEntryData ){
+            const dataPath = path.join(workingDir, workspace.mainEntryData)
+            if ( !fs.existsSync(dataPath) ){
+                throw new Error(`Main entry data file not found: ${dataPath}`)
+            }
+
+            const mainEntryData = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+            pageContent = pageContent.replace(
+                '</head>',
+                `\n<script>window.__serverData__ = ${JSON.stringify(mainEntryData)}</script></head>`
+            )
+        }
+
+        try{
+            const loader = generateLoader({
+                mainEntry: `./${workspace.mainEntry}`,
+                usagesRoute: `${baseUrl}/v-use/${workspace.name}`
+            })
+            const bundler = await ClientBundler.create(
+                [ClientBundler.FileEntry.create('w', [{
+                    path: path.join(workingDir, 'ws.bundle.js'),
+                    content: loader
+                }])],
+                ClientBundler.Config.create({
+                    outputPath: path.join(workingDir, 'dist'),
+                    output: ClientBundler.Config.Output.Memory,
+                    workingDir: workingDir
+                })
+            )
+
+            await bundler.build()
+
+            const assets = bundler.currentRun.result.assets.map(asset => WorkspaceAsset{
+                name: asset.outputName
+                content: asset.content
+            })
+            const mainAsset = assets.find((asset, index) => {
+                return bundler.currentRun.result.assets[index].isMainEntry
+            })
+
+            return WorkspaceCompilation{
+                page: page
+                pageContent: pageContent
+                identifier: id
+                stamp: stamp
+                assets: assets
+                mainAsset: mainAsset
+                warnings: bundler.currentRun.result.warnings
+                styles: []
+            }
+        } catch ( e ){
+            return WorkspaceCompilation.createFromErrors(
+                e instanceof Array ? e : [e],
+                id,
+                stamp,
+                workspace.path
+            )
+        }
+    }
+
+    async fn updateCompilationUsages(compilation:WorkspaceCompilation, usageStructure:Object, ws:Workspace, options:Object):Object{
+        const collection = ScopedComponentCollection.fromJSON(usageStructure)
+        ScopedComponentPaths.resolveRelativePaths(collection, path.resolve('.'))
+
+        const view = collection.findScopedComponentByUri(usageStructure.uri)
+        const styles = new StyleContainer('/styles')
+        await styles.addScopedStyles(collection)
+        compilation.updateStyles(styles.outputs.map(output => ({
+            file: output.output,
+            content: output.content
+        })))
+
+        const control = new ScopedAssignmentControl()
+        const assignments = control.updateAssignmentStructure(collection, view)
+        compilation.usageAssignments = {
+            scopedStyles: assignments,
+            scopedStyleLinks: control.styleLinks(collection).map(link => {
+                return `${options?.baseUrl || ''}/v/${ws.name}${link}`
+            })
+        }
+        return compilation.usageAssignments
+    }
+}
