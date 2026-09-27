@@ -2,6 +2,17 @@ import { FlowFunctionResolutionError } from './flow-function-resolution-error.mj
 import { ExportReference } from './export-reference.mjs'
 
 export class FunctionReference {
+
+    constructor(packageName, module, sourceFileName, exportName, name, functionId, fn = null) {
+        this._packageName = packageName
+        this._module = module
+        this._sourceFileName = sourceFileName
+        this._exportName = exportName
+        this._name = name
+        this._functionId = functionId
+        this._fn = fn
+    }
+
     static functionId(fn) {
         return fn?.name && fn?.Meta?.module && fn?.Meta?.sourceFileName
             ? `${fn.Meta.module}.${fn.Meta.sourceFileName}@${fn.name}`
@@ -86,16 +97,6 @@ export class FunctionReference {
             json.functionId,
             null
         )
-    }
-
-    constructor(packageName, module, sourceFileName, exportName, name, functionId, fn = null) {
-        this._packageName = packageName
-        this._module = module
-        this._sourceFileName = sourceFileName
-        this._exportName = exportName
-        this._name = name
-        this._functionId = functionId
-        this._fn = fn
     }
 
     get name() {

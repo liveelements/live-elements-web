@@ -119,12 +119,9 @@ export class Flow {
                 case Flow.Kind.Call: {
                     const result = {
                         kind: Flow.Kind.Call,
-                        name: value.ref.name,
-                        functionId: value.ref.functionId,
+                        ref: value.ref.toJSON(),
                         args: value.args.map((arg) => Flow.nodeToJSON(arg))
                     }
-                    if (value.ref.module) 
-                        result.module = value.ref.module
                     if (value.tap !== undefined) 
                         result.tap = value.tap
                     if ( value.after )
@@ -177,18 +174,18 @@ export class Flow {
                 case Flow.Kind.Member:
                     return Flow.member(Flow.nodeFromJSON(value.base, typeLookup), value.path)
                 case Flow.Kind.Call: {
-                    const ref = FunctionReference.fromJSON({
-                        name: value.name,
-                        functionId: value.functionId,
-                        module: value.module
-                    })
-                    const call = Flow.call(
-                        ref,
-                        value.args ? value.args.map(arg => Flow.nodeFromJSON(arg, typeLookup)) : [],
+                    if (value.ref === undefined) {
+                        throw new Error(
+                            'Flow.fromJSON() received a call node with no "ref". Flow wire JSON nests the ' +
+                            'function reference under "ref"; the flat name/functionId/module form is retired.'
+                        )
+                    }
+                    return Flow.call(
+                        FunctionReference.fromJSON(value.ref),
+                        (value.args ?? []).map((arg) => Flow.nodeFromJSON(arg, typeLookup)),
                         value.tap,
                         value.after
                     )
-                    return call
                 }
                 case Flow.Kind.Ret:
                     return Flow.ret(Flow.nodeFromJSON(value.expr, typeLookup))
