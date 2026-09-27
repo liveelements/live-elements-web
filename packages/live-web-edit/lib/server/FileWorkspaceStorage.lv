@@ -9,22 +9,29 @@ component FileWorkspaceStorage < WorkspaceStorage{
         return FileWorkspaceStorage.(location, templatePath, options){}
     }
 
-    static fn validateWorkspaceName(value:Object, description:string = 'workspace'):string{
-        const label = String(description || 'workspace')
+    static fn checkWorkspaceName(value:Object):string{
         const name = String(value ?? '').trim()
-
-        if ( !name ){
-            throw new PublicError(`Missing ${label} name.`)
-        }
+        if ( !name )
+            return null
         if (
             name.includes('..') ||
             path.isAbsolute(name) ||
             name.includes(path.posix.sep) ||
             name.includes(path.win32.sep)
         ){
-            throw new PublicError(`Invalid ${label} name.`)
+            return null
         }
         return name
+    }
+
+    static fn validateWorkspaceName(value:Object, description:string = 'workspace'):string{
+        const label = String(description || 'workspace')
+        const name = FileWorkspaceStorage.checkWorkspaceName(value)
+        if ( name )
+            return name
+        if ( !String(value ?? '').trim() )
+            throw new PublicError(`Missing ${label} name.`)
+        throw new PublicError(`Invalid ${label} name.`)
     }
 
     string path: ''
