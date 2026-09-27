@@ -96,7 +96,7 @@ instance clientBundlerTest Spec{
                     packageReuse: ClientBundler.Config.PackageReuse.WhenBuilt
                 })
                 const first = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     config
                 )
                 const bundlePath = first.currentRun.compiledPackage('@pkg/example').bundleAbsolutePath
@@ -105,7 +105,7 @@ instance clientBundlerTest Spec{
                 const beforeManifestMtime = fs.statSync(manifestPath).mtimeMs
                 await first.dispose()
                 const second = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     config
                 )
                 try {
@@ -190,7 +190,7 @@ instance clientBundlerTest Spec{
                 // A second, unrelated bundler compiles only the page. Nothing is handed over in memory:
                 // it finds the packages through the dist/client manifests the first bundler wrote.
                 const pageBundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('page', [pagePath])],
+                    [ClientBundler.FileEntry.create('page', [], pagePath)],
                     ClientBundler.Config.create({
                         ...configOptions,
                         packageReuse: ClientBundler.Config.PackageReuse.WhenBuilt
@@ -203,6 +203,9 @@ instance clientBundlerTest Spec{
                     // The page is the only thing compiled, and it links to the package bundles.
                     expect(result.assets.filter((asset) => !asset.isSyncedToDisk).map((asset) => asset.outputName))
                         .toEqual(['page.bundle.js'])
+                    // The lv plugin rewrites an .lv entry to its build/ output, so the entry name
+                    // has to be recovered from the output file name or the script tags go missing.
+                    expect(result.assetFor('page.bundle.js').isMainEntry).toBe(true)
                     expect(result.assetFor('page.bundle.js').content).toContain('page:first')
                     expect(result.externalImports).toEqual(['@pkg/a', 'live-elements-core'])
                     expect(fs.existsSync(path.join(root, 'page', 'build', 'Page.lv.mjs'))).toBe(true)
@@ -238,7 +241,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.create(
-                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    [ClientBundler.FileEntry.create('main', [], { path: entryPath })],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: packageDir,
@@ -278,7 +281,7 @@ instance clientBundlerTest Spec{
             fs.symlinkSync(fixture.root, linkedRoot, 'dir')
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     ClientBundler.Config.create({
                         outputPath: path.join(linkedPackageDir, 'dist'),
                         workingDir: linkedPackageDir,
@@ -309,7 +312,7 @@ instance clientBundlerTest Spec{
                 fs.writeFileSync(markerPath, "@fn marker(): string{\n    ???\n}\n")
 
                 const bundler = await ClientBundler.create(
-                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    [ClientBundler.FileEntry.create('main', [], { path: entryPath })],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: packageDir,
@@ -341,7 +344,7 @@ instance clientBundlerTest Spec{
             const entryPath = path.join(packageDir, 'Entry.lv')
             const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
             const bundler = await ClientBundler.createAndBuild(
-                [ClientBundler.FileEntry.create('main', [entryPath])],
+                [ClientBundler.FileEntry.create('main', [], entryPath)],
                 ClientBundler.Config.create({
                     outputPath: path.join(packageDir, 'dist'),
                     workingDir: packageDir,
@@ -372,7 +375,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.create(
-                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    [ClientBundler.FileEntry.create('main', [], { path: entryPath })],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: packageDir,
@@ -430,7 +433,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     ClientBundler.Config.create({
                         outputPath: outputPath,
                         workingDir: root,
@@ -468,7 +471,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     ClientBundler.Config.create({
                         outputPath: path.join(root, 'dist'),
                         workingDir: root,
@@ -518,7 +521,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.create(
-                    [ClientBundler.FileEntry.create('main', [{ path: entryPath }])],
+                    [ClientBundler.FileEntry.create('main', [], { path: entryPath })],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: root,
@@ -552,7 +555,7 @@ instance clientBundlerTest Spec{
             const markerPath = path.join(packageDir, 'lib', 'Marker.lv')
             const watcher = Watcher.createFromGroups(['client-bundler', 'client-bundler-manual'])
             const bundler = await ClientBundler.createAndBuild(
-                [ClientBundler.FileEntry.create('main', [entryPath])],
+                [ClientBundler.FileEntry.create('main', [], entryPath)],
                 ClientBundler.Config.create({
                     outputPath: path.join(packageDir, 'dist'),
                     workingDir: packageDir,
@@ -586,7 +589,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [{ path: modulePath, content: "window.__probe__ = 'probe-one'\n" }])],
+                    [ClientBundler.FileEntry.create('main', [], { path: modulePath, content: "window.__probe__ = 'probe-one'\n" })],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: root,
@@ -618,7 +621,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     ClientBundler.Config.create({
                         outputPath: outputPath,
                         workingDir: root,
@@ -659,7 +662,7 @@ instance clientBundlerTest Spec{
 
             try {
                 const bundler = await ClientBundler.createAndBuild(
-                    [ClientBundler.FileEntry.create('main', [entryPath])],
+                    [ClientBundler.FileEntry.create('main', [], entryPath)],
                     ClientBundler.Config.create({
                         outputPath,
                         workingDir: packageDir,

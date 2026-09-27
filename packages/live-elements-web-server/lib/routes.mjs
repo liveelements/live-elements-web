@@ -186,12 +186,12 @@ export class ServerViewRoute extends ServerRoute{
             ServerRenderer.assignBehaviorsToDom(behaviors)
             const behaviorsSource = ServerRenderer.behaviorsSource(behaviors)            
 
+            const behaviorFiles = [
+                { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
+                { path: clientBehaviorEvents }
+            ]
             const bundler = await ClientBundler.create(
-                [ClientBundler.FileEntry.create('main', [
-                        { path: viewBehaviorBundlePath, content: `window._bhvs_ = ${behaviorsSource}` },
-                        { path: clientBehaviorEvents }
-                    
-                ])],
+                [ClientBundler.FileEntry.create('main', behaviorFiles, ClientBundler.FileEntry.mergeAsImports('main', behaviorFiles))],
                 ClientBundler.Config.create({
                     outputPath: path.join(distPath, 'behaviors'),
                     sourcemap: false,

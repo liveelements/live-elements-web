@@ -391,7 +391,12 @@ export default class WebServer extends EventEmitter{
                 viewRoute.addScript(viewLoaderScript)
             }
             if ( viewRoute.scripts.length ){
-                entries.push(ClientBundler.FileEntry.create(bundleName, viewRoute.scripts.map(script => script.location)))
+                const scriptPaths = viewRoute.scripts.map(script => script.location)
+                entries.push(ClientBundler.FileEntry.create(
+                    bundleName,
+                    scriptPaths,
+                    ClientBundler.FileEntry.mergeAsImports(bundleName, scriptPaths)
+                ))
                 viewRoute.setBundleScript(bundleConfig.bundleFileNameFor(bundleName), bundleConfig.format.entryScriptType)
             }
         }

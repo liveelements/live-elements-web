@@ -25,16 +25,37 @@ const log = Environment.defineLogger('client-bundler', {
     prefixDecorated: [chalk.cyan('.Bundler')]
 })
 
+
 export class ClientBundlerFileEntry {
-    constructor(name, files) {
+    constructor(name, files, main) {
+        if (!main) {
+            throw new Error(`ClientBundler.FileEntry: entry "${name}" needs a main module. Pass the entry file, or ClientBundler.FileEntry.mergeAsImports(name, files) to bundle several.`)
+        }
         this._name = name
         this._files = files
+        this._main = main
     }
 
-    static create(name, files) { return new ClientBundlerFileEntry(name, files) }
+    static create(name, files, main) { return new ClientBundlerFileEntry(name, files, main) }
+
+    
+    static mergeAsImports(name, files) {
+        const filePaths = files.map((file) => typeof file === 'string' ? file : file.path)
+        const anchorDir = filePaths.map((filePath) => path.dirname(filePath)).find(fs.existsSync)
+        if (!anchorDir) {
+            throw new Error(`ClientBundler.FileEntry.mergeAsImports(): entry "${name}" has no file in a directory that exists on disk, so its imports cannot be resolved.`)
+        }
+
+        return {
+            path: path.join(ClientBundler._canonicalDir(anchorDir), `${name}.le-entry.mjs`),
+            content: filePaths.map((filePath) => `import ${JSON.stringify(filePath.replace(/\\/g, '/'))}`).join(';\n')
+        }
+    }
 
     get name() { return this._name }
     get files() { return this._files }
+    get main() { return this._main }
+    get mainPath() { return typeof this._main === 'string' ? this._main : this._main.path }
 }
 
 export class ClientBundlerPackageEntry {
@@ -49,11 +70,6 @@ export class ClientBundlerPackageEntry {
     get packageDir() { return this._packageDir }
 }
 
-/**
- * Every knob the bundler reads. Enums live here, not on `ClientBundler`: object enums for
- * multi-field payloads (`Format` carries three), numeric for binary switches. The numeric ones
- * are falsy at 0, so defaults must use `??` and comparisons `===`.
- */
 export class ClientBundlerConfig {
     static Format = Object.freeze({
         Classic: Object.freeze({ esbuildFormat: 'iife', splitting: false, entryScriptType: '' }),
@@ -228,19 +244,12 @@ export default class ClientBundler extends EventEmitter {
 
     _registerEntryModules(entries, run) {
         const unit = run.units.get(ClientBundlerUnit.PagesKey) ?? this._registerPageUnit(run)
-        for (const { name: entryName, files } of entries) {
-            for (const file of files.filter((item) => item && typeof item === 'object' && typeof item.content === 'string')) {
+        for (const entry of entries) {
+            for (const file of entry.files.concat([entry.main]).filter((item) => item && typeof item === 'object' && typeof item.content === 'string')) {
                 unit.virtualScripts.push(new VirtualScript(path.resolve(file.path), file.content))
             }
 
-            const filePaths = files.map((file) => typeof file === 'string' ? file : file.path)
-            const anchorDir = ClientBundler._canonicalDir(filePaths.map((filePath) => path.dirname(filePath)).find(fs.existsSync) ?? this._workingDir)
-            const entryScript = new VirtualScript(
-                path.join(anchorDir, `${entryName}.le-entry.mjs`),
-                filePaths.map((filePath) => `import ${JSON.stringify(filePath.replace(/\\/g, '/'))}`).join(';\n')
-            )
-            unit.syntheticEntries.set(entryName, entryScript.location)
-            unit.virtualScripts.push(entryScript)
+            unit.syntheticEntries.set(entry.name, path.resolve(this._workingDir, entry.mainPath))
         }
     }
 
@@ -357,6 +366,7 @@ export default class ClientBundler extends EventEmitter {
             const compiled = ClientBundlerUnitBuild.createFromBuildResult(unit, result, {
                 outputPath: this._config.outputPath,
                 workingDir: this._workingDir,
+                bundleFileNameFor: (entryName) => this._config.bundleFileNameFor(entryName),
                 compilation
             })
             run.unitBuilds.set(unit.key, compiled)
@@ -464,7 +474,7 @@ export default class ClientBundler extends EventEmitter {
                 }
             }
             const errors = Array.isArray(error?.errors) && error.errors.length > 0
-                ? error.errors.map((message) => new Error(message.location?.file
+                ? error.errors.map((message) => new Error(message.location?.file && !message.location.file.includes('node_modules')
                     ? `${message.text} At file ${message.location.file}:${message.location.line}:${message.location.column}`
                     : message.text))
                 : [error instanceof Error ? error : new Error(String(error))]

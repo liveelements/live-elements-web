@@ -20,11 +20,13 @@ export class ClientBundlerUnitBuild {
         Object.freeze(this)
     }
 
-    static createFromBuildResult(unit, result, { outputPath, workingDir, compilation = null }) {
+    static createFromBuildResult(unit, result, { outputPath, workingDir, bundleFileNameFor, compilation = null }) {
         const metafile = result.metafile
         const entryNameByPath = new Map()
+        const entryNameByFileName = new Map()
         for (const [entryName, entryPath] of unit.syntheticEntries) {
             entryNameByPath.set(path.resolve(workingDir, entryPath).replace(/\\/g, '/'), entryName)
+            entryNameByFileName.set(bundleFileNameFor(entryName), entryName)
         }
         const entryNameByOutput = new Map()
         const externalImports = new Set()
@@ -33,7 +35,9 @@ export class ClientBundlerUnitBuild {
                 const entryPoint = output.entryPoint.replace(/^le-virtual:/, '')
                 entryNameByOutput.set(
                     path.resolve(workingDir, outputKey).replace(/\\/g, '/'),
-                    entryNameByPath.get(path.resolve(workingDir, entryPoint).replace(/\\/g, '/')) ?? null
+                    entryNameByPath.get(path.resolve(workingDir, entryPoint).replace(/\\/g, '/'))
+                        ?? entryNameByFileName.get(path.basename(outputKey))
+                        ?? null
                 )
             }
             if (unit.isPage) {
@@ -49,7 +53,7 @@ export class ClientBundlerUnitBuild {
         })
         const dependencies = [...unit.sharedPackageData.collectedDependencies.values()]
             .sort((left, right) => left.name.localeCompare(right.name))
-        const warnings = result.warnings.map((message) => new Warning(message.location?.file
+        const warnings = result.warnings.map((message) => new Warning(message.location?.file && !message.location.file.includes('node_modules')
             ? `${message.text} At file ${message.location.file}:${message.location.line}:${message.location.column}`
             : message.text))
         const inputPaths = Object.keys(metafile.inputs)

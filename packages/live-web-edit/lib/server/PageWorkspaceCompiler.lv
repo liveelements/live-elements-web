@@ -58,10 +58,10 @@ component PageWorkspaceCompiler < WorkspaceCompiler{
                 usagesRoute: `${baseUrl}/v-use/${workspace.name}`
             })
             const bundler = await ClientBundler.create(
-                [ClientBundler.FileEntry.create('w', [{
+                [ClientBundler.FileEntry.create('w', [], {
                     path: path.join(workingDir, 'ws.bundle.js'),
                     content: loader
-                }])],
+                })],
                 ClientBundler.Config.create({
                     outputPath: path.join(workingDir, 'dist'),
                     output: ClientBundler.Config.Output.Memory,
