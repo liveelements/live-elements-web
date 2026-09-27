@@ -1,6 +1,6 @@
 import live-web.model
 
-import {ApiRequest} from '../../lib/api-request.mjs'
+import {ApiRequest} from 'live-elements-web-server/client/api-request.mjs'
 
 instance workspaceEditorActions Actions{
 

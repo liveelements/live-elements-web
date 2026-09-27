@@ -1,5 +1,6 @@
 {
   "exports": [
+    "client/api-request.mjs",
     "client/client-application-loader.mjs",
     "client/client-behavior-attach.mjs",
     "client/client-bundle-socket.mjs",
