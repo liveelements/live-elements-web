@@ -24,6 +24,7 @@ import ScopedComponentPaths from './scoped-component-paths.mjs'
 import {ScopedComponentCollection} from '../shared/scoped-component-collection.mjs'
 import BundleData from './bundle-data.mjs'
 import PageNotFoundError from './page-not-found-error.mjs'
+import { PublicError } from '../shared/errors/public-error.mjs'
 import Memory from './memory/memory.mjs'
 import StyleChainProcessor from './style-chain-processor.mjs'
 import { ImportMap } from './import-map.mjs'
@@ -560,6 +561,8 @@ export default class WebServer extends EventEmitter{
                             next()
                             return
                         }
+                    } else if ( e instanceof PublicError && e.code ){
+                        res.status(e.code)
                     } else {
                         log.e(e)
                     }
