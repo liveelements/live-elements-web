@@ -26,7 +26,7 @@ component TextArea < DOMElement{
     }
 
     fn on(eventName:string, fn:any){
-        if ( eventName === 'input' ){
+        if ( eventName === 'input' || eventName === 'change' ){
             this._initializeDOMEvent(eventName, 'on' + eventName)
             BaseElement.prototype.on.call(this, eventName, fn)
         } else {
