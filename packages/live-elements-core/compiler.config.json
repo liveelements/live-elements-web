@@ -18,7 +18,8 @@
         "call": "Flow.call",
         "return": "Flow.ret",
         "ref": "Flow.ref",
-        "member": "Flow.member"
+        "member": "Flow.member",
+        "function": "Flow.fn"
     },
     "importLocalPath" : "node_modules",
     "packageBuildPath" : "build",

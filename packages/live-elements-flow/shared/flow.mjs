@@ -59,6 +59,29 @@ export class Flow {
         return new Flow(params, typeOrBody ?? null, body ?? [])
     }
 
+    static fn(name, flow, meta = undefined) {
+        if (typeof name !== 'string' || name.length === 0) {
+            throw new Error('Flow.fn() name must be a non-empty string')
+        }
+        if (!(flow instanceof Flow)) {
+            throw new Error(`Flow.fn() "${name}" expects a Flow`)
+        }
+
+        function fn(runner, ...args) {
+            if (typeof runner?.run !== 'function') {
+                throw new Error(`Flow function "${name}" expects a FlowRunner as its first argument.`)
+            }
+            return runner.run(flow, flow.params.length === 1 ? args[0] : args)
+        }
+
+        Object.defineProperty(fn, 'name', { value: name })
+        Object.defineProperty(fn, 'flow', { value: flow, writable: false, configurable: false, enumerable: true })
+        if (meta !== undefined) {
+            Object.defineProperty(fn, 'Meta', { value: meta, writable: false, configurable: false, enumerable: true })
+        }
+        return Object.freeze(fn)
+    }
+
     static call(fnOrId, args = [], tap = undefined, after = undefined) {
         if (!Array.isArray(args)) {
             throw new Error('Flow.call() args must be an array')
