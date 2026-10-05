@@ -93,7 +93,7 @@ component RouteCollector < BundleDataCollector{
                     throw new Error(`Unkown placement type for view route: ${routeUrl}.`)
                 }
             }
-            return new ServerViewRoute(
+            const viewRoute = new ServerViewRoute(
                 routeUrl,
                 routeUserMiddleware,
                 route.f,
@@ -104,6 +104,8 @@ component RouteCollector < BundleDataCollector{
                 page,
                 route.name
             )
+            viewRoute.before = route.before
+            return viewRoute
         }
     }
 

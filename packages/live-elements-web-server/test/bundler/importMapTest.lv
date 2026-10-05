@@ -72,6 +72,36 @@ instance importMapTest Spec{
     }
 
     Scenario{
+        name: 'merges entries without preloading them, keeping existing entries on a conflict'
+        run: (expect) => {
+            const map = new ImportMap(
+                { '@scope/package': '/scripts/packages/package/index.js' },
+                ['/scripts/packages/package/index.js']
+            ).merge({
+                '@scope/package': '/library-exports/package/index.js',
+                '@scope/static': '/library-exports/static/index.js'
+            })
+
+            expect(map.imports).toEqual({
+                '@scope/package': '/scripts/packages/package/index.js',
+                '@scope/static': '/library-exports/static/index.js'
+            })
+            expect(map.modulepreloads).toEqual(['/scripts/packages/package/index.js'])
+        }
+    }
+
+    Scenario{
+        name: 'rejects invalid merge entries naming the offender'
+        run: (expect) => {
+            const map = new ImportMap({}, [])
+
+            expect(() => map.merge({ '@scope/relative': 'scripts/index.js' })).toThrow('@scope/relative')
+            expect(() => map.merge({ '': '/scripts/index.js' })).toThrow('non-empty')
+            expect(() => map.merge('/scripts/index.js')).toThrow('must be an object')
+        }
+    }
+
+    Scenario{
         name: 'does not emit markup or document nodes for an empty map'
         run: (expect) => {
             const map = new ImportMap({}, [])

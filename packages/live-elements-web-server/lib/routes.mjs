@@ -73,6 +73,7 @@ export class ServerViewRoute extends ServerRoute{
         this._bundleScript = null
         this._bundleScriptType = ''
         this._pageInfo     = null
+        this._before       = null
     }
 
     get c(){ return this._c }
@@ -85,6 +86,8 @@ export class ServerViewRoute extends ServerRoute{
     get styles(){ return this._styles }
     get bundleScript(){ return this._bundleScript }
     get bundleScriptType(){ return this._bundleScriptType }
+    get before(){ return this._before }
+    set before(value){ this._before = value }
 
     addStyle(style){ this._styles.push(style) }
     addScript(script){ this._scripts.push(script) }

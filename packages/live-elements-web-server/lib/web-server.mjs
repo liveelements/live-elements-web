@@ -167,6 +167,13 @@ export default class WebServer extends EventEmitter{
         return this._pageImportMap
     }
 
+    async routeImportMap(route, req){
+        const result = route.before ? await route.before(req) : null
+        if ( !result?.importMap )
+            return this.pageImportMap()
+        return this.pageImportMap().merge(result.importMap.imports)
+    }
+
     get distPath(){ return this._distPath }
     establishedDistPath(){ 
         if ( !fs.existsSync(this._distPath) ){
@@ -543,7 +550,7 @@ export default class WebServer extends EventEmitter{
         let head = []
         const scriptType = route.bundleScriptType ? ` type="${route.bundleScriptType}"` : ''
         let body = [`<script${scriptType} src="${this.config.scriptsBaseUrl}${route.bundleScript}"></script>`]
-        const importMapMarkup = this.pageImportMap().headMarkup()
+        const importMapMarkup = (await this.routeImportMap(route, req)).headMarkup()
         if ( importMapMarkup ) 
             head.push(importMapMarkup)
 
@@ -582,7 +589,7 @@ export default class WebServer extends EventEmitter{
         res.end()
     }
 
-    async renderRouteContent(route, data, req){
+    async renderRouteContent(route, data, req, importMap = this.pageImportMap()){
         const page = route.page ? route.page : this.findPageByOutput('index.html').page
 
         const viewsc = this._scopedStyles.findScopedComponent(route.c)
@@ -605,7 +612,7 @@ export default class WebServer extends EventEmitter{
             this.config.runMode === WebServer.RunMode.Production
                 ? ClientBundler.Config.Output.Files
                 : ClientBundler.Config.Output.Memory,
-            this.pageImportMap()
+            importMap
         )
         const render = renderResult.unwrapAnd((report) => report.forEach(WebServer.logError))
         return render
@@ -620,6 +627,7 @@ export default class WebServer extends EventEmitter{
                     return res.sendFile(cachePath)
                 }
             }
+            const importMap = await this.routeImportMap(route, req)
             let data = null
             if ( typeof route.data === 'function' ){
                 try{
@@ -636,7 +644,7 @@ export default class WebServer extends EventEmitter{
             } else {
                 data = route.data
             }
-            this.renderRouteContent(route, data, req).then(content => {
+            this.renderRouteContent(route, data, req, importMap).then(content => {
                 route.renderContent = content
                 res.send(route.renderContent).end()
             }).catch(e => {
@@ -654,7 +662,8 @@ export default class WebServer extends EventEmitter{
                 }
             }
 
-            this.renderRouteContent(route, null, req).then(content => {
+            const importMap = await this.routeImportMap(route, req)
+            this.renderRouteContent(route, null, req, importMap).then(content => {
                 route.renderContent = content
                 res.send(route.renderContent).end()
             }).catch(e => {

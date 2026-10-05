@@ -21,5 +21,6 @@ component ViewRoute < Route{
     var c : null
     Object placement : null
     Object data: null
+    any before: null
     number render = ViewRoute.CSR
 }

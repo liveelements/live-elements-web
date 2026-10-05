@@ -38,6 +38,31 @@ export class ImportMap {
         )
     }
 
+    /**
+     * Adds specifier → url entries (a view route's `before` result). Existing entries win on a
+     * conflict, added urls are used as given and are never preloaded.
+     */
+    merge(entries) {
+        if (!entries || typeof entries !== 'object' || Array.isArray(entries)) {
+            throw new Error(`Page imports must be an object mapping specifiers to urls, got: ${JSON.stringify(entries)}`)
+        }
+        const imports = { ...this._imports }
+        for (const [specifier, url] of Object.entries(entries)) {
+            if (!specifier) {
+                throw new Error(`Page import specifiers must be non-empty strings, got an empty specifier for: ${JSON.stringify(url)}`)
+            }
+            if (typeof url !== 'string' || !/^(\/|https?:\/\/)/.test(url)) {
+                throw new Error(`Page import "${specifier}" must map to a url starting with "/" or "http(s)://", got: ${JSON.stringify(url)}`)
+            }
+            if (Object.hasOwn(this._imports, specifier)) {
+                log.d(`Page import "${specifier}" -> "${url}" dropped: the client bundler maps it to "${this._imports[specifier]}".`)
+                continue
+            }
+            imports[specifier] = url
+        }
+        return new ImportMap(imports, this._modulepreloads)
+    }
+
     static build(packages, scriptsBaseUrl, outputPath) {
         const entries = packages
         const imports = {}
