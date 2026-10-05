@@ -8,6 +8,7 @@ instance components BaseElement{
         { label: 'Card', url: '/card', c: CardDoc },
         { label: 'Collapsible', url: '/collapsible', c: CollapsibleDoc },
         { label: 'Context Menu', url: '/context-menu', c: ContextMenuDoc },
+        { label: 'Descriptions', url: '/descriptions', c: DescriptionsDoc },
         { label: 'Dropdown', url: '/dropdown', c: DropdownDoc },
         { label: 'Forms', url: '/forms', c: FormContainerDoc },
         { label: 'Frame', url: '/frame', c: IFrameDoc },

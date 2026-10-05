@@ -1,0 +1,127 @@
+import live-web.dom
+import live-web-view.content
+import live-web-view.button
+import .docs.internal
+
+component DescriptionsDoc{
+    default children
+
+    Content{
+        H1S`Descriptions`
+        P`Displays read-only label and value fields, with optional actions.`
+        H2S`Account details`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: DescriptionListSection{
+            Header{ H2`Account` }
+            Dl{
+                Div{
+                    Dt`Email`
+                    Dd`jane@example.com`
+                    Dd{ IconButton{ T`Edit` } }
+                }
+                Div{
+                    Dt`Plan`
+                    Dd`Pro`
+                }
+                Div{
+                    Dt`Customer ID`
+                    Dd`cus_2vK8mW9nJ4pQ6rS3xT7yZ1aB`
+                    Dd{ IconButton{ T`Edit` } }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+            import live-web-view.button
+        ```
+        UseSource```
+            static any[] use = [DescriptionListSection, IconButton]
+        ```
+        ContentSource```
+            DescriptionListSection{
+                Header{ H2\`Account\` }
+                Dl{
+                    Div{
+                        Dt\`Email\`
+                        Dd\`jane@example.com\`
+                        Dd{ IconButton{ T\`Edit\` } }
+                    }
+                    Div{
+                        Dt\`Plan\`
+                        Dd\`Pro\`
+                    }
+                    Div{
+                        Dt\`Customer ID\`
+                        Dd\`cus_2vK8mW9nJ4pQ6rS3xT7yZ1aB\`
+                        Dd{ IconButton{ T\`Edit\` } }
+                    }
+                }
+            }
+        ```
+    }
+
+    Content{
+        H2S`Two-column details`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: DescriptionListSection{ columns: 2
+            Header{ H2`Billing` }
+            Dl{
+                Div{
+                    Dt`Plan`
+                    Dd`Pro`
+                }
+                Div{
+                    Dt`Billing interval`
+                    Dd`Monthly`
+                }
+                Div{
+                    Dt`Payment method`
+                    Dd`Visa ending in 4242`
+                }
+                Div{
+                    Dt`Next invoice`
+                    Dd`October 15, 2026`
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.content
+        ```
+        UseSource```
+            static any[] use = [DescriptionListSection]
+        ```
+        ContentSource```
+            DescriptionListSection{ columns: 2
+                Header{ H2\`Billing\` }
+                Dl{
+                    Div{
+                        Dt\`Plan\`
+                        Dd\`Pro\`
+                    }
+                    Div{
+                        Dt\`Billing interval\`
+                        Dd\`Monthly\`
+                    }
+                    Div{
+                        Dt\`Payment method\`
+                        Dd\`Visa ending in 4242\`
+                    }
+                    Div{
+                        Dt\`Next invoice\`
+                        Dd\`October 15, 2026\`
+                    }
+                }
+            }
+        ```
+    }
+}

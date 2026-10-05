@@ -1,0 +1,19 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component DescriptionListSection < Section{
+    id: root
+
+    static any[] use = [
+        ScopedStyle{ src: './style/descriptionlistsection.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
+    ]
+
+    number columns: 1
+    string[] extraClasses: []
+
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(DescriptionListSection),
+        this.columns > 1 ? `cols-${Math.min(this.columns, 3)}` : ''
+    ])
+}
