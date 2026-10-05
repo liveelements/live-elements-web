@@ -1,0 +1,7 @@
+
+component Dl < DOMElement{
+    constructor(){
+        super('dl')
+        Dl.prototype.__initialize.call(this)
+    }
+}
