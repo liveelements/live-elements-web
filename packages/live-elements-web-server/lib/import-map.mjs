@@ -5,6 +5,10 @@ import log from './server-log.mjs'
 export class ImportMap {
     static OutputFile = 'import-map.json'
 
+    static inlineJson(value) {
+        return JSON.stringify(value ?? null).replaceAll('<', '\\u003c')
+    }
+
     constructor(imports, modulepreloads) {
         this._imports = imports
         this._modulepreloads = modulepreloads
@@ -68,7 +72,7 @@ export class ImportMap {
 
         const importMapScript = document.createElement('script')
         importMapScript.type = 'importmap'
-        importMapScript.textContent = JSON.stringify({ imports: this._imports })
+        importMapScript.textContent = ImportMap.inlineJson({ imports: this._imports })
         const children = head.childNodes
         let inserted = false
         for (let i = 0; i < children.length; ++i) {
@@ -93,7 +97,7 @@ export class ImportMap {
 
     headMarkup() {
         if (this.isEmpty) return ''
-        const importMap = JSON.stringify({ imports: this._imports })
+        const importMap = ImportMap.inlineJson({ imports: this._imports })
         const links = this._modulepreloads.filter(Boolean).map((href) => `<link rel="modulepreload" href="${href}">`).join('')
         return `<script type="importmap">${importMap}</script>${links}`
     }

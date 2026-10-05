@@ -570,7 +570,7 @@ export default class WebServer extends EventEmitter{
             } else {
                 data = route.data
             }
-            const scriptContent = `<script data-purpose="page-load">window.__serverData__ = ${JSON.stringify(data)};</script>`
+            const scriptContent = `<script data-purpose="page-load">window.__serverData__ = ${ImportMap.inlineJson(data)};</script>`
             head.push(scriptContent)
         }
         if ( route.styles.length ){
@@ -663,24 +663,33 @@ export default class WebServer extends EventEmitter{
         }
     }
 
-    getViewRoute(route, req, res, next){
+    async getViewRoute(route, req, res, next){
         const render = this.config.runMode === WebServer.RunMode.Production 
             ? route.render 
             : this.config.renderMode === WebServer.RenderMode.Production ? route.render : ComponentRegistry.Components.ViewRoute.CSR
 
-        if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            this.renderRouteCSR(route, req, res, next)
-        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
-            this.renderRouteSSR(route, req, res, next)
+        // express 4 does not handle rejected handlers, an escaped error would crash the process
+        try{
+            if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
+                await this.renderRouteCSR(route, req, res, next)
+            } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
+                await this.renderRouteSSR(route, req, res, next)
+            }
+        } catch ( e ){
+            next(e)
         }
     }
 
-    getViewRouteUseDist(route, cacheDir, req, res, next){
+    async getViewRouteUseDist(route, cacheDir, req, res, next){
         const render = route.render
-        if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
-            this.renderRouteCSR(route, req, res, next)
-        } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
-            this.renderRouteSSR(route, req, res, next, cacheDir, render)
+        try{
+            if ( render === ComponentRegistry.Components.ViewRoute.CSR ){
+                await this.renderRouteCSR(route, req, res, next)
+            } else if ( render === ComponentRegistry.Components.ViewRoute.SSR || render === ComponentRegistry.Components.ViewRoute.SSC ){
+                await this.renderRouteSSR(route, req, res, next, cacheDir, render)
+            }
+        } catch ( e ){
+            next(e)
         }
     }
 
