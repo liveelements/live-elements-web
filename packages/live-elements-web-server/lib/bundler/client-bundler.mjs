@@ -7,7 +7,7 @@ import esbuild from 'esbuild'
 import * as compilerConfig from 'live-elements-core/compilerconfig.mjs'
 
 import { sharedPackageEsbuildPlugin } from './esbuild-plugin-shared-package.mjs'
-import { lvEsbuildPlugin } from './esbuild-plugin-lv.mjs'
+import { LvEsbuildCompilation, lvEsbuildPlugin } from './esbuild-plugin-lv.mjs'
 import { virtualModulesPlugin } from './esbuild-plugin-virtual-modules.mjs'
 
 import { ClientBundlerRun } from './client-bundler-run.mjs'
@@ -264,11 +264,11 @@ export default class ClientBundler extends EventEmitter {
         return unit
     }
 
-    async _compilePackageModules(unit) {
+    async _compilePackageModules(unit, compilationHandle) {
         const buildDir = path.join(unit.packageDir, 'build')
         fs.mkdirSync(buildDir, { recursive: true })
 
-        const compilation = await PackageModuleCompiler.create().compile(unit.packageDir)
+        const compilation = await PackageModuleCompiler.create(compilationHandle).compile(unit.packageDir)
         if (compilation.errors.length > 0) {
             const details = compilation.errors
                 .map((entry) => ` - ${entry?.module ?? 'unknown'}: ${entry?.error ?? 'Unknown error'}`)
@@ -299,7 +299,7 @@ export default class ClientBundler extends EventEmitter {
     _buildOptionsFor(run, unit, { write = false } = {}) {
         const plugins = [
             virtualModulesPlugin(unit.virtualScripts),
-            lvEsbuildPlugin()
+            lvEsbuildPlugin(unit.lvPluginData)
         ]
         if (this._config.bundling === ClientBundlerConfig.Bundling.ByPackage) {
             plugins.push(sharedPackageEsbuildPlugin(unit.sharedPackageData))
@@ -440,12 +440,20 @@ export default class ClientBundler extends EventEmitter {
                     }
                 }
 
-                let compilation = null
-                if (unit.isPackage) {
-                    compilation = await this._compilePackageModules(unit)
-                    unit.refreshEntryScript()
+                const lvCompilation = await LvEsbuildCompilation.create()
+                let compiled
+                try {
+                    unit.lvPluginData.open(lvCompilation)
+                    let compilation = null
+                    if (unit.isPackage) {
+                        compilation = await this._compilePackageModules(unit, lvCompilation.compiler)
+                        unit.refreshEntryScript()
+                    }
+                    compiled = await this._buildUnit(run, unit, compilation)
+                } finally {
+                    unit.lvPluginData.close()
+                    lvCompilation.close()
                 }
-                const compiled = await this._buildUnit(run, unit, compilation)
 
                 for (const { name, packageDir } of compiled.discoveredPackages()) {
                     requiredKeys.add(name)

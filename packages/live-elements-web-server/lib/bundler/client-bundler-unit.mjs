@@ -2,6 +2,7 @@ import path from 'node:path'
 
 import { ClientPackageConfig } from './client-package-config.mjs'
 import { SharedPackagePluginData } from './esbuild-plugin-shared-package.mjs'
+import { LvPluginData } from './esbuild-plugin-lv.mjs'
 import { CompiledPackage } from './compiled-package.mjs'
 import { VirtualScript } from '../scripts.mjs'
 
@@ -18,6 +19,7 @@ export class ClientBundlerUnit {
         this.virtualScripts = []
         this.outdir = outdir
         this.sharedPackageData = new SharedPackagePluginData()
+        this.lvPluginData = new LvPluginData()
         this.context = null
         this._packageConfig = null
     }

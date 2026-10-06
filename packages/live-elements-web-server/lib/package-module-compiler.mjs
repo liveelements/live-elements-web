@@ -69,12 +69,12 @@ export class PackageModuleCompilation {
 export class PackageModuleCompiler {
     static Skipped = new Set(['node_modules', 'build', '.git'])
 
-    static create() {
-        return new PackageModuleCompiler();
+    static create(compilerHandle = null) {
+        return new PackageModuleCompiler(compilerHandle);
     }
 
-    constructor() {
-        this._compilerHandle = null;
+    constructor(compilerHandle = null) {
+        this._compilerHandle = compilerHandle;
     }
 
     _compiler(config) {
@@ -93,7 +93,7 @@ export class PackageModuleCompiler {
         let dirs = [];
         const scanDir = (directory) => {
             const relSegments = path.relative(root, directory).split(path.sep).filter(Boolean)
-            if (relSegments.some((segment) => PackageModuleCompiler.Skipped.has(segment))) {
+            if (relSegments.some((segment) => PackageModuleCompiler.Skipped.has(segment) || segment.startsWith('.'))) {
                 return;
             }
             const relPath = path.relative(root, directory);
@@ -234,8 +234,7 @@ export class PackageModuleCompiler {
     }
 
     async compile(packagePath) {
-        const compilerConfig = await loadCompilerConfig();
-        const compilerHandle = this._compiler(compilerConfig);
+        const compilerHandle = this._compilerHandle ?? this._compiler(await loadCompilerConfig());
         const moduleDirs = PackageModuleCompiler.moduleDirs(packagePath);
         const modules = [];
         const errors = [];
@@ -276,7 +275,7 @@ export class PackageModuleCompiler {
         }
 
         const buildRoot = path.resolve(packagePath, 'build');
-        if (!fs.existsSync(buildRoot)) {
+        if (!fs.existsSync(buildRoot) && errors.length === 0) {
             throw new Error(`Build directory not found at: ${buildRoot}`);
         }
 
