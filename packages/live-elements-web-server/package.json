@@ -39,7 +39,7 @@
         "pretty": "^2.0.0",
         "tape": "^5.6.3",
         "live-elements-core": "^0.1.15",
-        "live-elements-js-compiler": "^0.1.20",
+        "live-elements-js-compiler": "^0.1.21",
         "live-web": "^0.1.15"
     },
     "devDependencies": {

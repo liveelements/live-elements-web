@@ -26,7 +26,7 @@
     "dependencies": {
         "live-elements-core": "file:packages/live-elements-core",
         "live-elements-flow": "file:packages/live-elements-flow",
-        "live-elements-js-compiler": "^0.1.20",
+        "live-elements-js-compiler": "^0.1.21",
         "live-elements-web-cli": "file:packages/live-elements-web-cli",
         "live-elements-web-server": "file:packages/live-elements-web-server",
         "live-testspec": "file:packages/live-testspec",
