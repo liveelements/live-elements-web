@@ -20,7 +20,7 @@ async function getComponent(cpath){
     return ciComponent
 }
 
-parentPort.on('message', async ({ file, content, destination, chain }) => {
+parentPort.on('message', async ({ id, file, content, destination, chain }) => {
     try{
         const itemsChain = []
         for ( let i = 0; i < chain.length; ++i ){
@@ -41,12 +41,12 @@ parentPort.on('message', async ({ file, content, destination, chain }) => {
         for ( let i = 0; i < itemsChain.length; ++i ){
             result = await itemsChain[i].processor.process(file, result.content, destination)
         }
-        parentPort.postMessage({ value: { content: result.content, map: result.map ? result.map.toString() : null }});
+        parentPort.postMessage({ id, value: { content: result.content, map: result.map ? result.map.toString() : null }});
     } catch ( error ) {
         const sourceError = error.constructor.name === 'CssSyntaxError'
             ? new CSSError(error.message, error.file, error.line, error.column)
             : new StandardError(error.message)
         const traceError = new WorkerError(`Error in worker.`, sourceError)
-        parentPort.postMessage({ error: traceError.toJSON() })
+        parentPort.postMessage({ id, error: traceError.toJSON() })
     }
 })

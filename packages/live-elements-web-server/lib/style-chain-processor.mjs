@@ -6,6 +6,7 @@ import url from 'url'
 import {WorkerError} from "../shared/errors/worker-error.mjs"
 
 let currentWorker = null
+let lastTaskId = 0
 
 export default class StyleChainProcessor{
     
@@ -18,6 +19,47 @@ export default class StyleChainProcessor{
             currentWorker.terminate()
             currentWorker = null
         }
+    }
+
+    /**
+     * Starts the shared style worker. Replies carry the request id, since packages compile their
+     * styles concurrently and the worker answers out of order.
+     */
+    static __startWorker(){
+        const workerPath = path.join(StyleChainProcessor.currentDir(), 'worker', 'style-chain-worker.mjs')
+        const worker = new Worker(workerPath, { workerData: null })
+        worker.taskCount = 0
+        worker.pending = new Map()
+
+        worker.on('message', ({ id, value, error }) => {
+            const task = worker.pending.get(id)
+            if ( !task )
+                return
+            worker.pending.delete(id)
+            if ( error ){
+                const we = WorkerError.fromJSON(error, errors)
+                task.reject(we instanceof WorkerError ? we.source : we)
+            } else {
+                task.resolve(value)
+            }
+            if ( worker !== currentWorker && worker.pending.size === 0 )
+                worker.terminate()
+        })
+        worker.on('error', (error) => {
+            for ( const task of worker.pending.values() )
+                task.reject(error)
+            worker.pending.clear()
+            if ( currentWorker === worker )
+                currentWorker = null
+        })
+        worker.once('exit', (code) => {
+            for ( const task of worker.pending.values() )
+                task.reject(new Error(`Worker stopped with exit code ${code}`))
+            worker.pending.clear()
+            if ( currentWorker === worker )
+                currentWorker = null
+        })
+        return worker
     }
 
     static currentDir(){ 
@@ -56,50 +98,21 @@ export default class StyleChainProcessor{
 
     processInWorker(file, content, destination){
         return new Promise((resolve, reject) => {
-            const workerPath = path.join(StyleChainProcessor.currentDir(), 'worker', 'style-chain-worker.mjs')
             if ( currentWorker && currentWorker.taskCount >= StyleChainProcessor.MaxWorkerTaskCount ){
-                currentWorker.terminate()
+                // Retire the worker; it terminates after answering the tasks it still holds.
+                const retired = currentWorker
                 currentWorker = null
+                if ( retired.pending.size === 0 )
+                    retired.terminate()
             }
             if ( !currentWorker ){
-                currentWorker = new Worker(workerPath, { workerData: null })
-                currentWorker.taskCount = 0
-                currentWorker.once('exit', (code) => {
-                    if (code !== 0) {
-                        reject(new Error(`Worker stopped with exit code ${code}`));
-                    }
-                })
+                currentWorker = StyleChainProcessor.__startWorker()
             }
-            currentWorker.taskCount++
-            currentWorker.postMessage( { file, content, destination, chain: this._items.map(item => ({ path: item.path, args: item.args, theme: item.theme })) } )
-
-            const messageListener = (result) => { 
-                if (result.error) {
-                    const we = WorkerError.fromJSON(result.error, errors)
-                    const errorToSend = we instanceof WorkerError ? we.source : we
-                    reject(errorToSend);
-                } else {
-                    resolve(result.value);
-                }
-                if ( currentWorker ){
-                    currentWorker.off('message', messageListener)
-                    currentWorker.off('error', errorListener)
-                }
-            }
-
-            const errorListener = (error) => {
-                reject(error)
-                if ( currentWorker ){
-                    currentWorker.off('message', messageListener)
-                    currentWorker.off('error', errorListener)
-                }
-            }
-
-
-            currentWorker.once('message', messageListener)
-            currentWorker.once('error', errorListener)
-            
-
+            const worker = currentWorker
+            const id = ++lastTaskId
+            worker.taskCount++
+            worker.pending.set(id, { resolve, reject })
+            worker.postMessage({ id, file, content, destination, chain: this._items.map(item => ({ path: item.path, args: item.args, theme: item.theme })) })
         })
     }
 
