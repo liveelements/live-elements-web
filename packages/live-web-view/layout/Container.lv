@@ -1,0 +1,36 @@
+import live-web.dom
+import live-elements-web-server.style
+
+/**
+ * Page content column with a standard maximum width.
+ *
+ * **Role:**
+ * - Caps and centers a page's main content at one of the `Container.Width` sizes.
+ * - Holds the page `Header` and the page body (`Main`, `TableFrame`, a block, …).
+ * - Inside a `SidebarLayout`, a direct child `Container` takes the place of `Aside`.
+ *
+ * Apps style it (borders, header row) in their own page stylesheets with `&Container`.
+ *
+ * @group ViewComponent
+ */
+component Container < Div{
+
+    static Object Width = {
+        Fluid: 'mw-fluid',
+        L: 'mw-l',
+        XL: 'mw-xl',
+        XL2: 'mw-xl2'
+    }
+
+    static any[] use = [
+        ScopedStyle{ src: './style/container.css' process: '../style/CSSProcessor.lv' },
+        ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
+    ]
+
+    string maxW: Container.Width.Fluid
+    string[] extraClasses: []
+
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(Container), this.maxW
+    ])
+}

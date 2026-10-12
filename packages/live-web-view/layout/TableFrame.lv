@@ -1,0 +1,14 @@
+import live-web.dom
+import live-elements-web-server.style
+
+component TableFrame < Div{
+    static any[] use = [
+        TableView,
+        ScopedStyle{ src: './style/tableframe.css' process: '../style/CSSProcessor.lv' }
+    ]
+
+    string[] extraClasses: []
+    classes: this.extraClasses.concat([
+        ScopedStyle.className(TableFrame)
+    ])
+}

@@ -56,7 +56,7 @@ FileGeneratorContent```
 
 
 FileGenerator{
-    output: 'app/Main.lv'
+    output: 'app/PlaygroundPage.lv'
 
 FileGeneratorContent```
 import live-web.dom
@@ -65,7 +65,7 @@ import live-web-edit.view.workspace
 import live-elements-web-server.view
 import live-elements-web-server.style
 
-component Main < PageView{
+component PlaygroundPage < PageView{
     static any[] use = [WorkspaceView]
     head: PageProperties{ ColorSchemeLoader{} }
 
@@ -106,7 +106,7 @@ instance bundle Bundle{
     ].concat(WorkspaceRoute.findWorkspacesIn(this.examplesTemplatesPath))
 
     WorkspaceRoute.(path.join(this.currentPackage, 'workspaces'), this.templates){
-        view: Main
+        view: PlaygroundPage
     }
 }
 ```

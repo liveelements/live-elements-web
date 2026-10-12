@@ -1,0 +1,12 @@
+&Container{
+    @apply w-full mx-auto box-border;
+}
+&Container&.mw-l{
+    @apply max-w-[64rem];
+}
+&Container&.mw-xl{
+    @apply max-w-[70rem];
+}
+&Container&.mw-xl2{
+    @apply max-w-[90rem];
+}

@@ -11,10 +11,10 @@ header h1, header h2{
     @apply text-mono-2 dark:text-mono-e text-2xl font-bold mb-0 font-sans;
 }
 dl{
-    @apply grid grid-cols-1 gap-x-10 gap-y-5 m-0;
+    @apply grid grid-cols-1 gap-x-10 gap-y-3 m-0;
 }
 dl > div{
-    @apply grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1 min-w-0;
+    @apply grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-0 min-w-0;
 }
 dt{
     @apply row-start-1 col-start-1 text-sm font-medium text-mono-6 font-sans dark:text-mono-9;

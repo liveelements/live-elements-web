@@ -106,5 +106,103 @@ component TableDoc{
         ```
     }
 
+    Content{
+        H2S`Framed table`
+        P`The frame owns the border and radius; set width and margins on the caller.`
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: CardDisplay{
+            TableFrame{
+                TableView{
+                    THead{
+                        Th`User`
+                        Th`Status`
+                        Th`Actions`
+                    }
+                    TBody{
+                        Tr{
+                            Td`User #1`
+                            Td`Pending`
+                            Td{
+                                PrimaryButton{ T`Edit` }
+                            }
+                        }
+                        Tr{
+                            Td`User #2`
+                            Td`Ready`
+                            Td{
+                                PrimaryButton{ T`Edit` }
+                            }
+                        }
+                        Tr{
+                            Td`User #3`
+                            Td`Pending`
+                            Td{
+                                PrimaryButton{ T`Edit` }
+                            }
+                        }
+                        Tr{
+                            Td`User #2`
+                            Td`Ready`
+                            Td{
+                                PrimaryButton{ T`Edit` }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [TableFrame, TableView]
+        ```
+        ContentSource```
+            TableFrame{
+                TableView{
+                    THead{
+                        Th\`User\`
+                        Th\`Status\`
+                        Th\`Actions\`
+                    }
+                    TBody{
+                        Tr{
+                            Td\`User #1\`
+                            Td\`Pending\`
+                            Td{
+                                PrimaryButton{ T\`Edit\` }
+                            }
+                        }
+                        Tr{
+                            Td\`User #2\`
+                            Td\`Ready\`
+                            Td{
+                                PrimaryButton{ T\`Edit\` }
+                            }
+                        }
+                        Tr{
+                            Td\`User #3\`
+                            Td\`Pending\`
+                            Td{
+                                PrimaryButton{ T\`Edit\` }
+                            }
+                        }
+                        Tr{
+                            Td\`User #2\`
+                            Td\`Ready\`
+                            Td{
+                                PrimaryButton{ T\`Edit\` }
+                            }
+                        }
+                    }
+                }
+            }
+        ```
+    }
 
 }

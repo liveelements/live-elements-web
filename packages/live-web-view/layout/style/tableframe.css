@@ -1,0 +1,7 @@
+&TableFrame{
+    @apply w-full overflow-x-auto rounded-xl border border-mono-d dark:border-mono-3 px-4 md:px-8;
+}
+
+&TableFrame &TableView&.border-around{
+    @apply border-0;
+}

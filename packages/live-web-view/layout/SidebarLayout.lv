@@ -13,6 +13,7 @@ component SidebarLayout < Div{
         Sidebar, 
         SidebarCompact,
         Aside,
+        Container,
         ScopedStyle{ src: './style/sidebarlayout.css' process: '../style/CSSProcessor.lv' },
         ScopedStyle{ src: '../style/global.css' process: '../style/CSSProcessor.lv' }
     ]

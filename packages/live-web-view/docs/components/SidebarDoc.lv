@@ -15,6 +15,15 @@ component SidebarDoc{
         P{
             T`The `Code`SidebarLayout`T` component is used to create a responsive sidebar.`
         }
+        P{
+            T`A direct-child `Code`Container`T` can also be used in place of `Code`Aside`T` for a standard page content column.`
+        }
+        ContentSource```
+            SidebarLayout{
+                Sidebar{ }
+                Container{ }
+            }
+        ```
         H2S`Sidebar On The Left Side`
     }
 

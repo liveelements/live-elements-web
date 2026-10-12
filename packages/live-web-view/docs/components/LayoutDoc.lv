@@ -13,6 +13,47 @@ component LayoutDoc{
         P{
             T`This page describes components in `Code`live-web-view`T` used to manage the layout of a page.`
         }
+        H2S`Container`
+        P{
+            Code`Container`T` centers a page content column at a standard maximum width. Its width is a property, while apps style borders and the header row in their own stylesheets.`
+        }
+    }
+
+    Example{
+        render: Example.RenderType.CSRSSR
+        element: Div{ style: { display: 'grid', gap: '1rem' }
+            CardDisplay{
+                Container{ maxW: Container.Width.L
+                    Div{ style: { height: '3rem', backgroundColor: '#bfdbfe' } }
+                }
+            }
+            CardDisplay{
+                Container{ maxW: Container.Width.XL
+                    Div{ style: { height: '3rem', backgroundColor: '#bbf7d0' } }
+                }
+            }
+            CardDisplay{
+                Container{ maxW: Container.Width.XL2
+                    Div{ style: { height: '3rem', backgroundColor: '#fde68a' } }
+                }
+            }
+        }
+
+        ImportsSource```
+            import live-web.dom
+            import live-web-view.layout
+        ```
+        UseSource```
+            static any[] use = [Container]
+        ```
+        ContentSource```
+            Container{ maxW: Container.Width.L
+                Div{}
+            }
+        ```
+    }
+
+    Content{
         H2S`Centered Layout`
         P{
             T`The `Code`CenterLayout`T` component centers it's content both vertically and horizontally.`
