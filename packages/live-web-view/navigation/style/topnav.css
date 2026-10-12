@@ -26,6 +26,9 @@
 &TopNav .nav-brand svg{
     @apply h-5;
 }
+&TopNav .nav-brand img{
+    @apply h-5 w-auto;
+}
 &TopNav .nav-content-toggle {
     @apply flex hidden w-full items-center;
 }
