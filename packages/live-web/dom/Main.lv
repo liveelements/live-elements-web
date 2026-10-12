@@ -1,0 +1,7 @@
+component Main < DOMElement{
+
+    constructor(){
+        super('main')
+        Main.prototype.__initialize.call(this)
+    }
+}
