@@ -5,12 +5,17 @@ export class ClientPackageConfig {
     
     static read(configPath) {
         const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-        return new ClientPackageConfig(path.dirname(configPath), raw.exports)
+        return new ClientPackageConfig(path.dirname(configPath), raw.exports, raw.docs)
     }
 
-    constructor(packageDir, exports) {
+    constructor(packageDir, exports, docs) {
         this.packageDir = packageDir
         this.exports = Object.freeze([...exports])
+        this.docs = docs ?? null
+    }
+
+    get docsPath() {
+        return this.docs === null ? null : path.resolve(this.packageDir, this.docs)
     }
 
     resolveClientExports() {

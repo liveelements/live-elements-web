@@ -1,0 +1,60 @@
+import live-testspec
+
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
+import { ClientPackageConfig } from '../../lib/bundler/client-package-config.mjs'
+
+instance clientPackageConfigTest Spec{
+    describe: 'ClientPackageConfig'
+
+    fn withPackage(config:Object, files:Array, run:Function){
+        const packageDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'client-package-config-')))
+        try {
+            for (const file of files) {
+                fs.mkdirSync(path.dirname(path.join(packageDir, file)), { recursive: true })
+                fs.writeFileSync(path.join(packageDir, file), 'export {}\n')
+            }
+            const configPath = path.join(packageDir, 'client.package.json')
+            fs.writeFileSync(configPath, `${JSON.stringify(config)}\n`)
+            return run(packageDir, configPath)
+        } finally {
+            fs.rmSync(packageDir, { recursive: true, force: true })
+        }
+    }
+
+    Scenario{
+        name: 'leaves docs null when the field is missing'
+        run: (expect) => {
+            clientPackageConfigTest.withPackage({ exports: [] }, [], (packageDir, configPath) => {
+                const config = ClientPackageConfig.read(configPath)
+                expect(config.docs).toBeNull()
+                expect(config.docsPath).toBeNull()
+            })
+        }
+    }
+
+    Scenario{
+        name: 'resolves docs to an absolute path under the package dir'
+        run: (expect) => {
+            clientPackageConfigTest.withPackage({ exports: [], docs: 'docs/functions.json' }, [], (packageDir, configPath) => {
+                const config = ClientPackageConfig.read(configPath)
+                expect(config.docs).toBe('docs/functions.json')
+                expect(config.docsPath).toBe(path.join(packageDir, 'docs', 'functions.json'))
+            })
+        }
+    }
+
+    Scenario{
+        name: 'resolves exports the same way when docs is set'
+        run: (expect) => {
+            const files = ['views/A.mjs', 'views/B.mjs', 'docs/functions.json']
+            clientPackageConfigTest.withPackage({ exports: ['views/*.mjs', '!views/B.mjs'], docs: 'docs/functions.json' }, files, (packageDir, configPath) => {
+                const config = ClientPackageConfig.read(configPath)
+                expect(config.exports).toEqual(['views/*.mjs', '!views/B.mjs'])
+                expect(config.resolveClientExports()).toEqual([path.join(packageDir, 'views', 'A.mjs')])
+            })
+        }
+    }
+}
