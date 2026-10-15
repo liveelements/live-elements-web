@@ -5,12 +5,12 @@ import live-elements-web-server.style
 import .view.lib
 
 import {EditorView, basicSetup} from 'codemirror'
-import {indentUnit} from '@codemirror/language'
+import {indentUnit, HighlightStyle, syntaxHighlighting} from '@codemirror/language'
 import {keymap} from '@codemirror/view'
 import {EditorState, Compartment} from "@codemirror/state"
 import {javascript} from "@codemirror/lang-javascript"
 import {css} from "@codemirror/lang-css"
-import {oneDark} from "@codemirror/theme-one-dark"
+import {oneDarkTheme, oneDarkHighlightStyle, color} from "@codemirror/theme-one-dark"
 
 component CodeEditorView < Div{
     static any[] use = [ 
@@ -54,18 +54,37 @@ component CodeEditorView < Div{
         }
         }, {dark: false})
 
-    static Object darkTheme = [
-        EditorView.theme({
-            "&": {
-                backgroundColor: "#111111",
-            },
-            ".cm-gutters": {
-                backgroundColor: "#111111",
-                border: "none",
-            }
-        }, { dark: true }),
-        oneDark
-    ]
+    /**
+     * Builds a One Dark based theme for the `themes` property.
+     *
+     * - `options.background` sets the editor and gutter background (default `#111111`).
+     * - `options.colors` replaces One Dark syntax colors by name, e.g. `{ coral: '#b998fe' }`.
+     *   Names are the keys of One Dark's palette: chalky, coral, cyan, ivory, stone, malibu, sage, whiskey, violet.
+     */
+    static fn createDarkTheme(options:any){
+        const background = options && options.background ? options.background : '#111111'
+        const colors = options && options.colors ? options.colors : {}
+        const replacements = {}
+        Object.keys(colors).forEach(name => { replacements[color[name]] = colors[name] })
+        const specs = oneDarkHighlightStyle.specs.map(
+            spec => replacements[spec.color] ? Object.assign({}, spec, { color: replacements[spec.color] }) : spec
+        )
+        return [
+            EditorView.theme({
+                "&": {
+                    backgroundColor: background,
+                },
+                ".cm-gutters": {
+                    backgroundColor: background,
+                    border: "none",
+                }
+            }, { dark: true }),
+            oneDarkTheme,
+            syntaxHighlighting(HighlightStyle.define(specs))
+        ]
+    }
+
+    static Object darkTheme = CodeEditorView.createDarkTheme({})
 
     string[] extraClasses: []
     classes: this.extraClasses.concat([
