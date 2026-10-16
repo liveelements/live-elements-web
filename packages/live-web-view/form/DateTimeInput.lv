@@ -16,20 +16,16 @@ component DateTimeInput < Div{
     string name
     string placeholder
     string value
+    on valueChanged: () => { this.picker?.setDate(this.value || null, false) }
 
     boolean time: false
     boolean date: true
     boolean range: false
 
     Object options = ({})
+    Object picker: null
 
     string currentValue: input.currentValue
-
-    props : ({
-        data: {
-            options: JSON.stringify(dateTimeInput.options)
-        }
-    })
 
     string[] extraClasses: []
     classes: this.extraClasses.concat([ScopedStyle.className(DateTimeInput)])
@@ -51,26 +47,24 @@ component DateTimeInput < Div{
             }
             const flatpickr = window.__packages__.flatpickr
 
-            const input = d.querySelector('input')
-            const options = JSON.parse(d.dataset.options)
+            
+            const disableTime = (instance, disabled) => {
+                if ( instance.hourElement ) instance.hourElement.disabled = disabled
+                if ( instance.minuteElement ) instance.minuteElement.disabled = disabled
+            }
 
-            const dpick = flatpickr(input, {
+            dateTimeInput.picker?.destroy()
+            dateTimeInput.picker = flatpickr(d.querySelector('input'), {
                 appendTo: d,
                 position: "auto",
                 static: true,
-                onReady: function(selectedDates, dateStr, instance) {
-                    instance.hourElement.disabled = true
-                    instance.minuteElement.disabled = true
-                },
-                onOpen: function(selectedDates, dateStr, instance) {
-                    instance.hourElement.disabled = false
-                    instance.minuteElement.disabled = false
-                },
-                onClose: function(selectedDates, dateStr, instance) {
-                    instance.hourElement.disabled = true
-                    instance.minuteElement.disabled = true
-                },
-                ...options
+                enableTime: dateTimeInput.time,
+                noCalendar: !dateTimeInput.date,
+                mode: dateTimeInput.range ? 'range' : 'single',
+                onReady: (selectedDates, dateStr, instance) => disableTime(instance, true),
+                onOpen: (selectedDates, dateStr, instance) => disableTime(instance, false),
+                onClose: (selectedDates, dateStr, instance) => disableTime(instance, true),
+                ...dateTimeInput.options
             })
         }
     }
