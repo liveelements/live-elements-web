@@ -7,6 +7,9 @@ import { ObjectType } from './types.mjs'
  * `TypeCodec` instances instead serialize foreign values through `.toJSON(value)` and
  * `.fromJSON(data, type, typeLookup)`.
  *
+ * Built-in codecs support collection, error, promise, and date values. Decoding structural object
+ * types keeps undeclared fields while decoding every declared field through its type.
+ *
  * Use `TypeCodec.encode(value)` and `TypeCodec.decode(data, type, typeLookup)` as the public entry points.
  */
 export class TypeCodec {
@@ -54,7 +57,7 @@ export class TypeCodec {
         const isObjectType = type instanceof ObjectType
             || (typeof type?.isObject === 'function' && type.isObject())
         if (isObjectType && data && typeof data === 'object' && !Array.isArray(data)) {
-            const out = {}
+            const out = { ...data }
             for (const [key, fieldType] of Object.entries(type.fields))
                 out[key] = TypeCodec.decode(data[key], fieldType, typeLookup)
             return out
@@ -82,6 +85,19 @@ TypeCodec.builtin = new Map([
     [Error, new TypeCodec({
         toJSON: (value) => ({ message: value.message, name: value.name, stack: value.stack }),
         fromJSON: (data) => Object.assign(new Error(data?.message), { name: data?.name, stack: data?.stack })
+    })],
+    [Date, new TypeCodec({
+        toJSON: (value) => Number.isNaN(value.getTime()) ? null : value.toISOString(),
+        fromJSON: (data) => {
+            if (data == null || typeof data?.getTime === 'function')
+                return data
+            if (typeof data !== 'string' && typeof data !== 'number')
+                throw new TypeError(`Invalid date ${JSON.stringify(data)}.`)
+            const value = new Date(data)
+            if (Number.isNaN(value.getTime()))
+                throw new TypeError(`Invalid date ${JSON.stringify(data)}.`)
+            return value
+        }
     })],
     [Promise, new TypeCodec({
         fromJSON: (data, type, typeLookup) => TypeCodec.decode(data, type.params[0], typeLookup)

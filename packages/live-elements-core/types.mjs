@@ -14,7 +14,7 @@ export class Type{
         this.ref = ref
     }
 
-    key(){ return Type.isClass(this.ref) || this.ref.meta ? Type.classReference(this.ref) : this.ref }
+    key(){ return typeof this.ref === 'function' || this.ref?.meta ? Type.classReference(this.ref) : this.ref }
 
     matches(value){ return value instanceof this.ref }
 
@@ -54,7 +54,10 @@ export class Type{
     }
 
     static isClass(ref){
-        return typeof ref === 'function' && /^class\s/.test(Function.prototype.toString.call(ref))
+        return typeof ref === 'function' && (
+            /^class\s/.test(Function.prototype.toString.call(ref)) ||
+            TypeLookup.builtins.includes(ref)
+        )
     }
 
     static classReference(ref){
@@ -786,6 +789,12 @@ export const ArrayType = { for: (param) => GenericType.for(Array, param) }
 
 export class TypeLookup{
 
+    /**
+     * Constructors available to every type lookup. Hosts may include these too,
+     * but no longer need to list built-ins such as Array.
+     */
+    static builtins = [Array, Map, Set, Promise, Error, Date]
+
     constructor(types){
         if (!Array.isArray(types)) {
             throw new Error('TypeLookup() expects an array of types.')
@@ -795,6 +804,7 @@ export class TypeLookup{
 
     find(typeName){
         return this._data.find(t => Type.classReference(t) === typeName)
+            ?? TypeLookup.builtins.find(ctor => ctor.name === typeName)
     }
 
     static fromArray(list){
