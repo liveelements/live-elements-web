@@ -317,7 +317,10 @@ export class TypeResolver {
             })
 
             typeImports.add('ObjectType')
-            return `ObjectType.for({ ${fields.join(', ')} })`
+            const name = type.aliasSymbol?.getName()
+                ?? ((symbol?.flags & ts.SymbolFlags.Interface) !== 0 ? symbol.getName() : null)
+            const meta = name ? `, { "name": ${JSON.stringify(name)} }` : ''
+            return `ObjectType.for({ ${fields.join(', ')} }${meta})`
         }
 
         throw new Error(

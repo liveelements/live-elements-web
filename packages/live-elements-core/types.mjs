@@ -34,6 +34,7 @@ export class Type{
     }
 
     toString(){ return Type.className(this.ref) }
+    label(){ return this.toString() }
 
     isAssignableTo(target){
         if (this === target || target === Type.any) 
@@ -298,6 +299,7 @@ export class GenericType extends Type{
         return true
     }
     toString(){ return `${Type.className(this.ref)}<${this.params.map(p => p.toString()).join(',')}>` }
+    label(){ return `${Type.className(this.ref)}<${this.params.map(p => p.label()).join(',')}>` }
 }
 
 GenericType.__genericCache = new WeakMap()
@@ -399,6 +401,11 @@ export class FunctionType extends Type {
     toString() {
         const ps = this.params.map(p => p.toString()).join(', ')
         return `(${ps}) => ${this.returnType.toString()}`
+    }
+
+    label() {
+        const ps = this.params.map(p => p.label()).join(', ')
+        return `(${ps}) => ${this.returnType.label()}`
     }
 }
 
@@ -679,11 +686,16 @@ export class ObjectType extends Type{
     key(){
         return this.ctor
             ? Type.classReference(this.ctor)
-            : '{' + Object.entries(this.fields).map(([k,v])=>`${k}:${v.key()}`).join(',') + '}'
+            : ObjectType.createKey(this.fields, this.meta)
+    }
+
+    static createKey(fields, meta = {}){
+        const key = '{' + Object.entries(fields).map(([k,v])=>`${k}:${v.key()}`).join(',') + '}'
+        return meta?.name ? `${meta.name}${key}` : key
     }
 
     static for(fields, meta){
-        const key = '{' + Object.entries(fields).map(([k,v])=>`${k}:${v.key()}`).join(',') + '}'
+        const key = ObjectType.createKey(fields, meta)
         return Type.__accessCache(key, ObjectType, null, fields, meta)
     }
 
@@ -757,7 +769,16 @@ export class ObjectType extends Type{
         return this.ctor
           ? `${this.ctor.name}{ ${body} }`
           : `{ ${body} }`;
-      }
+    }
+
+    label() {
+        if (!this.ctor && this.meta.name) return this.meta.name
+        const body = Object.entries(this.fields)
+            .map(([k,v]) => `${k}:${v.label()}`).join(', ')
+        return this.ctor
+            ? `${this.ctor.name}{ ${body} }`
+            : `{ ${body} }`
+    }
 }
 
 
